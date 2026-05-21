@@ -1,0 +1,177 @@
+/* =========================
+   HEADER
+   ========================= */
+
+header {
+  margin-top: 15px;
+  height: 20vh;
+}
+
+
+.header {
+  display: flex;
+  flex-direction: column; /* logo+acciones arriba, menú debajo */
+  justify-content: flex-start;
+  align-items: stretch;
+  padding: 16px 16px;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+/* Fila superior: logo + título y acciones */
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* logo a la izquierda, acciones a la derecha */
+  margin-bottom: 12px;
+}
+
+/* Logo + título */
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-img {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+}
+
+.site-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text, black);
+  white-space: nowrap;
+}
+
+/* =========================
+   NAV MENU
+   ========================= */
+.main-nav {
+  display: flex;
+  justify-content: center;
+}
+
+.menu-nav {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+}
+
+.menu-nav > li {
+  position: relative;
+}
+
+.menu-nav > li > a {
+  padding: 15px 20px;
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--color-text, white);
+}
+
+/* =========================
+   SUBMENU / DROPDOWN
+   ========================= */
+.submenu-nav {
+  position: absolute;
+  top: 100%;
+  left: 0;
+
+  width: 100%;   
+  min-width: unset; 
+
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+  margin: 0;
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.25s ease;
+  z-index: 1000;
+}
+
+.submenu-nav li {
+  list-style: none;
+}
+
+.submenu-nav a {
+  display: block;
+  padding: 10px 14px;
+  color: #111;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.dropdown:hover .submenu-nav,
+.dropdown.active .submenu-nav {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.submenu-nav a:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.dropdown-title {
+  display: block;
+  padding: 15px 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--color-text, white);
+  width: 100%;
+}
+
+.dropdown.active .dropdown-title {
+  background: rgba(255, 255, 255, 0.92);
+  color: #111;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+  width: max-content; 
+}
+
+.dropdown-title {
+  display: block;
+  width: 100%;
+}
+
+
+/* =========================
+   HEADER ACTIONS
+   ========================= */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+@media (max-width: 1024px) {
+  .main-nav {
+    flex-direction: column;
+    display: none; /* puedes agregar toggle para móvil */
+  }
+}

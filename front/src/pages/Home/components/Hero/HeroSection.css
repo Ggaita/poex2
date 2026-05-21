@@ -1,0 +1,143 @@
+.hero {
+  position: relative;
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #0b0f19;
+  padding-bottom: 6rem;
+}
+
+/* ===== BACKGROUND ===== */
+
+.hero-background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.hero-background img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.05);
+  filter: brightness(0.55) saturate(1.1);
+}
+
+/* Overlay oscuro profesional */
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+      circle at center,
+      rgba(0, 0, 0, 0.2),
+      rgba(0, 0, 0, 0.75)
+    );
+}
+
+/* ===== CONTAINER ===== */
+
+.hero-container {
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* ===== CONTENT ===== */
+
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  align-items: center;
+}
+
+/* TITLE */
+
+.hero-title {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+/* SUBTITLE */
+
+.hero-subtitle {
+  font-size: clamp(1rem, 1.5vw, 1.2rem);
+  max-width: 700px;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.6;
+}
+
+/* ===== SEARCH ===== */
+
+.search-form {
+  width: 100%;
+  max-width: 650px;
+  margin-top: 1rem;
+}
+
+.search-box {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.5rem;
+  border-radius: 14px;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* INPUT */
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: white;
+  font-size: 1rem;
+  padding: 0.9rem 1rem;
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* BUTTON */
+
+.search-button {
+  background: #4f7cff;
+  color: white;
+  border: none;
+  padding: 0.9rem 1.4rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search-button:hover {
+  background: #3f6df0;
+  transform: translateY(-1px);
+}
+
+.search-button:active {
+  transform: translateY(0px);
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 640px) {
+  .search-box {
+    flex-direction: column;
+  }
+
+  .search-button {
+    width: 100%;
+  }
+}

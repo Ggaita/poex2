@@ -1,0 +1,18 @@
+:root {
+  --background-color: #5059bc;
+  --color-surface: #f8fafc;
+  --color-text: black;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--background-color);
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
