@@ -4,7 +4,8 @@ import type { SearchMode } from "../../../../../shared/types/search.types";
 
 export const HeroSearchForm = () => {
   const [query, setQuery] = useState<string>("");
-  const [mode, setMode] = useState<SearchMode>("products");
+  const mode: SearchMode = "products";
+// const [mode, setMode] = useState<SearchMode>("products");
 
   const navigate = useNavigate();
 
