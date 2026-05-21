@@ -8,30 +8,45 @@ export default function NavMenu() {
         <Dropdown
           title="INSTITUCIONAL"
           items={[
-            { label: "Qué es la oferta exportable", to: "/oferta" },
-            { label: "Conocé Chaco", to: "/chaco" }
+            { label: "Quiénes somos", to: "/quienes-somos" },
+            { label: "Objetivos", to: "/objetivos" },
+            { label: "Organismos vinculados", to: "/organismos-vinculados" },
+            { label: "Contacto institucional", to: "/contacto-institucional" }
           ]}
         />
 
         <Dropdown
           title="SECTORES ECONÓMICOS"
           items={[
-            { label: "AGROINDUSTRIA", to: "/agro" },
-            { label: "VITIVINÍCOLA", to: "/vino" },
-            { label: "ALGUNO MAS", to: "/otro" }
+            { label: "Agro y alimentos", to: "/agro-y-alimentos" },
+            { label: "Industria", to: "/industria" },
+            { label: "Industrias Creativas", to: "/industrias-creativas" },
+            { label: "Servicios Tecnológicos", to: "/servicios-tecnologicos" },
           ]}
         />
 
         <Dropdown
           title="SERVICIOS DE COMERCIO EXTERIOR"
           items={[
-            { label: "SERVICIOS CONEXOS", to: "/servicios" },
-            { label: "ENTIDADES", to: "/entidades" },
-            { label: "REPRESENTACIONES EXTRANJERAS", to: "/extranjeras" }
+            { label: "Asistencia exportadora", to: "/asistencia-exportadora" },
+            { label: "Certificaciones", to: "/certificaciones" },
+            { label: "Normativas", to: "/normativas" },
+            { label: "Logística y aduana", to: "/logistica-y-aduana" },
+            { label: "Capacitación", to: "/capacitacion" },
           ]}
         />
 
-        <li><a href="/oportunidades">OPORTUNIDADES COMERCIALES</a></li>
+        <Dropdown
+          title="OPORTUNIDADES COMERCIALES"
+          items={[
+            { label: "Búsqueda de productos", to: "/busqueda-de-productos" },
+            { label: "Búsqueda de empresas", to: "/busqueda-de-empresas" },
+            { label: "Catálogo exportable", to: "/catalogo-exportable" },
+            { label: "Formularios de consulta", to: "/formularios-de-consulta" },
+            { label: "Oportunidades de inversión ", to: "/oportunidades-de-inversion" },
+          ]}
+        />
+
         <li><a href="/ayuda">AYUDA</a></li>
 
       </ul>
