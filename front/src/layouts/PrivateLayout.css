@@ -1,0 +1,124 @@
+.private-layout {
+  background: #f5f7ff;
+}
+
+.private-header {
+  margin-top: 0;
+  min-height: auto;
+  background: #1d2a7a;
+  color: #f8f9ff;
+  padding: 0.9rem 1rem 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.private-header-row {
+  width: min(1200px, 100%);
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.private-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.private-brand strong {
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+}
+
+.private-brand span {
+  font-size: 0.82rem;
+  color: #c7d7fe;
+}
+
+.private-session {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.private-session small {
+  color: #e4e7ff;
+  font-weight: 600;
+}
+
+.private-session button {
+  border: 1px solid #fda29b;
+  border-radius: 8px;
+  background: #fee4e2;
+  color: #7a271a;
+  font-weight: 700;
+  padding: 0.4rem 0.65rem;
+  cursor: pointer;
+}
+
+.private-session button:hover {
+  background: #fecdca;
+}
+
+.private-nav {
+  width: min(1200px, 100%);
+  margin: 0.85rem auto 0;
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.private-nav-link {
+  text-decoration: none;
+  color: #e4e7ff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  padding: 0.42rem 0.62rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.private-nav-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.private-nav-link.active {
+  background: #eef4ff;
+  border-color: #eef4ff;
+  color: #263ca0;
+}
+
+.private-main-content {
+  padding: 0;
+}
+
+.private-footer {
+  width: 100%;
+  background: #101a4f;
+  color: #d0d5ff;
+  text-align: center;
+  padding: 0.65rem 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.private-footer p {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+@media (max-width: 800px) {
+  .private-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .private-session {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .private-session button {
+    white-space: nowrap;
+  }
+}
