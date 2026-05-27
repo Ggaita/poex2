@@ -1,6 +1,6 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import MainLayout from "../../layouts/MainLayouts";
+import PrivateLayout from "../../layouts/PrivateLayout";
 import {
   getAuthSession,
   getDefaultPrivateRoute,
@@ -123,7 +123,7 @@ export default function LoginPage() {
   };
 
   return (
-    <MainLayout>
+    <PrivateLayout>
       <section className="login-page">
         <div className="login-card">
           <header>
@@ -199,6 +199,6 @@ export default function LoginPage() {
           </footer>
         </div>
       </section>
-    </MainLayout>
+    </PrivateLayout>
   );
 }

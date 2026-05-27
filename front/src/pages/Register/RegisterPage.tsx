@@ -1,5 +1,5 @@
 import { type ChangeEvent, type FormEvent, useState } from "react";
-import MainLayout from "../../layouts/MainLayouts";
+import PrivateLayout from "../../layouts/PrivateLayout";
 import "./RegisterPage.css";
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
 
@@ -500,7 +500,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <MainLayout>
+    <PrivateLayout>
       <section className="register-page">
         <div className="register-shell">
           <header className="register-header">
@@ -1105,6 +1105,6 @@ export default function RegisterPage() {
           </form>
         </div>
       </section>
-    </MainLayout>
+    </PrivateLayout>
   );
 }
