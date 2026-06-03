@@ -1,7 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+type DropdownItem = {
+  label: string;
+  to: string;
+};
 
-export default function Dropdown({ title, items }: any) {
+type DropdownProps = {
+  title: string;
+  items: DropdownItem[];
+};
+
+export default function Dropdown({ title, items }: DropdownProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -13,7 +22,7 @@ export default function Dropdown({ title, items }: any) {
       <a className="dropdown-title">{title}</a>
 
       <ul className="submenu-nav">
-        {items.map((item: any, i: number) => (
+        {items.map((item, i: number) => (
           <li key={i}>
             <Link to={item.to}>{item.label}</Link>
           </li>

@@ -1,57 +1,13 @@
 import { type ChangeEvent, type FormEvent, useState } from "react";
 import PrivateLayout from "../../layouts/PrivateLayout";
+import type {
+  CatalogItem,
+  CompanyPhotoItem,
+  ProductPhotoItem,
+  RegisterFormState
+} from "./register.types";
 import "./RegisterPage.css";
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
-
-type YesNo = "" | "si" | "no";
-
-type RegisterFormState = {
-  companyName: string;
-  contactEmail: string;
-  phone: string;
-  address: string;
-  city: string;
-  googleMapsEmbed: string;
-  description: string;
-  representativeName: string;
-  representativeRole: string;
-  representativeEmail: string;
-  sector: string;
-  chamberMembership: YesNo;
-  chamberNames: string;
-  product: string;
-  keywords: string;
-  tariffPosition: string;
-  exportDestinations: string;
-  awards: string;
-  certifications: string;
-  website: string;
-  facebook: string;
-  instagram: string;
-  linkedin: string;
-  youtube: string;
-  otherLink: string;
-  hasCatalog: YesNo;
-  hasProductPhotos: YesNo;
-  hasCompanyPhotos: YesNo;
-};
-
-type CatalogItem = {
-  id: string;
-  title: string;
-  file: File | null;
-};
-
-type ProductPhotoItem = {
-  id: string;
-  description: string;
-  file: File | null;
-};
-
-type CompanyPhotoItem = {
-  id: string;
-  file: File | null;
-};
 
 const stepTitles = [
   "Datos de la empresa",
@@ -492,7 +448,7 @@ export default function RegisterPage() {
       setSuccessMessage(
         `Solicitud enviada correctamente (ID ${result?.data?.id ?? "N/A"}). Quedó registrada para revisión del administrador.`
       );
-    } catch (_error) {
+    } catch {
       setApiError("No se pudo conectar con el backend. Verificá que la API esté levantada.");
     } finally {
       setIsSubmitting(false);

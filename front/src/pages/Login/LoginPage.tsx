@@ -6,12 +6,13 @@ import {
   getDefaultPrivateRoute,
   saveAuthSession
 } from "../../shared/auth/session";
+import type { ApiResponse } from "../../shared/types/api.types";
+import type {
+  LoginLocationState,
+  LoginResponseData,
+  LoginRole
+} from "./login.types";
 import "./LoginPage.css";
-
-type LoginRole = "admin" | "empresa";
-type LoginLocationState = {
-  from?: string;
-};
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
 
 const isValidEmail = (value: string): boolean => {
@@ -82,7 +83,7 @@ export default function LoginPage() {
         })
       });
 
-      const result = await response.json();
+      const result = (await response.json()) as ApiResponse<LoginResponseData>;
 
       if (!response.ok) {
         setErrorMessage(result?.error ?? "No se pudo iniciar sesión.");
@@ -91,7 +92,7 @@ export default function LoginPage() {
       const token = result?.data?.token;
 
       const displayName = result?.data?.user?.displayName;
-      const loggedUserRole = result?.data?.user?.role as LoginRole | undefined;
+      const loggedUserRole = result?.data?.user?.role;
       const safeDisplayName = displayName || email.trim();
 
       if (
@@ -115,7 +116,7 @@ export default function LoginPage() {
       const from = (location.state as LoginLocationState | null)?.from;
       navigate(resolveTargetRoute(loggedUserRole, from), { replace: true });
       return;
-    } catch (_error) {
+    } catch {
       setErrorMessage("No se pudo conectar con el backend. Verificá que la API esté levantada.");
     } finally {
       setIsSubmitting(false);

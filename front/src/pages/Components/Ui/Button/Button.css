@@ -1,7 +1,7 @@
 /* Botones */
 .btn {
   padding: 8px 16px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
@@ -10,21 +10,21 @@
 }
 
 .btn-primary {
-  background-color: var(--color-primary, #3b82f6);
-  color: #fff;
+  background-color: var(--color-primary);
+  color: var(--color-white);
 }
 
 .btn-primary:hover {
-  background-color: #2563eb;
+  background-color: var(--color-primary-strong);
 }
 
 .btn-secondary {
-  background-color: var(--color-secondary, #e5e7eb);
-  color: #111;
+  background-color: var(--color-secondary);
+  color: var(--color-text);
 }
 
 .btn-secondary:hover {
-  background-color: #d1d5db;
+  background-color: var(--color-border);
 }
 
 /* Icon buttons */
@@ -36,11 +36,11 @@
   justify-content: center;
   border: none;
   background: transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  color: var(--color-text, black);
+  color: var(--color-text);
 }
 
 .icon-btn:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: var(--color-surface-accent);
 }

@@ -5,7 +5,7 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: #0b0f19;
+  background: var(--brand-azul-noche);
   padding-bottom: 6rem;
 }
 
@@ -60,7 +60,7 @@
 .hero-title {
   font-size: clamp(2rem, 4vw, 3.5rem);
   font-weight: 800;
-  color: #ffffff;
+  color: var(--color-white);
   letter-spacing: -0.02em;
   line-height: 1.1;
 }
@@ -70,7 +70,7 @@
 .hero-subtitle {
   font-size: clamp(1rem, 1.5vw, 1.2rem);
   max-width: 700px;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.82);
   line-height: 1.6;
 }
 
@@ -111,18 +111,18 @@
 /* BUTTON */
 
 .search-button {
-  background: #4f7cff;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-white);
   border: none;
   padding: 0.9rem 1.4rem;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .search-button:hover {
-  background: #3f6df0;
+  background: var(--color-primary-strong);
   transform: translateY(-1px);
 }
 

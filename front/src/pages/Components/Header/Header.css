@@ -16,6 +16,7 @@ header {
   padding: 16px 16px;
   background-color: var(--color-surface);
   color: var(--color-text);
+  border-bottom: 1px solid var(--color-border-soft);
 }
 
 /* Fila superior: logo + título y acciones */
@@ -42,7 +43,7 @@ header {
 .site-title {
   font-size: 1rem;
   font-weight: 700;
-  color: var(--color-text, black);
+  color: var(--color-text);
   white-space: nowrap;
 }
 
@@ -70,7 +71,7 @@ header {
   padding: 15px 20px;
   white-space: nowrap;
   text-decoration: none;
-  color: var(--color-text, white);
+  color: var(--color-text);
 }
 
 /* =========================
@@ -86,9 +87,8 @@ header {
 
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(10px);
-
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
+  border-bottom-left-radius: var(--radius-sm);
+  border-bottom-right-radius: var(--radius-sm);
 
   display: flex;
   flex-direction: column;
@@ -109,7 +109,7 @@ header {
 .submenu-nav a {
   display: block;
   padding: 10px 14px;
-  color: #111;
+  color: var(--color-text);
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
@@ -132,15 +132,15 @@ header {
   padding: 15px 20px;
   cursor: pointer;
   white-space: nowrap;
-  color: var(--color-text, white);
+  color: var(--color-text);
   width: 100%;
 }
 
 .dropdown.active .dropdown-title {
   background: rgba(255, 255, 255, 0.92);
-  color: #111;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+  color: var(--color-text);
+  border-top-left-radius: var(--radius-sm);
+  border-top-right-radius: var(--radius-sm);
 }
 
 .dropdown {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PrivateLayout from "../../layouts/PrivateLayout";
 import {
@@ -8,25 +8,12 @@ import {
   setStoredReviewerName
 } from "../../shared/auth/session";
 import type { ApiResponse } from "../../shared/types/api.types";
+import type {
+  ApplicationStatus,
+  CompanyApplication,
+  StatusFilter
+} from "./admin-applications.types";
 import "./AdminApplicationsPage.css";
-
-type ApplicationStatus = "pending" | "approved" | "rejected";
-type StatusFilter = ApplicationStatus | "all";
-
-type CompanyApplication = {
-  id: number;
-  companyName: string;
-  contactName: string;
-  email: string;
-  phone?: string;
-  taxId?: string;
-  message?: string;
-  status: ApplicationStatus;
-  createdAt: string;
-  reviewedAt?: string;
-  reviewedBy?: string;
-  rejectionReason?: string;
-};
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
 
@@ -69,9 +56,10 @@ export default function AdminApplicationsPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("pending");
   const [applications, setApplications] = useState<CompanyApplication[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const selectedIdRef = useRef<number | null>(null);
   const [selectedApplication, setSelectedApplication] =
     useState<CompanyApplication | null>(null);
-  const [listLoading, setListLoading] = useState(false);
+  const [listLoading, setListLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -91,111 +79,123 @@ export default function AdminApplicationsPage() {
     [selectedApplication?.message]
   );
 
-  const handleUnauthorized = () => {
+  const handleUnauthorized = useCallback(() => {
     clearAuthSession();
     navigate("/login", { replace: true });
-  };
+  }, [navigate]);
 
-  const getAuthHeader = (): string | null => {
+  const getAuthHeader = useCallback((): string | null => {
     const token = getAuthSession()?.token;
     if (!token) {
       return null;
     }
 
     return `Bearer ${token}`;
-  };
+  }, []);
 
-  const loadApplications = async (filter: StatusFilter): Promise<void> => {
-    setListLoading(true);
-    setErrorMessage("");
-
-    const authHeader = getAuthHeader();
-    if (!authHeader) {
-      handleUnauthorized();
-      setListLoading(false);
-      return;
-    }
-
-    try {
-      const query = filter === "all" ? "" : `?status=${filter}`;
-      const response = await fetch(`${API_BASE_URL}/api/admin/applications${query}`, {
-        headers: {
-          Authorization: authHeader
-        }
-      });
-      const result = (await response.json()) as ApiResponse<CompanyApplication[]>;
-
-      if (response.status === 401) {
+  const loadApplicationDetail = useCallback(
+    async (id: number): Promise<void> => {
+      const authHeader = getAuthHeader();
+      if (!authHeader) {
         handleUnauthorized();
         return;
       }
 
-      if (!response.ok) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/applications/${id}`, {
+          headers: {
+            Authorization: authHeader
+          }
+        });
+        const result = (await response.json()) as ApiResponse<CompanyApplication>;
+
+        if (response.status === 401) {
+          handleUnauthorized();
+          return;
+        }
+
+        if (!response.ok) {
+          setSelectedApplication(null);
+          setErrorMessage(result.error ?? "No se pudo cargar el detalle de la solicitud.");
+          return;
+        }
+
+        setSelectedApplication(result.data);
+      } catch {
+        setSelectedApplication(null);
+        setErrorMessage("No se pudo conectar con el backend para cargar el detalle.");
+      } finally {
+        setDetailLoading(false);
+      }
+    },
+    [getAuthHeader, handleUnauthorized]
+  );
+
+  const loadApplications = useCallback(
+    async (filter: StatusFilter): Promise<void> => {
+      const authHeader = getAuthHeader();
+      if (!authHeader) {
+        handleUnauthorized();
+        return;
+      }
+
+      try {
+        const query = filter === "all" ? "" : `?status=${filter}`;
+        const response = await fetch(`${API_BASE_URL}/api/admin/applications${query}`, {
+          headers: {
+            Authorization: authHeader
+          }
+        });
+        const result = (await response.json()) as ApiResponse<CompanyApplication[]>;
+
+        if (response.status === 401) {
+          handleUnauthorized();
+          return;
+        }
+
+        if (!response.ok) {
+          setApplications([]);
+          selectedIdRef.current = null;
+          setSelectedId(null);
+          setSelectedApplication(null);
+          setDetailLoading(false);
+          setErrorMessage(result.error ?? "No se pudieron cargar las solicitudes.");
+          return;
+        }
+
+        const rows = Array.isArray(result.data) ? result.data : [];
+        setApplications(rows);
+
+        const currentSelectedId = selectedIdRef.current;
+        const keepCurrent =
+          currentSelectedId !== null && rows.some((item) => item.id === currentSelectedId);
+        const nextSelectedId = keepCurrent ? currentSelectedId : (rows[0]?.id ?? null);
+
+        selectedIdRef.current = nextSelectedId;
+        setSelectedId(nextSelectedId);
+
+        if (nextSelectedId === null) {
+          setSelectedApplication(null);
+          setDetailLoading(false);
+          return;
+        }
+
+        setSelectedApplication(null);
+        setDetailLoading(true);
+        void loadApplicationDetail(nextSelectedId);
+      } catch {
         setApplications([]);
+        selectedIdRef.current = null;
         setSelectedId(null);
         setSelectedApplication(null);
-        setErrorMessage(result.error ?? "No se pudieron cargar las solicitudes.");
-        return;
+        setDetailLoading(false);
+        setErrorMessage("No se pudo conectar con el backend para cargar solicitudes.");
+      } finally {
+        setListLoading(false);
       }
-
-      const rows = Array.isArray(result.data) ? result.data : [];
-      setApplications(rows);
-
-      const keepCurrent = selectedId !== null && rows.some((item) => item.id === selectedId);
-      const nextSelectedId = keepCurrent ? selectedId : (rows[0]?.id ?? null);
-      setSelectedId(nextSelectedId);
-
-      if (nextSelectedId === null) {
-        setSelectedApplication(null);
-      }
-    } catch (_error) {
-      setApplications([]);
-      setSelectedId(null);
-      setSelectedApplication(null);
-      setErrorMessage("No se pudo conectar con el backend para cargar solicitudes.");
-    } finally {
-      setListLoading(false);
-    }
-  };
-
-  const loadApplicationDetail = async (id: number): Promise<void> => {
-    setDetailLoading(true);
-    setErrorMessage("");
-
-    const authHeader = getAuthHeader();
-    if (!authHeader) {
-      handleUnauthorized();
-      setDetailLoading(false);
-      return;
-    }
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/admin/applications/${id}`, {
-        headers: {
-          Authorization: authHeader
-        }
-      });
-      const result = (await response.json()) as ApiResponse<CompanyApplication>;
-
-      if (response.status === 401) {
-        handleUnauthorized();
-        return;
-      }
-
-      if (!response.ok) {
-        setSelectedApplication(null);
-        setErrorMessage(result.error ?? "No se pudo cargar el detalle de la solicitud.");
-        return;
-      }
-
-      setSelectedApplication(result.data);
-    } catch (_error) {
-      setSelectedApplication(null);
-      setErrorMessage("No se pudo conectar con el backend para cargar el detalle.");
-    } finally {
-      setDetailLoading(false);
-    }
-  };
+    },
+    [getAuthHeader, handleUnauthorized, loadApplicationDetail]
+  );
 
   const handleUpdateStatus = async (
     nextStatus: Exclude<ApplicationStatus, "pending">
@@ -265,7 +265,7 @@ export default function AdminApplicationsPage() {
         setRejectionReason("");
       }
       await loadApplications(statusFilter);
-    } catch (_error) {
+    } catch {
       setErrorMessage("No se pudo conectar con el backend para actualizar el estado.");
     } finally {
       setIsUpdatingStatus(false);
@@ -273,17 +273,14 @@ export default function AdminApplicationsPage() {
   };
 
   useEffect(() => {
-    void loadApplications(statusFilter);
-  }, [statusFilter]);
+    const timeoutId = window.setTimeout(() => {
+      void loadApplications(statusFilter);
+    }, 0);
 
-  useEffect(() => {
-    if (selectedId === null) {
-      setSelectedApplication(null);
-      return;
-    }
-
-    void loadApplicationDetail(selectedId);
-  }, [selectedId]);
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [loadApplications, statusFilter]);
 
   return (
     <PrivateLayout>
@@ -317,6 +314,10 @@ export default function AdminApplicationsPage() {
                     value={statusFilter}
                     onChange={(event) => {
                       setStatusFilter(event.target.value as StatusFilter);
+                      setErrorMessage("");
+                      setSelectedApplication(null);
+                      setDetailLoading(false);
+                      setListLoading(true);
                       setActionMessage("");
                     }}
                   >
@@ -328,7 +329,13 @@ export default function AdminApplicationsPage() {
                 </label>
                 <button
                   type="button"
-                  onClick={() => void loadApplications(statusFilter)}
+                  onClick={() => {
+                    setErrorMessage("");
+                    setSelectedApplication(null);
+                    setDetailLoading(false);
+                    setListLoading(true);
+                    void loadApplications(statusFilter);
+                  }}
                   disabled={listLoading}
                 >
                   {listLoading ? "Actualizando..." : "Recargar"}
@@ -352,8 +359,13 @@ export default function AdminApplicationsPage() {
                           : "application-item"
                       }
                       onClick={() => {
+                        selectedIdRef.current = application.id;
                         setSelectedId(application.id);
+                        setErrorMessage("");
+                        setSelectedApplication(null);
+                        setDetailLoading(true);
                         setActionMessage("");
+                        void loadApplicationDetail(application.id);
                       }}
                     >
                       <div className="item-row">

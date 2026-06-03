@@ -8,11 +8,11 @@
 
 .login-card {
   width: min(460px, 100%);
-  background: #ffffff;
-  border-radius: 16px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
-  border: 1px solid #eaecf0;
-  box-shadow: 0 20px 45px rgba(8, 15, 40, 0.1);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-card);
 }
 
 .login-card header {
@@ -27,16 +27,16 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-weight: 700;
-  color: #5059bc;
+  color: var(--color-primary);
 }
 
 .login-card header h1 {
   font-size: 1.5rem;
-  color: #101828;
+  color: var(--color-text);
 }
 
 .login-card header small {
-  color: #475467;
+  color: var(--color-text-muted);
   line-height: 1.5;
 }
 
@@ -48,19 +48,19 @@
 }
 
 .role-switch button {
-  border: 1px solid #d0d5dd;
-  border-radius: 10px;
-  background: #f8fafc;
-  color: #344054;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+  color: var(--color-text-muted);
   padding: 0.62rem 0.8rem;
   font-weight: 700;
   cursor: pointer;
 }
 
 .role-switch button.active {
-  border-color: #5059bc;
-  color: #2f3899;
-  background: #eef0ff;
+  border-color: var(--color-primary);
+  color: var(--color-primary-strong);
+  background: var(--color-primary-soft);
 }
 
 .login-form {
@@ -74,13 +74,13 @@
   flex-direction: column;
   gap: 0.35rem;
   font-weight: 600;
-  color: #344054;
+  color: var(--color-text-muted);
   font-size: 0.93rem;
 }
 
 .login-form input {
-  border: 1px solid #d0d5dd;
-  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   padding: 0.65rem 0.75rem;
   font: inherit;
 }
@@ -98,36 +98,36 @@
 
 .login-form button[type="submit"] {
   border: none;
-  border-radius: 10px;
-  background: #5059bc;
-  color: white;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: var(--color-white);
   font-weight: 700;
   padding: 0.7rem 1rem;
   cursor: pointer;
 }
 
 .login-form button[type="submit"]:hover {
-  background: #3f48a9;
+  background: var(--color-primary-strong);
 }
 
 .login-error,
 .login-success {
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   padding: 0.65rem 0.75rem;
   font-size: 0.86rem;
   font-weight: 600;
 }
 
 .login-error {
-  border: 1px solid #fda29b;
-  background: #fff5f4;
-  color: #b42318;
+  border: 1px solid var(--color-danger-border);
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
 }
 
 .login-success {
-  border: 1px solid #abefc6;
-  background: #ecfdf3;
-  color: #027a48;
+  border: 1px solid var(--color-success-border);
+  background: var(--color-success-bg);
+  color: var(--color-success);
 }
 
 .login-card footer {
@@ -135,7 +135,7 @@
 }
 
 .login-card footer a {
-  color: #5059bc;
+  color: var(--color-primary);
   font-weight: 700;
   text-decoration: none;
 }

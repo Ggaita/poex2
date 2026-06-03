@@ -12,9 +12,9 @@
 }
 
 .admin-dashboard-header {
-  border: 1px solid #dbe2ff;
-  border-radius: 14px;
-  background: #ffffff;
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -22,7 +22,7 @@
 }
 
 .admin-dashboard-header p {
-  color: #4456d9;
+  color: var(--color-primary);
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -30,12 +30,12 @@
 }
 
 .admin-dashboard-header h1 {
-  color: #101828;
+  color: var(--color-text);
   font-size: clamp(1.25rem, 2.1vw, 1.9rem);
 }
 
 .admin-dashboard-header small {
-  color: #475467;
+  color: var(--color-text-muted);
 }
 
 .admin-module-grid {
@@ -45,9 +45,9 @@
 }
 
 .admin-module-card {
-  border: 1px solid #dbe2ff;
-  border-radius: 12px;
-  background: #fff;
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
   padding: 0.9rem;
   display: flex;
   flex-direction: column;
@@ -55,12 +55,12 @@
 }
 
 .admin-module-card h2 {
-  color: #1d2939;
+  color: var(--color-text);
   font-size: 1.02rem;
 }
 
 .admin-module-card p {
-  color: #475467;
+  color: var(--color-text-muted);
   line-height: 1.45;
   font-size: 0.92rem;
   min-height: 3.9rem;
@@ -68,21 +68,21 @@
 
 .admin-module-link {
   text-decoration: none;
-  border: 1px solid #6172f3;
-  color: #3645c8;
-  border-radius: 8px;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary-strong);
+  border-radius: var(--radius-sm);
   padding: 0.45rem 0.65rem;
   font-weight: 700;
   width: fit-content;
 }
 
 .admin-module-link:hover {
-  background: #eef4ff;
+  background: var(--color-primary-soft);
 }
 
 .admin-module-link.disabled {
-  border-color: #d0d5dd;
-  color: #667085;
+  border-color: var(--color-border);
+  color: var(--color-text-soft);
   pointer-events: none;
 }
 

@@ -6,9 +6,9 @@
 .register-shell {
   width: min(1100px, 100%);
   margin: 0 auto;
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 20px 45px rgba(8, 15, 40, 0.1);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
   padding: 1.6rem;
 }
 
@@ -21,17 +21,17 @@
 
 .register-header h1 {
   font-size: clamp(1.4rem, 2.2vw, 2rem);
-  color: #101828;
+  color: var(--color-text);
 }
 
 .register-header p {
-  color: #475467;
+  color: var(--color-text-muted);
   line-height: 1.5;
 }
 
 .register-eyebrow {
   font-weight: 700;
-  color: #5059bc;
+  color: var(--color-primary);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-size: 0.78rem;
@@ -46,10 +46,10 @@
 }
 
 .step-item button {
-  border: 1px solid #d0d5dd;
-  background: #f8fafc;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-soft);
   width: 100%;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 0.7rem 0.8rem;
   display: flex;
   align-items: center;
@@ -70,30 +70,30 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #e4e7ec;
-  color: #344054;
+  background: var(--color-secondary);
+  color: var(--color-text-muted);
   font-weight: 700;
 }
 
 .step-item button small {
-  color: #1d2939;
+  color: var(--color-text);
   font-weight: 600;
   line-height: 1.2;
 }
 
 .step-item.active button {
-  border-color: #5059bc;
-  background: #eef0ff;
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
 }
 
 .step-item.active button span {
-  background: #5059bc;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-white);
 }
 
 .register-form {
-  border: 1px solid #eaecf0;
-  border-radius: 14px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
   padding: 1rem;
 }
 
@@ -105,7 +105,7 @@
 
 .form-step h2 {
   font-size: 1.1rem;
-  color: #1d2939;
+  color: var(--color-text);
 }
 
 .form-grid {
@@ -119,7 +119,7 @@
   flex-direction: column;
   gap: 0.38rem;
   font-weight: 600;
-  color: #344054;
+  color: var(--color-text-muted);
   font-size: 0.94rem;
 }
 
@@ -130,12 +130,12 @@
 .form-grid input,
 .form-grid textarea,
 .form-grid select {
-  border: 1px solid #d0d5dd;
-  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   padding: 0.65rem 0.7rem;
   font: inherit;
-  color: #101828;
-  background: #fff;
+  color: var(--color-text);
+  background: var(--color-surface);
 }
 
 .form-grid textarea {
@@ -146,14 +146,14 @@
 .dynamic-block > span,
 .terms-error {
   font-size: 0.82rem;
-  color: #b42318;
+  color: var(--color-danger);
   font-weight: 600;
 }
 
 .dynamic-block {
   margin-top: 1rem;
-  border: 1px solid #d0d5dd;
-  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   padding: 0.8rem;
   display: flex;
   flex-direction: column;
@@ -169,15 +169,15 @@
 
 .dynamic-header h3 {
   font-size: 0.98rem;
-  color: #1d2939;
+  color: var(--color-text);
 }
 
 .dynamic-header button {
   border: none;
-  background: #eef0ff;
-  color: #313aac;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-strong);
   font-weight: 700;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 0.5rem 0.7rem;
   cursor: pointer;
 }
@@ -192,8 +192,8 @@
   grid-template-columns: 1fr 1fr auto;
   gap: 0.7rem;
   align-items: end;
-  border: 1px solid #eaecf0;
-  border-radius: 10px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
   padding: 0.65rem;
 }
 
@@ -202,21 +202,21 @@
   flex-direction: column;
   gap: 0.35rem;
   font-size: 0.88rem;
-  color: #344054;
+  color: var(--color-text-muted);
   font-weight: 600;
 }
 
 .dynamic-row input {
-  border: 1px solid #d0d5dd;
-  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   padding: 0.52rem 0.6rem;
 }
 
 .remove-row {
-  border: 1px solid #fda29b;
-  color: #b42318;
-  background: #fff5f4;
-  border-radius: 8px;
+  border: 1px solid var(--color-danger-border);
+  color: var(--color-danger);
+  background: var(--color-danger-bg);
+  border-radius: var(--radius-sm);
   font-weight: 700;
   padding: 0.52rem 0.7rem;
   cursor: pointer;
@@ -227,7 +227,7 @@
   display: flex;
   align-items: flex-start;
   gap: 0.55rem;
-  color: #344054;
+  color: var(--color-text-muted);
   font-size: 0.92rem;
 }
 
@@ -245,15 +245,15 @@
 .register-btn-ghost,
 .register-btn-primary {
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   padding: 0.7rem 1rem;
   font-weight: 700;
   cursor: pointer;
 }
 
 .register-btn-ghost {
-  background: #f2f4f7;
-  color: #344054;
+  background: var(--color-surface-soft);
+  color: var(--color-text-muted);
 }
 
 .register-btn-ghost:disabled {
@@ -262,29 +262,29 @@
 }
 
 .register-btn-primary {
-  background: #5059bc;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-white);
 }
 
 .register-btn-primary:hover {
-  background: #3f48a9;
+  background: var(--color-primary-strong);
 }
 
 .form-success {
-  border: 1px solid #abefc6;
-  background: #ecfdf3;
-  color: #027a48;
-  border-radius: 10px;
+  border: 1px solid var(--color-success-border);
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border-radius: var(--radius-md);
   padding: 0.75rem 0.85rem;
   margin-bottom: 1rem;
   font-weight: 600;
 }
 
 .form-error {
-  border: 1px solid #fecdca;
-  background: #fef3f2;
-  color: #b42318;
-  border-radius: 10px;
+  border: 1px solid var(--color-danger-border);
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border-radius: var(--radius-md);
   padding: 0.75rem 0.85rem;
   margin-bottom: 1rem;
   font-weight: 600;

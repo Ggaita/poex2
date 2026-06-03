@@ -1,0 +1,60 @@
+:root {
+  /* Manual de marca - paleta principal */
+  --brand-verde-agricultura: #c8d29c;
+  --brand-verde-naturaleza: #8a9a46;
+  --brand-azul-noche: #00203a;
+  --brand-azul-laguna: #063565;
+  --brand-rio-azulado: #5059bc;
+  --brand-magenta: #e6007e;
+
+  /* Tipografías */
+  --font-heading: "Kanit", "Segoe UI", sans-serif;
+  --font-body: "Manrope", "Segoe UI", sans-serif;
+
+  /* Neutros */
+  --color-white: #ffffff;
+  --color-black: #0b1320;
+  --color-bg-app: #f3f6fb;
+  --color-surface: #ffffff;
+  --color-surface-soft: #f8fafc;
+  --color-surface-accent: #eef2ff;
+  --color-border: #d0d5dd;
+  --color-border-soft: #dbe2ff;
+  --color-border-subtle: #eaecf0;
+  --color-text: #101828;
+  --color-text-muted: #475467;
+  --color-text-soft: #64748b;
+  --color-text-inverse: #f8f9ff;
+  --color-link: var(--brand-azul-laguna);
+
+  /* Semánticos */
+  --color-primary: var(--brand-rio-azulado);
+  --color-primary-strong: #3f48a9;
+  --color-primary-soft: #eef0ff;
+  --color-secondary: #e4e7ec;
+  --color-success: #067647;
+  --color-success-strong: #079455;
+  --color-success-bg: #ecfdf3;
+  --color-success-border: #abefc6;
+  --color-warning: #b54708;
+  --color-warning-bg: #fffaeb;
+  --color-warning-border: #fedf89;
+  --color-danger: #b42318;
+  --color-danger-strong: #d92d20;
+  --color-danger-bg: #fef3f2;
+  --color-danger-bg-hover: #fee4e2;
+  --color-danger-border: #fecdca;
+  --color-info: var(--brand-azul-laguna);
+  --color-info-bg: rgba(6, 53, 101, 0.08);
+
+  /* Layout helpers */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-card: 0 20px 45px rgba(8, 15, 40, 0.1);
+  --container-xl: min(1200px, 100%);
+
+  /* Compatibilidad con variables viejas */
+  --background-color: var(--color-bg-app);
+  --color-text-accent: var(--brand-magenta);
+}

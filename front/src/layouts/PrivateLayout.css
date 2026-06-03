@@ -1,12 +1,12 @@
 .private-layout {
-  background: #f5f7ff;
+  background: var(--color-bg-app);
 }
 
 .private-header {
   margin-top: 0;
   min-height: auto;
-  background: #1d2a7a;
-  color: #f8f9ff;
+  background: var(--brand-azul-laguna);
+  color: var(--color-text-inverse);
   padding: 0.9rem 1rem 0.85rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
@@ -33,7 +33,7 @@
 
 .private-brand span {
   font-size: 0.82rem;
-  color: #c7d7fe;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .private-session {
@@ -43,22 +43,22 @@
 }
 
 .private-session small {
-  color: #e4e7ff;
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 600;
 }
 
 .private-session button {
-  border: 1px solid #fda29b;
-  border-radius: 8px;
-  background: #fee4e2;
-  color: #7a271a;
+  border: 1px solid var(--color-danger-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
   font-weight: 700;
   padding: 0.4rem 0.65rem;
   cursor: pointer;
 }
 
 .private-session button:hover {
-  background: #fecdca;
+  background: var(--color-danger-bg-hover);
 }
 
 .private-nav {
@@ -71,9 +71,9 @@
 
 .private-nav-link {
   text-decoration: none;
-  color: #e4e7ff;
+  color: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 0.42rem 0.62rem;
   font-weight: 600;
   font-size: 0.9rem;
@@ -84,9 +84,9 @@
 }
 
 .private-nav-link.active {
-  background: #eef4ff;
-  border-color: #eef4ff;
-  color: #263ca0;
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary-soft);
+  color: var(--color-primary-strong);
 }
 
 .private-main-content {
@@ -95,8 +95,8 @@
 
 .private-footer {
   width: 100%;
-  background: #101a4f;
-  color: #d0d5ff;
+  background: var(--brand-azul-noche);
+  color: rgba(255, 255, 255, 0.85);
   text-align: center;
   padding: 0.65rem 1rem;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
