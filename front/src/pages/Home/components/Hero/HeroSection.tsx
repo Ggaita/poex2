@@ -1,11 +1,7 @@
 import { HeroSearchForm } from "./Components/HeroSearchForm";
 import { HeroBackground } from "./Components/HeroBackground";
+import type { HeroSectionProps } from "./hero.types";
 import "./HeroSection.css";
-
-interface HeroSectionProps {
-  title: string;
-  subtitle: string;
-}
 
 export const HeroSection = ({ title, subtitle }: HeroSectionProps) => {
   return (

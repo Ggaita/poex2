@@ -1,13 +1,9 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import {
   getAuthSession,
-  getDefaultPrivateRoute,
-  type AuthRole
+  getDefaultPrivateRoute
 } from "../../shared/auth/session";
-
-type RequireRoleRouteProps = {
-  allowedRoles: AuthRole[];
-};
+import type { RequireRoleRouteProps } from "./require-role-route.types";
 
 export default function RequireRoleRoute({
   allowedRoles

@@ -127,6 +127,9 @@ export default function LoginPage() {
     <PrivateLayout>
       <section className="login-page">
         <div className="login-card">
+          <Link to="/" className="login-back-link">
+            ← Volver al inicio
+          </Link>
           <header>
             <p>Ingreso al sistema</p>
             <h1>Admin / Empresa</h1>

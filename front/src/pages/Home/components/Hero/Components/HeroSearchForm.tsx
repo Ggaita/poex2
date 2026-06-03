@@ -1,23 +1,21 @@
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { SearchMode } from "../../../../../shared/types/search.types";
 
-export const HeroSearchForm = () => {
-  const [query, setQuery] = useState<string>("");
-  const mode: SearchMode = "products";
-// const [mode, setMode] = useState<SearchMode>("products");
+type HeroSearchFormProps = {
+  initialQuery?: string;
+};
+
+export const HeroSearchForm = ({ initialQuery = "" }: HeroSearchFormProps) => {
+  const [query, setQuery] = useState<string>(initialQuery);
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const trimmedQuery = query.trim();
     if (!trimmedQuery) return;
-
-    navigate(
-      `/search?q=${encodeURIComponent(trimmedQuery)}&mode=${mode}`
-    );
+    navigate(`/search?q=${encodeURIComponent(trimmedQuery)}`);
   };
 
   return (

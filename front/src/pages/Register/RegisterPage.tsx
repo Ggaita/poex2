@@ -1,4 +1,5 @@
 import { type ChangeEvent, type FormEvent, useState } from "react";
+import { Link } from "react-router-dom";
 import PrivateLayout from "../../layouts/PrivateLayout";
 import type {
   CatalogItem,
@@ -459,6 +460,9 @@ export default function RegisterPage() {
     <PrivateLayout>
       <section className="register-page">
         <div className="register-shell">
+          <Link to="/" className="register-back-link">
+            ← Volver al inicio
+          </Link>
           <header className="register-header">
             <p className="register-eyebrow">Incorporá tu empresa</p>
             <h1>Formulario de preinscripción</h1>

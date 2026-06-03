@@ -106,19 +106,95 @@
   font-size: 0.85rem;
   font-weight: 600;
 }
+@media (max-width: 1024px) {
+  .private-header {
+    padding: 0.8rem 0.85rem 0.75rem;
+  }
 
-@media (max-width: 800px) {
+  .private-header-row,
+  .private-nav {
+    width: 100%;
+  }
+
+  .private-nav {
+    gap: 0.45rem;
+  }
+
+  .private-nav-link {
+    font-size: 0.86rem;
+    padding: 0.4rem 0.58rem;
+  }
+}
+
+@media (max-width: 768px) {
   .private-header-row {
     flex-direction: column;
     align-items: flex-start;
+    gap: 0.75rem;
   }
 
   .private-session {
     width: 100%;
     justify-content: space-between;
+    gap: 0.45rem;
+  }
+
+  .private-session small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 65%;
   }
 
   .private-session button {
     white-space: nowrap;
+  }
+
+  .private-nav {
+    margin-top: 0.7rem;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .private-nav-link {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .private-header {
+    padding: 0.72rem 0.7rem 0.65rem;
+  }
+
+  .private-brand strong {
+    font-size: 0.98rem;
+  }
+
+  .private-brand span {
+    font-size: 0.76rem;
+  }
+
+  .private-session {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .private-session small {
+    max-width: 100%;
+  }
+
+  .private-session button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .private-footer {
+    padding: 0.58rem 0.7rem;
+  }
+
+  .private-footer p {
+    font-size: 0.8rem;
+    line-height: 1.35;
   }
 }

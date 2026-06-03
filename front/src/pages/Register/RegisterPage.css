@@ -11,6 +11,19 @@
   box-shadow: var(--shadow-card);
   padding: 1.6rem;
 }
+.register-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--color-primary);
+  font-weight: 700;
+  text-decoration: none;
+  margin-bottom: 0.9rem;
+}
+
+.register-back-link:hover {
+  text-decoration: underline;
+}
 
 .register-header {
   display: flex;
@@ -290,7 +303,15 @@
   font-weight: 600;
 }
 
-@media (max-width: 920px) {
+@media (max-width: 1024px) {
+  .register-page {
+    padding: 1.55rem 0.9rem 2.25rem;
+  }
+
+  .register-shell {
+    padding: 1.25rem;
+    border-radius: var(--radius-md);
+  }
   .register-steps {
     grid-template-columns: 1fr 1fr;
   }
@@ -299,8 +320,70 @@
   .dynamic-row {
     grid-template-columns: 1fr;
   }
+}
+
+@media (max-width: 768px) {
+  .register-page {
+    padding: 1.15rem 0.75rem 1.8rem;
+  }
+
+  .register-shell {
+    padding: 1rem;
+  }
+
+  .register-steps {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+  }
+
+  .step-item button {
+    padding: 0.62rem 0.68rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dynamic-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
   .form-actions {
     flex-direction: column-reverse;
+  }
+}
+@media (max-width: 480px) {
+  .register-page {
+    padding: 0.95rem 0.6rem 1.45rem;
+  }
+
+  .register-shell,
+  .register-form {
+    padding: 0.85rem;
+  }
+
+  .register-back-link {
+    margin-bottom: 0.7rem;
+    font-size: 0.92rem;
+  }
+
+  .register-header {
+    margin-bottom: 1.1rem;
+  }
+
+  .register-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .dynamic-header button,
+  .register-btn-ghost,
+  .register-btn-primary {
+    width: 100%;
+    text-align: center;
+  }
+
+  .form-actions {
+    margin-top: 0.95rem;
   }
 }

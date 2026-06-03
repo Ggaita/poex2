@@ -14,6 +14,19 @@
   border: 1px solid var(--color-border-subtle);
   box-shadow: var(--shadow-card);
 }
+.login-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--color-primary);
+  font-weight: 700;
+  text-decoration: none;
+  margin-bottom: 0.9rem;
+}
+
+.login-back-link:hover {
+  text-decoration: underline;
+}
 
 .login-card header {
   display: flex;
@@ -142,4 +155,76 @@
 
 .login-card footer a:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 1024px) {
+  .login-page {
+    padding: 1.6rem 1rem 2.4rem;
+  }
+
+  .login-card {
+    width: min(520px, 100%);
+    padding: 1.35rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .login-page {
+    padding: 1.25rem 0.85rem 2rem;
+    place-items: start center;
+  }
+
+  .login-card {
+    border-radius: var(--radius-md);
+    padding: 1.15rem;
+  }
+
+  .login-card header h1 {
+    font-size: 1.35rem;
+  }
+
+  .role-switch {
+    margin: 0.85rem 0 1rem;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-page {
+    padding: 1rem 0.7rem 1.5rem;
+  }
+
+  .login-card {
+    padding: 1rem 0.9rem;
+  }
+
+  .login-back-link {
+    margin-bottom: 0.7rem;
+    font-size: 0.92rem;
+  }
+
+  .login-card header h1 {
+    font-size: 1.2rem;
+  }
+
+  .role-switch {
+    grid-template-columns: 1fr;
+  }
+
+  .remember-check {
+    align-items: flex-start;
+  }
+
+  .login-form button[type="submit"] {
+    width: 100%;
+  }
+
+  .login-card footer {
+    margin-top: 0.8rem;
+  }
+
+  .login-card footer a {
+    display: inline-block;
+    line-height: 1.35;
+  }
 }

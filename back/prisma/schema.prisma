@@ -17,6 +17,11 @@ enum UserRole {
   admin
   empresa
 }
+enum ProfileEditMode {
+  agency
+  company
+  mixed
+}
 
 model CompanyApplication {
   id              Int               @id @default(autoincrement())
@@ -31,6 +36,7 @@ model CompanyApplication {
   reviewedAt      DateTime?
   reviewedBy      String?
   rejectionReason String?
+  profile         CompanyProfile?
 
   @@index([status])
   @@map("company_applications")
@@ -44,7 +50,89 @@ model AppUser {
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  ownedProfiles CompanyProfile[]      @relation("ProfileOwner")
+  profileAuditLogs CompanyProfileAuditLog[] @relation("ProfileAuditActor")
 
   @@index([role])
   @@map("app_users")
+}
+
+model CompanyProfile {
+  id                 Int         @id @default(autoincrement())
+  applicationId      Int?        @unique
+  ownerUserId        Int?
+  slug               String      @unique
+  companyName        String
+  contactName        String
+  contactEmail       String
+  phone              String?
+  taxId              String?
+  description        String?
+  sector             String?
+  subSector          String?
+  product            String?
+  keywords           String?
+  tariffPosition     String?
+  exportDestinations String?
+  awards             String?
+  certifications     String?
+  website            String?
+  facebook           String?
+  instagram          String?
+  linkedin           String?
+  youtube            String?
+  otherLink          String?
+  address            String?
+  city               String?
+  googleMapsEmbed    String?
+  latitude           Float?
+  longitude          Float?
+  editMode           ProfileEditMode @default(mixed)
+  isPublished        Boolean      @default(false)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  application        CompanyApplication? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  ownerUser          AppUser?     @relation("ProfileOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
+  visibilityRules    CompanyProfileVisibility[]
+  auditLogs          CompanyProfileAuditLog[]
+
+  @@index([isPublished])
+  @@index([editMode])
+  @@index([companyName])
+  @@index([ownerUserId])
+  @@map("company_profiles")
+}
+
+model CompanyProfileVisibility {
+  id        Int      @id @default(autoincrement())
+  profileId Int
+  fieldKey  String
+  isVisible Boolean  @default(true)
+  updatedBy String?
+  updatedAt DateTime @updatedAt
+  profile   CompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, fieldKey])
+  @@index([profileId])
+  @@map("company_profile_visibility")
+}
+
+model CompanyProfileAuditLog {
+  id         Int      @id @default(autoincrement())
+  profileId  Int
+  actorUserId Int?
+  actorEmail String?
+  actorRole  UserRole?
+  action     String
+  fieldKey   String?
+  oldValue   String?
+  newValue   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  profile    CompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  actorUser  AppUser? @relation("ProfileAuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([profileId, createdAt])
+  @@index([actorUserId])
+  @@map("company_profile_audit_logs")
 }

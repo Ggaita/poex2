@@ -28,4 +28,7 @@ export interface UpdateApplicationStatusInput {
   status: Exclude<ApplicationStatus, "pending">;
   reviewedBy: string;
   rejectionReason?: string;
+  reviewedByUserId?: number;
+  reviewedByEmail?: string;
+  reviewedByRole?: "admin" | "empresa";
 }

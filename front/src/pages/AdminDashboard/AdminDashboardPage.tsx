@@ -13,9 +13,9 @@ const modules = [
   {
     title: "Empresas activas",
     description:
-      "Módulo preparado para administrar empresas aprobadas y su visibilidad pública.",
-    to: "/admin/dashboard",
-    cta: "Próximamente"
+      "Administrá fichas empresariales, visibilidad por campo y publicación pública.",
+    to: "/admin/profiles",
+    cta: "Gestionar perfiles"
   },
   {
     title: "Usuarios y permisos",

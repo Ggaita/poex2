@@ -1,13 +1,10 @@
 import Header from "../pages/Components/Header/Header";
 import Footer from "../pages/Components/Footer/Footer";
+import type { LayoutProps } from "./layout.types";
 
 import "./MainLayout.css";
 
-type Props = {
-  children: React.ReactNode;
-};
-
-export default function MainLayout({ children }: Props) {
+export default function MainLayout({ children }: LayoutProps) {
   return (
     <div className="layout">
 

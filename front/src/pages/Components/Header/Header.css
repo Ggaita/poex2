@@ -2,18 +2,14 @@
    HEADER
    ========================= */
 
-header {
-  margin-top: 15px;
-  height: 20vh;
-}
-
-
 .header {
+  margin-top: 15px;
+  min-height: 20vh;
   display: flex;
-  flex-direction: column; /* logo+acciones arriba, menú debajo */
+  flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
-  padding: 16px 16px;
+  padding: 16px;
   background-color: var(--color-surface);
   color: var(--color-text);
   border-bottom: 1px solid var(--color-border-soft);
@@ -44,7 +40,7 @@ header {
   font-size: 1rem;
   font-weight: 700;
   color: var(--color-text);
-  white-space: nowrap;
+  line-height: 1.2;
 }
 
 /* =========================
@@ -53,10 +49,14 @@ header {
 .main-nav {
   display: flex;
   justify-content: center;
+  width: 100%;
 }
 
 .menu-nav {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.15rem;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -72,6 +72,7 @@ header {
   white-space: nowrap;
   text-decoration: none;
   color: var(--color-text);
+  font-size: 0.92rem;
 }
 
 /* =========================
@@ -81,9 +82,9 @@ header {
   position: absolute;
   top: 100%;
   left: 0;
-
-  width: 100%;   
-  min-width: unset; 
+  width: max-content;
+  min-width: 220px;
+  max-width: 280px;
 
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(10px);
@@ -134,6 +135,7 @@ header {
   white-space: nowrap;
   color: var(--color-text);
   width: 100%;
+  font-size: 0.92rem;
 }
 
 .dropdown.active .dropdown-title {
@@ -146,7 +148,7 @@ header {
 .dropdown {
   position: relative;
   display: inline-block;
-  width: max-content; 
+  width: max-content;
 }
 
 .dropdown-title {
@@ -164,14 +166,128 @@ header {
   gap: 8px;
 }
 
-
-
 /* =========================
    RESPONSIVE
    ========================= */
 @media (max-width: 1024px) {
+  .header {
+    margin-top: 10px;
+    min-height: auto;
+    padding: 14px 12px;
+  }
+
+  .header-top {
+    gap: 0.8rem;
+  }
+
+  .logo-img {
+    height: 52px;
+  }
+
+  .site-title {
+    font-size: 0.9rem;
+  }
   .main-nav {
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 0.2rem;
+  }
+
+  .menu-nav {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    width: max-content;
+  }
+
+  .menu-nav > li > a,
+  .dropdown-title {
+    padding: 12px 14px;
+    font-size: 0.88rem;
+  }
+
+  .submenu-nav {
+    min-width: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    margin-top: 8px;
+    padding: 12px 10px;
+  }
+
+  .header-top {
     flex-direction: column;
-    display: none; /* puedes agregar toggle para móvil */
+    align-items: flex-start;
+    margin-bottom: 10px;
+    gap: 0.7rem;
+  }
+
+  .logo-container {
+    width: 100%;
+  }
+
+  .site-title {
+    font-size: 0.84rem;
+  }
+
+  .header-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .header-actions .btn {
+    width: 100%;
+  }
+
+  .menu-nav > li > a,
+  .dropdown-title {
+    padding: 10px 12px;
+    font-size: 0.84rem;
+  }
+
+  .submenu-nav {
+    min-width: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    margin-top: 6px;
+    padding: 10px 8px;
+  }
+
+  .logo-container {
+    gap: 8px;
+  }
+
+  .logo-img {
+    height: 44px;
+  }
+
+  .site-title {
+    font-size: 0.76rem;
+  }
+
+  .header-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .menu-nav > li > a,
+  .dropdown-title {
+    padding: 9px 10px;
+    font-size: 0.8rem;
+  }
+
+  .submenu-nav {
+    min-width: 160px;
+    max-width: 220px;
+  }
+
+  .submenu-nav a {
+    font-size: 0.8rem;
+    padding: 8px 10px;
   }
 }
