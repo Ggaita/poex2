@@ -1,6 +1,7 @@
 export interface SearchQuery {
   query: string;
 }
+export type SearchMode = "all" | "company" | "product";
 
 export type SearchResultKind = "company" | "product";
 
@@ -36,6 +37,7 @@ export interface SearchResultItem {
   kind: SearchResultKind;
   title: string;
   companyName: string;
+  companyLogoUrl?: string;
   summary: string;
   contactName?: string;
   email?: string;
@@ -50,6 +52,7 @@ export interface SearchResultItem {
 
 export interface SearchResponseData {
   query: string;
+  mode: SearchMode;
   total: number;
   results: SearchResultItem[];
 }

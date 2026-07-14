@@ -17,6 +17,7 @@ export const profileFieldKeys = [
   "exportDestinations",
   "awards",
   "certifications",
+  "logoUrl",
   "website",
   "facebook",
   "instagram",
@@ -54,6 +55,7 @@ export interface CompanyProfileDataPatch {
   exportDestinations?: string | null;
   awards?: string | null;
   certifications?: string | null;
+  logoUrl?: string | null;
   website?: string | null;
   facebook?: string | null;
   instagram?: string | null;
@@ -132,6 +134,7 @@ export interface CompanyProfileAdminView {
   exportDestinations?: string;
   awards?: string;
   certifications?: string;
+  logoUrl?: string;
   website?: string;
   facebook?: string;
   instagram?: string;
@@ -168,6 +171,7 @@ export interface PublicCompanyProfileView {
   exportDestinations?: string;
   awards?: string;
   certifications?: string;
+  logoUrl?: string;
   website?: string;
   facebook?: string;
   instagram?: string;

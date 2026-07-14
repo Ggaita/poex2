@@ -9,6 +9,7 @@ import { profileFieldKeys } from "../../profiles/types/profile.types";
 import type {
   SearchCompanyProductSummary,
   SearchFieldName,
+  SearchMode,
   SearchResponseData,
   SearchResultItem
 } from "../types/search.types";
@@ -39,6 +40,7 @@ const defaultVisibilityByField: Record<ProfileFieldKey, boolean> = {
   exportDestinations: true,
   awards: false,
   certifications: false,
+  logoUrl: true,
   website: true,
   facebook: false,
   instagram: false,
@@ -146,7 +148,7 @@ const scoreFields = (
 
     let matched = false;
 
-    if (normalizedFieldValue.includes(normalizedQuery)) {
+    if (normalizedQuery && normalizedFieldValue.includes(normalizedQuery)) {
       score += field.weight * 3;
       matched = true;
     }
@@ -193,18 +195,14 @@ const toCompanyProductSummaries = (
 
 export const searchApprovedProfiles = async (
   query: string,
-  limit = 24
+  limit = 24,
+  mode: SearchMode = "all"
 ): Promise<SearchResponseData> => {
   const normalizedQuery = normalizeText(query);
+  const hasQuery = normalizedQuery.length > 0;
   const tokens = tokenize(query);
-
-  if (!normalizedQuery) {
-    return {
-      query,
-      total: 0,
-      results: []
-    };
-  }
+  const includeCompanies = mode !== "product";
+  const includeProducts = mode !== "company";
 
   const rows: ProfileWithRelations[] = await prisma.companyProfile.findMany({
     where: { isPublished: true },
@@ -231,6 +229,7 @@ export const searchApprovedProfiles = async (
       const description = getVisibleString(row, visibility, "description");
       const sector = getVisibleString(row, visibility, "sector");
       const city = getVisibleString(row, visibility, "city");
+      const companyLogoUrl = getVisibleString(row, visibility, "logoUrl");
       const contactName = getVisibleString(row, visibility, "contactName");
       const email = getVisibleString(row, visibility, "contactEmail");
       const taxId = getVisibleString(row, visibility, "taxId");
@@ -254,13 +253,18 @@ export const searchApprovedProfiles = async (
         companyFields
       );
 
-      if (companyScore > 0) {
+      const shouldIncludeCompanyResult =
+        includeCompanies &&
+        ((hasQuery && companyScore > 0) || (!hasQuery && mode === "company"));
+
+      if (shouldIncludeCompanyResult) {
         acc.push({
           resultId: `company-${row.id}`,
           profileId: row.id,
           kind: "company",
           title: companyName,
           companyName,
+          companyLogoUrl,
           summary: description ?? "Empresa exportadora registrada.",
           contactName,
           email,
@@ -268,9 +272,13 @@ export const searchApprovedProfiles = async (
           city,
           companyProducts: companyProducts.slice(0, 8),
           keywords,
-          matchedFields: companyMatchedFields,
-          matchScore: companyScore
+          matchedFields: hasQuery ? companyMatchedFields : [],
+          matchScore: hasQuery ? companyScore : 0
         });
+      }
+
+      if (!includeProducts) {
+        return acc;
       }
 
       row.products.forEach((product) => {
@@ -297,7 +305,10 @@ export const searchApprovedProfiles = async (
           productFields
         );
 
-        if (productScore <= 0) {
+        const shouldIncludeProductResult =
+          (hasQuery && productScore > 0) || (!hasQuery && mode === "product");
+
+        if (!shouldIncludeProductResult) {
           return;
         }
 
@@ -307,6 +318,7 @@ export const searchApprovedProfiles = async (
           kind: "product",
           title: productName,
           companyName,
+          companyLogoUrl,
           summary:
             productDescription ??
             description ??
@@ -324,16 +336,29 @@ export const searchApprovedProfiles = async (
           },
           companyProducts: companyProducts.slice(0, 8),
           keywords,
-          matchedFields: productMatchedFields,
-          matchScore: productScore
+          matchedFields: hasQuery ? productMatchedFields : [],
+          matchScore: hasQuery ? productScore : 0
         });
       });
 
       return acc;
     }, [])
     .sort((left, right) => {
-      if (right.matchScore !== left.matchScore) {
-        return right.matchScore - left.matchScore;
+      if (hasQuery) {
+        if (right.matchScore !== left.matchScore) {
+          return right.matchScore - left.matchScore;
+        }
+        return left.resultId.localeCompare(right.resultId, "es");
+      }
+
+      const titleComparison = left.title.localeCompare(right.title, "es");
+      if (titleComparison !== 0) {
+        return titleComparison;
+      }
+
+      const companyComparison = left.companyName.localeCompare(right.companyName, "es");
+      if (companyComparison !== 0) {
+        return companyComparison;
       }
 
       return left.resultId.localeCompare(right.resultId, "es");
@@ -342,6 +367,7 @@ export const searchApprovedProfiles = async (
 
   return {
     query,
+    mode,
     total: scoredResults.length,
     results: scoredResults
   };

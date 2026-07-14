@@ -104,6 +104,13 @@ export default function CompanyPublicPage() {
 
           {!shouldShowLoading && profile ? (
             <article className="company-public-card">
+              {profile.logoUrl ? (
+                <img
+                  className="company-public-logo"
+                  src={profile.logoUrl}
+                  alt={`Logo de ${profile.companyName ?? "empresa"}`}
+                />
+              ) : null}
               {profile.companyName ? <h1>{profile.companyName}</h1> : null}
               {profile.description ? <p>{profile.description}</p> : null}
 

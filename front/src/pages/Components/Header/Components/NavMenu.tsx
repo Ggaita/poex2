@@ -4,6 +4,7 @@ export default function NavMenu() {
   return (
     <nav className="main-nav">
       <ul className="menu-nav">
+        <li><a href="/">INICIO</a></li>
 
         <Dropdown
           title="INSTITUCIONAL"
@@ -39,8 +40,8 @@ export default function NavMenu() {
         <Dropdown
           title="OPORTUNIDADES COMERCIALES"
           items={[
-            { label: "Búsqueda de productos", to: "/busqueda-de-productos" },
-            { label: "Búsqueda de empresas", to: "/busqueda-de-empresas" },
+            { label: "Búsqueda de productos", to: "/search?mode=product" },
+            { label: "Búsqueda de empresas", to: "/search?mode=company" },
             { label: "Catálogo exportable", to: "/catalogo-exportable" },
             { label: "Formularios de consulta", to: "/formularios-de-consulta" },
             { label: "Oportunidades de inversión ", to: "/oportunidades-de-inversion" },

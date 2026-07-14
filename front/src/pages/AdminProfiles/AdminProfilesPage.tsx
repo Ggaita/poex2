@@ -37,6 +37,7 @@ const fieldLabels: Record<ProfileFieldKey, string> = {
   exportDestinations: "Mercados destino",
   awards: "Premios",
   certifications: "Certificaciones",
+  logoUrl: "Logo empresa",
   website: "Sitio web",
   facebook: "Facebook",
   instagram: "Instagram",
@@ -67,6 +68,7 @@ const emptyFormState: AdminProfileFormState = {
   exportDestinations: "",
   awards: "",
   certifications: "",
+  logoUrl: "",
   website: "",
   facebook: "",
   instagram: "",
@@ -112,6 +114,7 @@ const toFormState = (profile: CompanyProfileAdminView): AdminProfileFormState =>
     exportDestinations: profile.exportDestinations ?? "",
     awards: profile.awards ?? "",
     certifications: profile.certifications ?? "",
+    logoUrl: profile.logoUrl ?? "",
     website: profile.website ?? "",
     facebook: profile.facebook ?? "",
     instagram: profile.instagram ?? "",
@@ -820,6 +823,7 @@ export default function AdminProfilesPage() {
         exportDestinations: trimNullable(formState.exportDestinations),
         awards: trimNullable(formState.awards),
         certifications: trimNullable(formState.certifications),
+        logoUrl: trimNullable(formState.logoUrl),
         website: trimNullable(formState.website),
         facebook: trimNullable(formState.facebook),
         instagram: trimNullable(formState.instagram),
@@ -1131,6 +1135,15 @@ export default function AdminProfilesPage() {
                           />
                         </label>
                         <label>
+                          URL logo empresa (http/https)
+                          <input
+                            name="logoUrl"
+                            value={formState.logoUrl}
+                            onChange={handleFormChange}
+                            placeholder="https://..."
+                          />
+                        </label>
+                        <label>
                           Teléfono
                           <input
                             name="phone"
@@ -1138,6 +1151,11 @@ export default function AdminProfilesPage() {
                             onChange={handleFormChange}
                           />
                         </label>
+                        {formState.logoUrl.trim() ? (
+                          <div className="admin-logo-preview full">
+                            <img src={formState.logoUrl.trim()} alt="Logo empresa" />
+                          </div>
+                        ) : null}
                         <label>
                           Sector
                           <input
@@ -1354,9 +1372,16 @@ export default function AdminProfilesPage() {
                               ) : null}
                               {product.description ? <p>{product.description}</p> : null}
                               {product.imageUrl ? (
-                                <a href={product.imageUrl} target="_blank" rel="noreferrer">
-                                  Ver imagen
-                                </a>
+                                <div className="product-image-preview-wrap">
+                                  <img
+                                    className="product-image-preview"
+                                    src={product.imageUrl}
+                                    alt={`Imagen de ${product.name}`}
+                                  />
+                                  <a href={product.imageUrl} target="_blank" rel="noreferrer">
+                                    Ver imagen
+                                  </a>
+                                </div>
                               ) : null}
                             </div>
                             <div className="product-controls">

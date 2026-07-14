@@ -30,14 +30,38 @@ type LocatedProfile = PublicCompanyProfileView & {
   latitude: number;
   longitude: number;
 };
+const parseCoordinate = (value: unknown): number | null => {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
 
-const hasCoordinates = (profile: PublicCompanyProfileView): profile is LocatedProfile => {
-  return (
-    typeof profile.latitude === "number" &&
-    Number.isFinite(profile.latitude) &&
-    typeof profile.longitude === "number" &&
-    Number.isFinite(profile.longitude)
-  );
+  if (typeof value === "string") {
+    const cleaned = value.trim().replace(",", ".");
+    if (cleaned.length === 0) {
+      return null;
+    }
+    const parsed = Number.parseFloat(cleaned);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+
+  return null;
+};
+
+const toLocatedProfile = (profile: PublicCompanyProfileView): LocatedProfile | null => {
+  const latitude = parseCoordinate(profile.latitude);
+  const longitude = parseCoordinate(profile.longitude);
+
+  if (latitude === null || longitude === null) {
+    return null;
+  }
+
+  return {
+    ...profile,
+    latitude,
+    longitude
+  };
 };
 
 const toCompanyTitle = (profile: PublicCompanyProfileView): string => {
@@ -103,8 +127,14 @@ export default function IndustrialParkPage() {
   }, []);
 
   const locatedProfiles = useMemo<LocatedProfile[]>(() => {
-    return profiles.filter(hasCoordinates);
+    return profiles
+      .map((profile) => toLocatedProfile(profile))
+      .filter((profile): profile is LocatedProfile => profile !== null);
   }, [profiles]);
+
+  const locatedProfileIds = useMemo(() => {
+    return new Set(locatedProfiles.map((profile) => profile.id));
+  }, [locatedProfiles]);
 
   const activeSelectedProfileId = useMemo(() => {
     if (
@@ -263,7 +293,7 @@ export default function IndustrialParkPage() {
                 ) : (
                   <ul className="industrial-company-list">
                     {profiles.map((profile) => {
-                      const located = hasCoordinates(profile);
+                      const located = locatedProfileIds.has(profile.id);
                       return (
                         <li
                           key={profile.id}

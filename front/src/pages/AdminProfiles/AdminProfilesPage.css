@@ -251,6 +251,22 @@
   grid-column: 1 / -1;
 }
 
+.admin-logo-preview {
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+  padding: 0.5rem;
+}
+
+.admin-logo-preview img {
+  width: 100%;
+  max-width: 160px;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-soft);
+}
+
 .form-grid input,
 .form-grid textarea {
   border: 1px solid var(--color-border);
@@ -440,6 +456,8 @@
 .product-main strong {
   color: var(--color-text);
   font-size: 0.9rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .product-review-badge {
@@ -477,6 +495,8 @@
   color: var(--color-text-muted);
   font-size: 0.82rem;
   line-height: 1.4;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .product-rejection-note {
@@ -494,6 +514,21 @@
 
 .product-main a:hover {
   text-decoration: underline;
+}
+
+.product-image-preview-wrap {
+  display: grid;
+  gap: 0.35rem;
+  width: fit-content;
+}
+
+.product-image-preview {
+  width: 100%;
+  max-width: 220px;
+  max-height: 140px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-soft);
 }
 
 .product-actions {

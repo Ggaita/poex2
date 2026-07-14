@@ -1,11 +1,18 @@
 import { type FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
+type HeroSearchMode = "all" | "company" | "product";
 
 type HeroSearchFormProps = {
   initialQuery?: string;
+  mode?: HeroSearchMode;
+  placeholder?: string;
 };
 
-export const HeroSearchForm = ({ initialQuery = "" }: HeroSearchFormProps) => {
+export const HeroSearchForm = ({
+  initialQuery = "",
+  mode = "all",
+  placeholder = "Vinos, cacao, agrotech..."
+}: HeroSearchFormProps) => {
   const [query, setQuery] = useState<string>(initialQuery);
 
   const navigate = useNavigate();
@@ -15,7 +22,14 @@ export const HeroSearchForm = ({ initialQuery = "" }: HeroSearchFormProps) => {
 
     const trimmedQuery = query.trim();
     if (!trimmedQuery) return;
-    navigate(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+
+    const params = new URLSearchParams();
+    params.set("q", trimmedQuery);
+    if (mode !== "all") {
+      params.set("mode", mode);
+    }
+
+    navigate(`/search?${params.toString()}`);
   };
 
   return (
@@ -32,7 +46,7 @@ export const HeroSearchForm = ({ initialQuery = "" }: HeroSearchFormProps) => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           required
-          placeholder="Vinos, cacao, agrotech..."
+          placeholder={placeholder}
           className="search-input"
           aria-label="Buscar productos o empresas"
         />

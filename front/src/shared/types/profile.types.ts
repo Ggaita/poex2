@@ -15,6 +15,7 @@ export type ProfileFieldKey =
   | "exportDestinations"
   | "awards"
   | "certifications"
+  | "logoUrl"
   | "website"
   | "facebook"
   | "instagram"
@@ -46,6 +47,7 @@ export interface CompanyProfileAdminView {
   exportDestinations?: string;
   awards?: string;
   certifications?: string;
+  logoUrl?: string;
   website?: string;
   facebook?: string;
   instagram?: string;
@@ -82,6 +84,7 @@ export interface PublicCompanyProfileView {
   exportDestinations?: string;
   awards?: string;
   certifications?: string;
+  logoUrl?: string;
   website?: string;
   facebook?: string;
   instagram?: string;

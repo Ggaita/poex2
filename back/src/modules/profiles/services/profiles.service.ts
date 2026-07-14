@@ -45,6 +45,7 @@ const textFieldKeys = [
   "exportDestinations",
   "awards",
   "certifications",
+  "logoUrl",
   "website",
   "facebook",
   "instagram",
@@ -81,6 +82,7 @@ const defaultVisibilityByField: Record<ProfileFieldKey, boolean> = {
   exportDestinations: true,
   awards: false,
   certifications: false,
+  logoUrl: true,
   website: true,
   facebook: false,
   instagram: false,
@@ -269,6 +271,7 @@ type ParsedApplicationMessage = {
   certifications?: string;
   googleMapsEmbed?: string;
   links?: {
+    logo?: string;
     website?: string;
     facebook?: string;
     instagram?: string;
@@ -326,6 +329,7 @@ const toAdminView = (
     exportDestinations: toOptionalString(profile.exportDestinations),
     awards: toOptionalString(profile.awards),
     certifications: toOptionalString(profile.certifications),
+    logoUrl: toOptionalString(profile.logoUrl),
     website: toOptionalString(profile.website),
     facebook: toOptionalString(profile.facebook),
     instagram: toOptionalString(profile.instagram),
@@ -444,6 +448,11 @@ const parseDataPatch = (
       if (requiredValue) {
         data[key] = requiredValue;
       }
+      return;
+    }
+
+    if (key === "logoUrl") {
+      data[key] = normalizeImageUrl(payload[key]);
       return;
     }
 
@@ -656,6 +665,7 @@ export const syncProfileFromApprovedApplicationTx = async (
     exportDestinations: trimToNullable(parsedMessage.exportDestinations),
     awards: trimToNullable(parsedMessage.awards),
     certifications: trimToNullable(parsedMessage.certifications),
+    logoUrl: normalizeImageUrl(parsedMessage.links?.logo),
     website: trimToNullable(parsedMessage.links?.website),
     facebook: trimToNullable(parsedMessage.links?.facebook),
     instagram: trimToNullable(parsedMessage.links?.instagram),

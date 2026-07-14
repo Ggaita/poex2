@@ -20,6 +20,7 @@ export interface CompanyPanelFormState {
   exportDestinations: string;
   awards: string;
   certifications: string;
+  logoUrl: string;
   website: string;
   facebook: string;
   instagram: string;

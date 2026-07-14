@@ -30,6 +30,11 @@
   gap: 12px;
 }
 
+.logo-link {
+  text-decoration: none;
+  color: inherit;
+}
+
 .logo-img {
   height: 60px;
   width: auto;

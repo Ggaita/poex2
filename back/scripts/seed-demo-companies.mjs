@@ -17,6 +17,7 @@ const profileFieldKeys = [
   "exportDestinations",
   "awards",
   "certifications",
+  "logoUrl",
   "website",
   "facebook",
   "instagram",
@@ -42,6 +43,7 @@ const visibleFields = new Set([
   "keywords",
   "tariffPosition",
   "exportDestinations",
+  "logoUrl",
   "website",
   "address",
   "city",
@@ -64,6 +66,8 @@ const demoCompanies = [
     subSector: "Algodón e hilandería",
     keywords: "algodón, hilado, fibra, exportación, chaco",
     exportDestinations: "Brasil, Chile, Perú",
+    logoUrl:
+      "https://dummyimage.com/320x320/0f172a/e2e8f0.png&text=Algodon+Chaco",
     website: "https://www.algodonchaqueno.com.ar",
     address: "Ruta Nacional 16 km 167, Presidencia Roque Sáenz Peña",
     city: "Presidencia Roque Sáenz Peña",
@@ -74,17 +78,23 @@ const demoCompanies = [
         name: "Hilado de algodón peinado",
         description:
           "Hilado para tejido plano y de punto con alto estándar de resistencia.",
-        tariffPosition: "5205.12"
+        tariffPosition: "5205.12",
+        imageUrl:
+          "https://dummyimage.com/960x640/9dc4e6/0f172a.png&text=Hilado+de+algodon"
       },
       {
         name: "Fibra de algodón cardada",
         description: "Fibra lista para procesos de hilandería y mezclas textiles.",
-        tariffPosition: "5203.00"
+        tariffPosition: "5203.00",
+        imageUrl:
+          "https://dummyimage.com/960x640/b7d7ef/0f172a.png&text=Fibra+cardada"
       },
       {
         name: "Aceite crudo de semilla de algodón",
         description: "Subproducto industrial para refinación alimentaria e insumos.",
-        tariffPosition: "1512.21"
+        tariffPosition: "1512.21",
+        imageUrl:
+          "https://dummyimage.com/960x640/ffe9a8/3f2f00.png&text=Aceite+de+semilla"
       }
     ]
   },
@@ -101,6 +111,8 @@ const demoCompanies = [
     subSector: "Apícola",
     keywords: "miel, apicultura, orgánico, cera, propóleo",
     exportDestinations: "España, Alemania, Emiratos Árabes Unidos",
+    logoUrl:
+      "https://dummyimage.com/320x320/0b3d2e/e6fff6.png&text=Mieles+Impenetrable",
     website: "https://www.mielesimpenetrable.com.ar",
     address: "Avenida Güemes 450, Juan José Castelli",
     city: "Juan José Castelli",
@@ -110,17 +122,23 @@ const demoCompanies = [
       {
         name: "Miel multifloral orgánica a granel",
         description: "Miel natural de monte chaqueño con certificación orgánica.",
-        tariffPosition: "0409.00"
+        tariffPosition: "0409.00",
+        imageUrl:
+          "https://dummyimage.com/960x640/f6c453/4a2b00.png&text=Miel+organica"
       },
       {
         name: "Cera virgen de abeja",
         description: "Cera purificada para uso cosmético e industrial.",
-        tariffPosition: "1521.90"
+        tariffPosition: "1521.90",
+        imageUrl:
+          "https://dummyimage.com/960x640/f5dfa4/3f2f00.png&text=Cera+virgen"
       },
       {
         name: "Extracto de propóleo",
         description: "Extracto concentrado de propóleo en base hidroalcohólica.",
-        tariffPosition: "1302.19"
+        tariffPosition: "1302.19",
+        imageUrl:
+          "https://dummyimage.com/960x640/c38d4f/2f1a00.png&text=Extracto+de+propoleo"
       }
     ]
   },
@@ -137,6 +155,8 @@ const demoCompanies = [
     subSector: "Derivados de quebracho",
     keywords: "quebracho, tanino, carbón vegetal, forestal",
     exportDestinations: "Italia, India, Uruguay",
+    logoUrl:
+      "https://dummyimage.com/320x320/3b2a1a/f6ede4.png&text=Quebracho+Forestal",
     website: "https://www.quebrachochaco.com.ar",
     address: "Parque Industrial Barranqueras, Chaco",
     city: "Barranqueras",
@@ -147,17 +167,23 @@ const demoCompanies = [
         name: "Extracto tánico de quebracho",
         description:
           "Extracto vegetal rico en taninos para curtido de cueros y procesos industriales.",
-        tariffPosition: "3201.90"
+        tariffPosition: "3201.90",
+        imageUrl:
+          "https://dummyimage.com/960x640/8f5a2b/f7ede2.png&text=Extracto+tanico"
       },
       {
         name: "Carbón vegetal premium",
         description: "Carbón de alta densidad para uso gastronómico e industrial.",
-        tariffPosition: "4402.90"
+        tariffPosition: "4402.90",
+        imageUrl:
+          "https://dummyimage.com/960x640/2f2f2f/f2f2f2.png&text=Carbon+vegetal"
       },
       {
         name: "Postes de quebracho tratado",
         description: "Postes para uso rural e infraestructura con tratamiento de larga vida útil.",
-        tariffPosition: "4406.10"
+        tariffPosition: "4406.10",
+        imageUrl:
+          "https://dummyimage.com/960x640/7f5d3f/f6eee6.png&text=Postes+de+quebracho"
       }
     ]
   }
@@ -182,6 +208,7 @@ const seedCompany = async (company) => {
       keywords: company.keywords,
       tariffPosition: firstTariffPosition,
       exportDestinations: company.exportDestinations,
+      logoUrl: company.logoUrl,
       website: company.website,
       address: company.address,
       city: company.city,
@@ -204,6 +231,7 @@ const seedCompany = async (company) => {
       keywords: company.keywords,
       tariffPosition: firstTariffPosition,
       exportDestinations: company.exportDestinations,
+      logoUrl: company.logoUrl,
       website: company.website,
       address: company.address,
       city: company.city,
@@ -233,6 +261,7 @@ const seedCompany = async (company) => {
       profileId: profile.id,
       name: product.name,
       description: product.description,
+      imageUrl: product.imageUrl ?? null,
       tariffPosition: product.tariffPosition,
       isTariffPositionUnknown: false,
       isAccepted: true,

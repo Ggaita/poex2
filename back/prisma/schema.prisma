@@ -95,6 +95,7 @@ model CompanyProfile {
   exportDestinations String?
   awards             String?
   certifications     String?
+  logoUrl            String?
   website            String?
   facebook           String?
   instagram          String?

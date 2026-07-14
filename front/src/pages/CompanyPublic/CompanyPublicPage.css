@@ -39,6 +39,15 @@
   gap: 0.8rem;
 }
 
+.company-public-logo {
+  width: 100%;
+  max-width: 170px;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-soft);
+}
+
 .company-public-card h1 {
   color: var(--color-text);
   font-size: clamp(1.35rem, 2.1vw, 1.9rem);
