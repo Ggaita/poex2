@@ -9,10 +9,26 @@ export type SearchFieldName =
   | "product"
   | "keywords"
   | "sector"
-  | "city";
+  | "city"
+  | "tariffPosition";
+
+export interface SearchCompanyProductSummary {
+  id: number;
+  name: string;
+  tariffPosition?: string;
+}
+
+export interface SearchProductDetail {
+  id: number;
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  tariffPosition?: string;
+}
 
 export interface SearchResultItem {
-  id: number;
+  resultId: string;
+  profileId: number;
   kind: SearchResultKind;
   title: string;
   companyName: string;
@@ -20,7 +36,9 @@ export interface SearchResultItem {
   contactName?: string;
   email?: string;
   sector?: string;
-  product?: string;
+  city?: string;
+  product?: SearchProductDetail;
+  companyProducts: SearchCompanyProductSummary[];
   keywords: string[];
   matchedFields: SearchFieldName[];
   matchScore: number;

@@ -11,6 +11,7 @@
     "test:integration:applications": "node scripts/integration-applications.mjs",
     "test:integration:auth-flow": "node scripts/integration-auth-flow.mjs",
     "seed:auth-users": "node scripts/seed-auth-users.mjs",
+    "seed:demo-companies": "node scripts/seed-demo-companies.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio"

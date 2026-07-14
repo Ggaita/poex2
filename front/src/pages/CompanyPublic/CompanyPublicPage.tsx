@@ -1,19 +1,31 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayouts";
 import type { ApiResponse } from "../../shared/types/api.types";
 import type { PublicCompanyProfileView } from "../../shared/types/profile.types";
+import OsmLocationPicker from "../../shared/components/OsmLocationPicker/OsmLocationPicker";
 import "./CompanyPublicPage.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
-
-const hasIframeMarkup = (value?: string): boolean => {
-  if (!value) {
-    return false;
-  }
-
-  return /<iframe[\s\S]*<\/iframe>/i.test(value);
+type LocatedPublicCompanyProfile = PublicCompanyProfileView & {
+  latitude: number;
+  longitude: number;
 };
+
+const hasCoordinates = (
+  value: PublicCompanyProfileView | null
+): value is LocatedPublicCompanyProfile => {
+  return (
+    typeof value?.latitude === "number" &&
+    Number.isFinite(value.latitude) &&
+    typeof value?.longitude === "number" &&
+    Number.isFinite(value.longitude)
+  );
+};
+
+const formatCoordinate = (value: number): string => value.toFixed(5);
+
+const noopLocationChange = (): void => undefined;
 
 export default function CompanyPublicPage() {
   const { id } = useParams();
@@ -68,20 +80,14 @@ export default function CompanyPublicPage() {
     };
   }, [id, invalidCompanyId]);
 
-  const mapLink = useMemo(() => {
-    if (
-      typeof profile?.latitude === "number" &&
-      typeof profile?.longitude === "number"
-    ) {
-      return `https://www.google.com/maps?q=${profile.latitude},${profile.longitude}`;
-    }
-
-    return null;
-  }, [profile?.latitude, profile?.longitude]);
   const renderedErrorMessage = invalidCompanyId
     ? "Identificador de empresa inválido."
     : errorMessage;
   const shouldShowLoading = !invalidCompanyId && isLoading;
+  const profileWithCoordinates = hasCoordinates(profile) ? profile : null;
+  const openStreetMapLink = profileWithCoordinates
+    ? `https://www.openstreetmap.org/?mlat=${profileWithCoordinates.latitude}&mlon=${profileWithCoordinates.longitude}#map=14/${profileWithCoordinates.latitude}/${profileWithCoordinates.longitude}`
+    : null;
 
   return (
     <MainLayout>
@@ -168,20 +174,46 @@ export default function CompanyPublicPage() {
                 ) : null}
               </div>
 
-              {mapLink ? (
-                <p className="company-map-link">
-                  <a href={mapLink} target="_blank" rel="noreferrer">
-                    Ver ubicación en Google Maps
-                  </a>
-                </p>
-              ) : null}
-
-              {hasIframeMarkup(profile.googleMapsEmbed) ? (
-                <div
-                  className="company-map-embed"
-                  dangerouslySetInnerHTML={{ __html: profile.googleMapsEmbed ?? "" }}
-                />
-              ) : null}
+              <section className="company-map-card">
+                <header className="company-map-head">
+                  <h2>Ubicación de la empresa</h2>
+                  <small>Vista unificada con OpenStreetMap</small>
+                </header>
+                {profileWithCoordinates ? (
+                  <div className="company-map-view">
+                    <OsmLocationPicker
+                      latitude={profileWithCoordinates.latitude}
+                      longitude={profileWithCoordinates.longitude}
+                      onChange={noopLocationChange}
+                      readOnly
+                    />
+                    <p className="company-map-meta">
+                      Coordenadas:{" "}
+                      <strong>
+                        {formatCoordinate(profileWithCoordinates.latitude)},{" "}
+                        {formatCoordinate(profileWithCoordinates.longitude)}
+                      </strong>
+                    </p>
+                    {profile.address || profile.city ? (
+                      <p className="company-map-address">
+                        {profile.city ?? "Localidad no informada"}
+                        {profile.address ? ` · ${profile.address}` : ""}
+                      </p>
+                    ) : null}
+                    {openStreetMapLink ? (
+                      <p className="company-map-link">
+                        <a href={openStreetMapLink} target="_blank" rel="noreferrer">
+                          Abrir en OpenStreetMap
+                        </a>
+                      </p>
+                    ) : null}
+                  </div>
+                ) : (
+                  <p className="company-map-empty">
+                    Esta empresa no tiene coordenadas visibles para mostrar en mapa.
+                  </p>
+                )}
+              </section>
             </article>
           ) : null}
         </div>

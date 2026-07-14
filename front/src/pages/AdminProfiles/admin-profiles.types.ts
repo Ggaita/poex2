@@ -1,4 +1,5 @@
 export type {
+  CompanyProductView,
   CompanyProfileAdminView,
   CompanyProfileAuditLogView,
   ProfileEditMode,

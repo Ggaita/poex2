@@ -7,6 +7,7 @@ import type {
   ProductPhotoItem,
   RegisterFormState
 } from "./register.types";
+import OsmLocationPicker from "../../shared/components/OsmLocationPicker/OsmLocationPicker";
 import "./RegisterPage.css";
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
 
@@ -35,6 +36,8 @@ const initialFormState: RegisterFormState = {
   phone: "",
   address: "",
   city: "",
+  latitude: "",
+  longitude: "",
   googleMapsEmbed: "",
   description: "",
   representativeName: "",
@@ -103,6 +106,18 @@ const hasFile = (
 ): boolean => {
   return items.some((item) => item.file !== null);
 };
+
+const parseCoordinate = (value: string): number | null => {
+  const cleaned = value.trim();
+  if (!cleaned) {
+    return null;
+  }
+
+  const parsed = Number.parseFloat(cleaned);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const formatCoordinate = (value: number): string => value.toFixed(6);
 
 export default function RegisterPage() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -178,6 +193,22 @@ export default function RegisterPage() {
     const file = event.target.files?.[0] ?? null;
     setLogo(file);
     clearError("logo");
+    setSuccessMessage("");
+    setApiError("");
+  };
+
+  const handleMapLocationChange = (coords: {
+    latitude: number;
+    longitude: number;
+  }) => {
+    setFormState((prev) => ({
+      ...prev,
+      latitude: formatCoordinate(coords.latitude),
+      longitude: formatCoordinate(coords.longitude)
+    }));
+    clearError("latitude");
+    clearError("longitude");
+    clearError("location");
     setSuccessMessage("");
     setApiError("");
   };
@@ -283,6 +314,33 @@ export default function RegisterPage() {
       if (!formState.description.trim()) {
         nextErrors.description = "Agregá una descripción breve de la empresa.";
       }
+      const hasLatitude = formState.latitude.trim().length > 0;
+      const hasLongitude = formState.longitude.trim().length > 0;
+      const latitude = parseCoordinate(formState.latitude);
+      const longitude = parseCoordinate(formState.longitude);
+
+      if (hasLatitude && latitude === null) {
+        nextErrors.latitude = "La latitud debe ser numérica.";
+      } else if (
+        latitude !== null &&
+        (latitude < -90 || latitude > 90)
+      ) {
+        nextErrors.latitude = "La latitud debe estar entre -90 y 90.";
+      }
+
+      if (hasLongitude && longitude === null) {
+        nextErrors.longitude = "La longitud debe ser numérica.";
+      } else if (
+        longitude !== null &&
+        (longitude < -180 || longitude > 180)
+      ) {
+        nextErrors.longitude = "La longitud debe estar entre -180 y 180.";
+      }
+
+      if (hasLatitude !== hasLongitude) {
+        nextErrors.location =
+          "Completá latitud y longitud o dejá ambos campos vacíos.";
+      }
       if (logo && logo.size > 2 * 1024 * 1024) {
         nextErrors.logo = "El logo debe pesar como máximo 2 MB.";
       }
@@ -377,6 +435,9 @@ export default function RegisterPage() {
     if (!validateStep(3)) {
       return;
     }
+
+    const latitude = parseCoordinate(formState.latitude);
+    const longitude = parseCoordinate(formState.longitude);
     const contactName = formState.representativeName.trim() || formState.companyName.trim();
     const payload = {
       companyName: formState.companyName.trim(),
@@ -386,6 +447,10 @@ export default function RegisterPage() {
       message: JSON.stringify({
         address: formState.address.trim(),
         city: formState.city.trim(),
+        geo: {
+          latitude,
+          longitude
+        },
         description: formState.description.trim(),
         representativeRole: formState.representativeRole.trim(),
         representativeEmail: formState.representativeEmail.trim(),
@@ -455,6 +520,9 @@ export default function RegisterPage() {
       setIsSubmitting(false);
     }
   };
+
+  const mapLatitude = parseCoordinate(formState.latitude);
+  const mapLongitude = parseCoordinate(formState.longitude);
 
   return (
     <PrivateLayout>
@@ -566,7 +634,47 @@ export default function RegisterPage() {
                   </label>
 
                   <label>
-                    Ubicación Google Maps (HTML embed)
+                    Latitud
+                    <input
+                      type="text"
+                      name="latitude"
+                      value={formState.latitude}
+                      onChange={handleInputChange}
+                      placeholder="-27.451234"
+                    />
+                    {errors.latitude ? <span>{errors.latitude}</span> : null}
+                  </label>
+
+                  <label>
+                    Longitud
+                    <input
+                      type="text"
+                      name="longitude"
+                      value={formState.longitude}
+                      onChange={handleInputChange}
+                      placeholder="-58.986543"
+                    />
+                    {errors.longitude ? <span>{errors.longitude}</span> : null}
+                  </label>
+
+                  <div className="register-map-block full-width">
+                    <div className="register-map-head">
+                      <p>Ubicación en OpenStreetMap</p>
+                      <small>
+                        Hacé clic en el mapa para marcar la empresa. También podés
+                        editar latitud y longitud manualmente.
+                      </small>
+                    </div>
+                    <OsmLocationPicker
+                      latitude={mapLatitude}
+                      longitude={mapLongitude}
+                      onChange={handleMapLocationChange}
+                    />
+                    {errors.location ? <span>{errors.location}</span> : null}
+                  </div>
+
+                  <label className="full-width">
+                    Referencia adicional del mapa (opcional)
                     <textarea
                       name="googleMapsEmbed"
                       value={formState.googleMapsEmbed}

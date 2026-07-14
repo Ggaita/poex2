@@ -1,25 +1,27 @@
 import type {
   CompanyProfile as DbCompanyProfile,
+  CompanyProduct as DbCompanyProduct,
   CompanyProfileVisibility as DbCompanyProfileVisibility
 } from "@prisma/client";
 import prisma from "../../../lib/prisma";
 import type { ProfileFieldKey } from "../../profiles/types/profile.types";
 import { profileFieldKeys } from "../../profiles/types/profile.types";
 import type {
+  SearchCompanyProductSummary,
   SearchFieldName,
   SearchResponseData,
   SearchResultItem
 } from "../types/search.types";
 
-type ProfileWithVisibility = DbCompanyProfile & {
+type ProfileWithRelations = DbCompanyProfile & {
   visibilityRules: DbCompanyProfileVisibility[];
+  products: DbCompanyProduct[];
 };
 
 type SearchableField = {
   field: SearchFieldName;
   value: string;
   weight: number;
-  isProductSignal?: boolean;
 };
 
 const defaultVisibilityByField: Record<ProfileFieldKey, boolean> = {
@@ -67,6 +69,15 @@ const tokenize = (value: string): string[] => {
   }
 
   return [...new Set(normalized.split(" ").filter((token) => token.length >= 2))];
+};
+
+const trimToUndefined = (value: unknown): string | undefined => {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const cleaned = value.trim();
+  return cleaned.length > 0 ? cleaned : undefined;
 };
 
 const toKeywordList = (raw?: string): string[] => {
@@ -123,10 +134,8 @@ const scoreFields = (
 ): {
   score: number;
   matchedFields: SearchFieldName[];
-  hasProductSignal: boolean;
 } => {
   let score = 0;
-  let hasProductSignal = false;
   const matchedFieldsSet = new Set<SearchFieldName>();
 
   fields.forEach((field) => {
@@ -149,21 +158,37 @@ const scoreFields = (
       }
     });
 
-    if (!matched) {
-      return;
-    }
-
-    matchedFieldsSet.add(field.field);
-    if (field.isProductSignal) {
-      hasProductSignal = true;
+    if (matched) {
+      matchedFieldsSet.add(field.field);
     }
   });
 
   return {
     score,
-    matchedFields: [...matchedFieldsSet],
-    hasProductSignal
+    matchedFields: [...matchedFieldsSet]
   };
+};
+
+const toCompanyProductSummaries = (
+  products: DbCompanyProduct[]
+): SearchCompanyProductSummary[] => {
+  const summaries: SearchCompanyProductSummary[] = [];
+
+  products.forEach((product) => {
+    const name = trimToUndefined(product.name);
+    if (!name) {
+      return;
+    }
+
+    const tariffPosition = trimToUndefined(product.tariffPosition);
+    summaries.push({
+      id: product.id,
+      name,
+      ...(tariffPosition ? { tariffPosition } : {})
+    });
+  });
+
+  return summaries;
 };
 
 export const searchApprovedProfiles = async (
@@ -181,9 +206,15 @@ export const searchApprovedProfiles = async (
     };
   }
 
-  const rows: ProfileWithVisibility[] = await prisma.companyProfile.findMany({
+  const rows: ProfileWithRelations[] = await prisma.companyProfile.findMany({
     where: { isPublished: true },
-    include: { visibilityRules: true },
+    include: {
+      visibilityRules: true,
+      products: {
+        where: { isAccepted: true },
+        orderBy: [{ updatedAt: "desc" }, { id: "desc" }]
+      }
+    },
     orderBy: [{ updatedAt: "desc" }, { id: "desc" }]
   });
 
@@ -195,7 +226,7 @@ export const searchApprovedProfiles = async (
         return acc;
       }
 
-      const product = getVisibleString(row, visibility, "product");
+      const profileProduct = getVisibleString(row, visibility, "product");
       const keywords = toKeywordList(getVisibleString(row, visibility, "keywords"));
       const description = getVisibleString(row, visibility, "description");
       const sector = getVisibleString(row, visibility, "sector");
@@ -203,12 +234,13 @@ export const searchApprovedProfiles = async (
       const contactName = getVisibleString(row, visibility, "contactName");
       const email = getVisibleString(row, visibility, "contactEmail");
       const taxId = getVisibleString(row, visibility, "taxId");
+      const companyProducts = toCompanyProductSummaries(row.products);
 
-      const fields: SearchableField[] = [
-        { field: "companyName", value: companyName, weight: 6 },
-        { field: "product", value: product ?? "", weight: 5, isProductSignal: true },
-        { field: "keywords", value: keywords.join(" "), weight: 4, isProductSignal: true },
-        { field: "description", value: description ?? "", weight: 3, isProductSignal: true },
+      const companyFields: SearchableField[] = [
+        { field: "companyName", value: companyName, weight: 7 },
+        { field: "product", value: profileProduct ?? "", weight: 5 },
+        { field: "keywords", value: keywords.join(" "), weight: 4 },
+        { field: "description", value: description ?? "", weight: 3 },
         { field: "sector", value: sector ?? "", weight: 2 },
         { field: "city", value: city ?? "", weight: 2 },
         { field: "contactName", value: contactName ?? "", weight: 1 },
@@ -216,35 +248,96 @@ export const searchApprovedProfiles = async (
         { field: "taxId", value: taxId ?? "", weight: 1 }
       ];
 
-      const { score, matchedFields, hasProductSignal } = scoreFields(
+      const { score: companyScore, matchedFields: companyMatchedFields } = scoreFields(
         normalizedQuery,
         tokens,
-        fields
+        companyFields
       );
 
-      const summary = description ?? "Empresa exportadora registrada.";
-      const kind = hasProductSignal ? "product" : "company";
-      const title = kind === "product" && product ? product : companyName;
+      if (companyScore > 0) {
+        acc.push({
+          resultId: `company-${row.id}`,
+          profileId: row.id,
+          kind: "company",
+          title: companyName,
+          companyName,
+          summary: description ?? "Empresa exportadora registrada.",
+          contactName,
+          email,
+          sector,
+          city,
+          companyProducts: companyProducts.slice(0, 8),
+          keywords,
+          matchedFields: companyMatchedFields,
+          matchScore: companyScore
+        });
+      }
 
-      acc.push({
-        id: row.id,
-        kind,
-        title,
-        companyName,
-        summary,
-        contactName,
-        email,
-        sector,
-        product,
-        keywords,
-        matchedFields,
-        matchScore: score
+      row.products.forEach((product) => {
+        const productName = trimToUndefined(product.name);
+        if (!productName) {
+          return;
+        }
+
+        const productDescription = trimToUndefined(product.description);
+        const productTariffPosition = trimToUndefined(product.tariffPosition);
+        const productFields: SearchableField[] = [
+          { field: "product", value: productName, weight: 8 },
+          { field: "description", value: productDescription ?? "", weight: 4 },
+          { field: "tariffPosition", value: productTariffPosition ?? "", weight: 5 },
+          { field: "companyName", value: companyName, weight: 3 },
+          { field: "keywords", value: keywords.join(" "), weight: 2 },
+          { field: "sector", value: sector ?? "", weight: 1 },
+          { field: "city", value: city ?? "", weight: 1 }
+        ];
+
+        const { score: productScore, matchedFields: productMatchedFields } = scoreFields(
+          normalizedQuery,
+          tokens,
+          productFields
+        );
+
+        if (productScore <= 0) {
+          return;
+        }
+
+        acc.push({
+          resultId: `product-${product.id}`,
+          profileId: row.id,
+          kind: "product",
+          title: productName,
+          companyName,
+          summary:
+            productDescription ??
+            description ??
+            "Producto exportable disponible en empresa registrada.",
+          contactName,
+          email,
+          sector,
+          city,
+          product: {
+            id: product.id,
+            name: productName,
+            description: productDescription,
+            imageUrl: trimToUndefined(product.imageUrl),
+            tariffPosition: productTariffPosition
+          },
+          companyProducts: companyProducts.slice(0, 8),
+          keywords,
+          matchedFields: productMatchedFields,
+          matchScore: productScore
+        });
       });
 
       return acc;
     }, [])
-    .filter((item) => item.matchScore > 0)
-    .sort((a, b) => b.matchScore - a.matchScore)
+    .sort((left, right) => {
+      if (right.matchScore !== left.matchScore) {
+        return right.matchScore - left.matchScore;
+      }
+
+      return left.resultId.localeCompare(right.resultId, "es");
+    })
     .slice(0, limit);
 
   return {

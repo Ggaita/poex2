@@ -6,6 +6,8 @@ export type RegisterFormState = {
   phone: string;
   address: string;
   city: string;
+  latitude: string;
+  longitude: string;
   googleMapsEmbed: string;
   description: string;
   representativeName: string;

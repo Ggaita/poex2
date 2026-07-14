@@ -5,11 +5,13 @@ import { clearAuthSession, getAuthSession } from "../../shared/auth/session";
 import type { ApiResponse } from "../../shared/types/api.types";
 import type {
   AdminProfileFormState,
+  CompanyProductView,
   CompanyProfileAdminView,
   CompanyProfileAuditLogView,
   ProfileEditMode,
   ProfileFieldKey
 } from "./admin-profiles.types";
+import OsmLocationPicker from "../../shared/components/OsmLocationPicker/OsmLocationPicker";
 import "./AdminProfilesPage.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
@@ -78,6 +80,22 @@ const emptyFormState: AdminProfileFormState = {
   longitude: ""
 };
 
+interface ProductFormState {
+  name: string;
+  description: string;
+  imageUrl: string;
+  tariffPosition: string;
+  isTariffPositionUnknown: boolean;
+}
+
+const emptyProductFormState: ProductFormState = {
+  name: "",
+  description: "",
+  imageUrl: "",
+  tariffPosition: "",
+  isTariffPositionUnknown: false
+};
+
 const toFormState = (profile: CompanyProfileAdminView): AdminProfileFormState => {
   return {
     companyName: profile.companyName ?? "",
@@ -114,6 +132,84 @@ const toFormState = (profile: CompanyProfileAdminView): AdminProfileFormState =>
   };
 };
 
+const toProductFormState = (product: CompanyProductView): ProductFormState => {
+  return {
+    name: product.name ?? "",
+    description: product.description ?? "",
+    imageUrl: product.imageUrl ?? "",
+    tariffPosition: product.tariffPosition ?? "",
+    isTariffPositionUnknown: Boolean(product.isTariffPositionUnknown)
+  };
+};
+
+const toProductTariffLabel = (product: CompanyProductView): string => {
+  if (product.isTariffPositionUnknown) {
+    return "P.A. no informada";
+  }
+
+  if (product.tariffPosition) {
+    return `P.A.: ${product.tariffPosition}`;
+  }
+
+  return "P.A. sin definir";
+};
+
+const toProductReviewLabel = (product: CompanyProductView): string => {
+  if (product.isAccepted === true) {
+    return "Aceptado";
+  }
+
+  if (product.isAccepted === false) {
+    return "No aceptado";
+  }
+
+  return "Pendiente de revisión";
+};
+
+const toProductReviewTone = (
+  product: CompanyProductView
+): "accepted" | "rejected" | "pending" => {
+  if (product.isAccepted === true) {
+    return "accepted";
+  }
+
+  if (product.isAccepted === false) {
+    return "rejected";
+  }
+
+  return "pending";
+};
+
+const byProductUpdatedAtDesc = (
+  left: CompanyProductView,
+  right: CompanyProductView
+): number => {
+  const leftTime = Date.parse(left.updatedAt);
+  const rightTime = Date.parse(right.updatedAt);
+
+  if (Number.isFinite(leftTime) && Number.isFinite(rightTime) && leftTime !== rightTime) {
+    return rightTime - leftTime;
+  }
+
+  return right.id - left.id;
+};
+
+const upsertProduct = (
+  currentProducts: CompanyProductView[],
+  nextProduct: CompanyProductView
+): CompanyProductView[] => {
+  return [...currentProducts.filter((product) => product.id !== nextProduct.id), nextProduct].sort(
+    byProductUpdatedAtDesc
+  );
+};
+
+const removeProduct = (
+  currentProducts: CompanyProductView[],
+  productId: number
+): CompanyProductView[] => {
+  return currentProducts.filter((product) => product.id !== productId);
+};
+
 const trimNullable = (value: string): string | null => {
   const cleaned = value.trim();
   return cleaned.length > 0 ? cleaned : null;
@@ -133,6 +229,53 @@ const toStatusLabel = (profile: CompanyProfileAdminView): string => {
   return profile.isPublished ? "Publicado" : "No publicado";
 };
 
+const toAuditFieldLabel = (fieldKey?: string): string => {
+  if (!fieldKey) {
+    return "Cambio general";
+  }
+
+  if (fieldKey in fieldLabels) {
+    return fieldLabels[fieldKey as ProfileFieldKey];
+  }
+
+  return fieldKey;
+};
+
+const toAuditActionTone = (action: string): "neutral" | "success" | "warning" | "danger" => {
+  const normalized = action.toLowerCase();
+  if (normalized.includes("unpublish") || normalized.includes("hide") || normalized.includes("ocult")) {
+    return "warning";
+  }
+
+  if (
+    normalized.includes("create") ||
+    normalized.includes("approve") ||
+    normalized.includes("publish") ||
+    normalized.includes("visible")
+  ) {
+    return "success";
+  }
+
+
+  if (normalized.includes("delete") || normalized.includes("remove") || normalized.includes("reject")) {
+    return "danger";
+  }
+
+  return "neutral";
+};
+
+const formatAuditDateTime = (value: string): string => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleString("es-AR", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  });
+};
+
 export default function AdminProfilesPage() {
   const navigate = useNavigate();
   const [profiles, setProfiles] = useState<CompanyProfileAdminView[]>([]);
@@ -145,8 +288,18 @@ export default function AdminProfilesPage() {
   const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [isSavingData, setIsSavingData] = useState(false);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [isSavingProduct, setIsSavingProduct] = useState(false);
+  const [reviewingProductId, setReviewingProductId] = useState<number | null>(null);
+  const [deletingProductId, setDeletingProductId] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [infoMessage, setInfoMessage] = useState("");
+  const [productFormState, setProductFormState] =
+    useState<ProductFormState>(emptyProductFormState);
+  const [editingProductId, setEditingProductId] = useState<number | null>(null);
+  const [showOnlyPendingProducts, setShowOnlyPendingProducts] = useState(false);
+  const [reviewMessageByProductId, setReviewMessageByProductId] = useState<
+    Record<number, string>
+  >({});
 
   const visibleFieldsCount = useMemo(() => {
     if (!selectedProfile) {
@@ -155,6 +308,19 @@ export default function AdminProfilesPage() {
 
     return Object.values(selectedProfile.visibility).filter(Boolean).length;
   }, [selectedProfile]);
+
+  const filteredProducts = useMemo(() => {
+    if (!selectedProfile) {
+      return [];
+    }
+
+    const products = selectedProfile.products ?? [];
+    if (!showOnlyPendingProducts) {
+      return products;
+    }
+
+    return products.filter((product) => product.isAccepted === null);
+  }, [selectedProfile, showOnlyPendingProducts]);
 
   const handleUnauthorized = () => {
     clearAuthSession();
@@ -210,12 +376,22 @@ export default function AdminProfilesPage() {
         setSelectedProfile(null);
         setAuditRows([]);
         setFormState(emptyFormState);
+        setProductFormState(emptyProductFormState);
+        setEditingProductId(null);
+        setReviewingProductId(null);
+        setDeletingProductId(null);
+        setReviewMessageByProductId({});
       }
     } catch {
       setProfiles([]);
       setSelectedId(null);
       setSelectedProfile(null);
       setAuditRows([]);
+      setProductFormState(emptyProductFormState);
+      setEditingProductId(null);
+      setReviewingProductId(null);
+      setDeletingProductId(null);
+      setReviewMessageByProductId({});
       setErrorMessage("No se pudo conectar con el backend para cargar perfiles.");
     } finally {
       setIsListLoading(false);
@@ -255,6 +431,11 @@ export default function AdminProfilesPage() {
       if (!detailResponse.ok || !detailResult.success) {
         setSelectedProfile(null);
         setAuditRows([]);
+        setProductFormState(emptyProductFormState);
+        setEditingProductId(null);
+        setReviewingProductId(null);
+        setDeletingProductId(null);
+        setReviewMessageByProductId({});
         setErrorMessage(detailResult.error ?? "No se pudo cargar el perfil.");
         return;
       }
@@ -262,9 +443,26 @@ export default function AdminProfilesPage() {
       setSelectedProfile(detailResult.data);
       setFormState(toFormState(detailResult.data));
       setAuditRows(Array.isArray(auditResult.data) ? auditResult.data : []);
+      setProductFormState(emptyProductFormState);
+      setEditingProductId(null);
+      setReviewingProductId(null);
+      setDeletingProductId(null);
+      setReviewMessageByProductId(
+        Object.fromEntries(
+          (detailResult.data.products ?? []).map((product) => [
+            product.id,
+            product.rejectionMessage ?? ""
+          ])
+        )
+      );
     } catch {
       setSelectedProfile(null);
       setAuditRows([]);
+      setProductFormState(emptyProductFormState);
+      setEditingProductId(null);
+      setReviewingProductId(null);
+      setDeletingProductId(null);
+      setReviewMessageByProductId({});
       setErrorMessage("No se pudo conectar con el backend para cargar el detalle.");
     } finally {
       setIsDetailLoading(false);
@@ -295,6 +493,289 @@ export default function AdminProfilesPage() {
     }));
     setErrorMessage("");
     setInfoMessage("");
+  };
+
+  const handleMapLocationChange = (coords: {
+    latitude: number;
+    longitude: number;
+  }): void => {
+    setFormState((prev) => ({
+      ...prev,
+      latitude: coords.latitude.toFixed(6),
+      longitude: coords.longitude.toFixed(6)
+    }));
+    setErrorMessage("");
+    setInfoMessage("");
+  };
+
+  const handleProductFieldChange = (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ): void => {
+    const { name, value } = event.target;
+    setProductFormState((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+    setErrorMessage("");
+    setInfoMessage("");
+  };
+
+  const handleProductUnknownToggle = (event: ChangeEvent<HTMLInputElement>): void => {
+    const nextChecked = event.target.checked;
+    setProductFormState((prev) => ({
+      ...prev,
+      isTariffPositionUnknown: nextChecked,
+      tariffPosition: nextChecked ? "" : prev.tariffPosition
+    }));
+    setErrorMessage("");
+    setInfoMessage("");
+  };
+
+  const handleStartProductEdit = (product: CompanyProductView): void => {
+    setEditingProductId(product.id);
+    setProductFormState(toProductFormState(product));
+    setErrorMessage("");
+    setInfoMessage("");
+  };
+
+  const handleCancelProductEdit = (): void => {
+    setEditingProductId(null);
+    setProductFormState(emptyProductFormState);
+    setErrorMessage("");
+    setInfoMessage("");
+  };
+
+  const handleReviewMessageChange = (productId: number, value: string): void => {
+    setReviewMessageByProductId((prev) => ({
+      ...prev,
+      [productId]: value
+    }));
+    setErrorMessage("");
+    setInfoMessage("");
+  };
+
+  const handleReviewProduct = async (
+    product: CompanyProductView,
+    isAccepted: boolean
+  ): Promise<void> => {
+    if (!selectedProfile) {
+      return;
+    }
+
+    const authHeader = getAuthHeader();
+    if (!authHeader) {
+      handleUnauthorized();
+      return;
+    }
+
+    const rejectionMessageRaw =
+      reviewMessageByProductId[product.id] ?? product.rejectionMessage ?? "";
+    const rejectionMessage = rejectionMessageRaw.trim();
+
+    if (!isAccepted && !rejectionMessage) {
+      setErrorMessage("Para marcar No aceptado, escribí un mensaje para la empresa.");
+      return;
+    }
+
+    setReviewingProductId(product.id);
+    setErrorMessage("");
+    setInfoMessage("");
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/admin/profiles/${selectedProfile.id}/products/${product.id}/review`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: authHeader
+          },
+          body: JSON.stringify({
+            isAccepted,
+            rejectionMessage: isAccepted ? null : rejectionMessage
+          })
+        }
+      );
+      const result = (await response.json()) as ApiResponse<CompanyProductView>;
+
+      if (response.status === 401) {
+        handleUnauthorized();
+        return;
+      }
+
+      if (!response.ok || !result.success || !result.data) {
+        setErrorMessage(result.error ?? "No se pudo registrar la revisión del producto.");
+        return;
+      }
+
+      setSelectedProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              products: upsertProduct(prev.products ?? [], result.data)
+            }
+          : prev
+      );
+      setReviewMessageByProductId((prev) => ({
+        ...prev,
+        [product.id]: result.data.rejectionMessage ?? ""
+      }));
+      setInfoMessage(
+        isAccepted
+          ? "Producto aceptado correctamente."
+          : "Producto marcado como no aceptado."
+      );
+      await loadProfileDetail(selectedProfile.id);
+    } catch {
+      setErrorMessage("No se pudo conectar con el backend para revisar el producto.");
+    } finally {
+      setReviewingProductId(null);
+    }
+  };
+
+  const handleSubmitProduct = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
+    event.preventDefault();
+
+    if (!selectedProfile) {
+      return;
+    }
+
+    const authHeader = getAuthHeader();
+    if (!authHeader) {
+      handleUnauthorized();
+      return;
+    }
+
+    const name = productFormState.name.trim();
+    if (!name) {
+      setErrorMessage("El nombre del producto es obligatorio.");
+      return;
+    }
+
+    const profileId = selectedProfile.id;
+    const isEditing = editingProductId !== null;
+    const endpoint = isEditing
+      ? `${API_BASE_URL}/api/admin/profiles/${profileId}/products/${editingProductId}`
+      : `${API_BASE_URL}/api/admin/profiles/${profileId}/products`;
+
+    const payload = {
+      name,
+      description: trimNullable(productFormState.description),
+      imageUrl: trimNullable(productFormState.imageUrl),
+      tariffPosition: productFormState.isTariffPositionUnknown
+        ? null
+        : trimNullable(productFormState.tariffPosition),
+      isTariffPositionUnknown: productFormState.isTariffPositionUnknown
+    };
+
+    setIsSavingProduct(true);
+    setErrorMessage("");
+    setInfoMessage("");
+
+    try {
+      const response = await fetch(endpoint, {
+        method: isEditing ? "PATCH" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authHeader
+        },
+        body: JSON.stringify(payload)
+      });
+      const result = (await response.json()) as ApiResponse<CompanyProductView>;
+
+      if (response.status === 401) {
+        handleUnauthorized();
+        return;
+      }
+
+      if (!response.ok || !result.success || !result.data) {
+        setErrorMessage(result.error ?? "No se pudo guardar el producto.");
+        return;
+      }
+
+      setSelectedProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              products: upsertProduct(prev.products ?? [], result.data)
+            }
+          : prev
+      );
+      setEditingProductId(null);
+      setProductFormState(emptyProductFormState);
+      setInfoMessage(
+        isEditing ? "Producto actualizado correctamente." : "Producto creado correctamente."
+      );
+      await loadProfileDetail(profileId);
+    } catch {
+      setErrorMessage("No se pudo conectar con el backend para guardar el producto.");
+    } finally {
+      setIsSavingProduct(false);
+    }
+  };
+
+  const handleDeleteProduct = async (productId: number): Promise<void> => {
+    if (!selectedProfile) {
+      return;
+    }
+
+    if (!window.confirm("¿Querés eliminar este producto?")) {
+      return;
+    }
+
+    const authHeader = getAuthHeader();
+    if (!authHeader) {
+      handleUnauthorized();
+      return;
+    }
+
+    const profileId = selectedProfile.id;
+
+    setDeletingProductId(productId);
+    setErrorMessage("");
+    setInfoMessage("");
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/admin/profiles/${profileId}/products/${productId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: authHeader
+          }
+        }
+      );
+      const result = (await response.json()) as ApiResponse<null>;
+
+      if (response.status === 401) {
+        handleUnauthorized();
+        return;
+      }
+
+      if (!response.ok || !result.success) {
+        setErrorMessage(result.error ?? "No se pudo eliminar el producto.");
+        return;
+      }
+
+      setSelectedProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              products: removeProduct(prev.products ?? [], productId)
+            }
+          : prev
+      );
+      if (editingProductId === productId) {
+        setEditingProductId(null);
+        setProductFormState(emptyProductFormState);
+      }
+      setInfoMessage("Producto eliminado correctamente.");
+      await loadProfileDetail(profileId);
+    } catch {
+      setErrorMessage("No se pudo conectar con el backend para eliminar el producto.");
+    } finally {
+      setDeletingProductId(null);
+    }
   };
 
   const handleSaveData = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
@@ -721,6 +1202,20 @@ export default function AdminProfilesPage() {
                             onChange={handleFormChange}
                           />
                         </label>
+                        <div className="admin-map-block full">
+                          <div className="admin-map-head">
+                            <p>Ubicación en OpenStreetMap</p>
+                            <small>
+                              Hacé clic en el mapa para actualizar latitud y longitud
+                              del perfil.
+                            </small>
+                          </div>
+                          <OsmLocationPicker
+                            latitude={parseNullableNumber(formState.latitude)}
+                            longitude={parseNullableNumber(formState.longitude)}
+                            onChange={handleMapLocationChange}
+                          />
+                        </div>
                         <label className="full">
                           Descripción
                           <textarea
@@ -735,6 +1230,203 @@ export default function AdminProfilesPage() {
                         {isSavingData ? "Guardando..." : "Guardar datos"}
                       </button>
                     </section>
+                  </form>
+
+                  <form className="settings-card products-management-card" onSubmit={handleSubmitProduct}>
+                    <div className="products-head">
+                      <h3>Productos exportables</h3>
+                      <small>
+                        Cargá o editá productos por empresa con imagen, descripción y P.A.
+                        conocida/desconocida.
+                      </small>
+                    </div>
+                    <div className="products-form-grid">
+                      <label>
+                        Nombre del producto *
+                        <input
+                          name="name"
+                          value={productFormState.name}
+                          onChange={handleProductFieldChange}
+                          disabled={isSavingProduct}
+                        />
+                      </label>
+                      <label>
+                        URL de imagen (http/https)
+                        <input
+                          name="imageUrl"
+                          value={productFormState.imageUrl}
+                          onChange={handleProductFieldChange}
+                          disabled={isSavingProduct}
+                          placeholder="https://..."
+                        />
+                      </label>
+                      <label className="full">
+                        Descripción del producto
+                        <textarea
+                          rows={3}
+                          name="description"
+                          value={productFormState.description}
+                          onChange={handleProductFieldChange}
+                          disabled={isSavingProduct}
+                        />
+                      </label>
+                      <label>
+                        Posición arancelaria (P.A.)
+                        <input
+                          name="tariffPosition"
+                          value={productFormState.tariffPosition}
+                          onChange={handleProductFieldChange}
+                          disabled={isSavingProduct || productFormState.isTariffPositionUnknown}
+                          placeholder="Ej: 0201.30"
+                        />
+                      </label>
+                      <label className="full product-unknown-toggle">
+                        <input
+                          type="checkbox"
+                          checked={productFormState.isTariffPositionUnknown}
+                          onChange={handleProductUnknownToggle}
+                          disabled={isSavingProduct}
+                        />
+                        <span>No conozco la Posición Arancelaria (P.A.)</span>
+                      </label>
+                    </div>
+                    <div className="products-form-actions">
+                      {editingProductId !== null ? (
+                        <button
+                          type="button"
+                          className="secondary"
+                          onClick={handleCancelProductEdit}
+                          disabled={isSavingProduct}
+                        >
+                          Cancelar edición
+                        </button>
+                      ) : null}
+                      <button type="submit" disabled={isSavingProduct}>
+                        {isSavingProduct
+                          ? "Guardando..."
+                          : editingProductId !== null
+                            ? "Actualizar producto"
+                            : "Agregar producto"}
+                      </button>
+                    </div>
+                    <label className="products-pending-filter">
+                      <input
+                        type="checkbox"
+                        checked={showOnlyPendingProducts}
+                        onChange={(event) => setShowOnlyPendingProducts(event.target.checked)}
+                      />
+                      <span>Mostrar solo pendientes de revisión</span>
+                    </label>
+                    {selectedProfile.products.length === 0 ? (
+                      <p className="products-empty">Esta empresa todavía no tiene productos cargados.</p>
+                    ) : filteredProducts.length === 0 ? (
+                      <p className="products-empty">
+                        No hay productos pendientes de revisión para esta empresa.
+                      </p>
+                    ) : (
+                      <ul className="products-list">
+                        {filteredProducts.map((product) => (
+                          <li
+                            key={product.id}
+                            className={
+                              editingProductId === product.id
+                                ? "product-item editing"
+                                : "product-item"
+                            }
+                          >
+                            <div className="product-main">
+                              <div className="product-main-head">
+                                <strong>{product.name}</strong>
+                                <span
+                                  className={`product-review-badge ${toProductReviewTone(product)}`}
+                                >
+                                  {toProductReviewLabel(product)}
+                                </span>
+                              </div>
+                              <small>
+                                {toProductTariffLabel(product)} · actualizado{" "}
+                                {formatAuditDateTime(product.updatedAt)}
+                              </small>
+                              {product.isAccepted === false && product.rejectionMessage ? (
+                                <p className="product-rejection-note">
+                                  No aceptado: {product.rejectionMessage}
+                                </p>
+                              ) : null}
+                              {product.description ? <p>{product.description}</p> : null}
+                              {product.imageUrl ? (
+                                <a href={product.imageUrl} target="_blank" rel="noreferrer">
+                                  Ver imagen
+                                </a>
+                              ) : null}
+                            </div>
+                            <div className="product-controls">
+                              <div className="product-review-panel">
+                                <label htmlFor={`review-message-${product.id}`}>
+                                  Mensaje para "No aceptado"
+                                </label>
+                                <textarea
+                                  id={`review-message-${product.id}`}
+                                  rows={2}
+                                  value={reviewMessageByProductId[product.id] ?? ""}
+                                  onChange={(event) =>
+                                    handleReviewMessageChange(product.id, event.target.value)
+                                  }
+                                  disabled={
+                                    isSavingProduct || deletingProductId === product.id || reviewingProductId === product.id
+                                  }
+                                />
+                                <div className="product-review-actions">
+                                  <button
+                                    type="button"
+                                    className="success"
+                                    onClick={() => void handleReviewProduct(product, true)}
+                                    disabled={
+                                      isSavingProduct || deletingProductId === product.id || reviewingProductId === product.id
+                                    }
+                                  >
+                                    {reviewingProductId === product.id ? "Procesando..." : "Aceptar"}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="danger"
+                                    onClick={() => void handleReviewProduct(product, false)}
+                                    disabled={
+                                      isSavingProduct || deletingProductId === product.id || reviewingProductId === product.id
+                                    }
+                                  >
+                                    {reviewingProductId === product.id
+                                      ? "Procesando..."
+                                      : "No aceptar"}
+                                  </button>
+                                </div>
+                              </div>
+                              <div className="product-actions">
+                                <button
+                                  type="button"
+                                  className="secondary"
+                                  onClick={() => handleStartProductEdit(product)}
+                                  disabled={
+                                    isSavingProduct || deletingProductId === product.id || reviewingProductId === product.id
+                                  }
+                                >
+                                  Editar
+                                </button>
+                                <button
+                                  type="button"
+                                  className="danger"
+                                  onClick={() => void handleDeleteProduct(product.id)}
+                                  disabled={
+                                    isSavingProduct || deletingProductId === product.id || reviewingProductId === product.id
+                                  }
+                                >
+                                  {deletingProductId === product.id ? "Eliminando..." : "Eliminar"}
+                                </button>
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </form>
 
                   <section className="settings-card">
@@ -755,25 +1447,50 @@ export default function AdminProfilesPage() {
                     </div>
                   </section>
 
-                  <section className="settings-card">
-                    <h3>Auditoría</h3>
+                  <section className="settings-card audit-card">
+                    <div className="audit-header">
+                      <h3>Auditoría</h3>
+                      <span>{auditRows.length} eventos</span>
+                    </div>
                     {auditRows.length === 0 ? (
                       <p className="audit-empty">Sin eventos registrados para este perfil.</p>
                     ) : (
                       <ul className="audit-list">
                         {auditRows.map((row) => (
-                          <li key={row.id}>
-                            <div>
-                              <strong>{row.action}</strong>
-                              <small>{new Date(row.createdAt).toLocaleString("es-AR")}</small>
+                          <li key={row.id} className="audit-item">
+                            <div className="audit-item-top">
+                              <span className={`audit-action-badge ${toAuditActionTone(row.action)}`}>
+                                {row.action}
+                              </span>
+                              <time dateTime={row.createdAt}>{formatAuditDateTime(row.createdAt)}</time>
                             </div>
-                            <p>
-                              {row.fieldKey ? `Campo: ${row.fieldKey} · ` : ""}
-                              {row.oldValue ? `Antes: ${row.oldValue}` : ""}
-                              {row.oldValue && row.newValue ? " → " : ""}
-                              {row.newValue ? `Ahora: ${row.newValue}` : ""}
-                            </p>
-                            <small>{row.actorEmail ?? "Sistema"}</small>
+                            {row.oldValue || row.newValue ? (
+                              <p className="audit-item-description">
+                                {row.oldValue ? (
+                                  <>
+                                    Antes: <strong>{row.oldValue}</strong>
+                                  </>
+                                ) : null}
+                                {row.oldValue && row.newValue ? (
+                                  <span aria-hidden="true"> → </span>
+                                ) : null}
+                                {row.newValue ? (
+                                  <>
+                                    Ahora: <strong>{row.newValue}</strong>
+                                  </>
+                                ) : null}
+                              </p>
+                            ) : (
+                              <p className="audit-item-description audit-item-description-muted">
+                                Sin detalle de valores para este evento.
+                              </p>
+                            )}
+                            <div className="audit-item-meta">
+                              <span className="audit-field-chip">
+                                {toAuditFieldLabel(row.fieldKey)}
+                              </span>
+                              <span className="audit-actor-chip">{row.actorEmail ?? "Sistema"}</span>
+                            </div>
                           </li>
                         ))}
                       </ul>

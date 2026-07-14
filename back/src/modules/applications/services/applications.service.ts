@@ -15,6 +15,10 @@ import type {
   UpdateStatusResult
 } from "../types/applications-service.types";
 import { syncProfileFromApprovedApplicationTx } from "../../profiles/services/profiles.service";
+import {
+  prepareApplicationApprovedEmailTx,
+  prepareApplicationReceivedEmail
+} from "../../communications/services/communications.service";
 
 const toPrismaStatus = (status: ApplicationStatus): PrismaApplicationStatus => {
   switch (status) {
@@ -132,6 +136,13 @@ export const createApplication = async (
     }
   });
 
+  await prepareApplicationReceivedEmail({
+    applicationId: application.id,
+    companyName: application.companyName,
+    contactName: application.contactName,
+    recipientEmail: application.email
+  });
+
   return { application: toApiApplication(application) };
 };
 
@@ -177,6 +188,13 @@ export const updateApplicationStatus = async (
         email: input.reviewedByEmail ?? input.reviewedBy,
         role: reviewerRole,
         displayName: input.reviewedBy
+      });
+
+      await prepareApplicationApprovedEmailTx(db, {
+        applicationId: updated.id,
+        companyName: updated.companyName,
+        contactName: updated.contactName,
+        recipientEmail: updated.email
       });
     }
 

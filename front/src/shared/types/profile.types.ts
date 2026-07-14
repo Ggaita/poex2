@@ -62,6 +62,7 @@ export interface CompanyProfileAdminView {
   createdAt: string;
   updatedAt: string;
   visibility: Record<ProfileFieldKey, boolean>;
+  products: CompanyProductView[];
 }
 
 export interface CompanyOwnProfile extends CompanyProfileAdminView {
@@ -107,4 +108,20 @@ export interface CompanyProfileAuditLogView {
   actorEmail?: string;
   actorRole?: "admin" | "empresa";
   createdAt: string;
+}
+
+export interface CompanyProductView {
+  id: number;
+  profileId: number;
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  tariffPosition?: string;
+  isTariffPositionUnknown: boolean;
+  isAccepted: boolean | null;
+  rejectionMessage?: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
+  createdAt: string;
+  updatedAt: string;
 }

@@ -1,5 +1,6 @@
 export type {
   CompanyOwnProfile,
+  CompanyProductView,
   ProfileEditMode,
   ProfileFieldKey
 } from "../../shared/types/profile.types";

@@ -46,6 +46,7 @@ export default function NavMenu() {
             { label: "Oportunidades de inversión ", to: "/oportunidades-de-inversion" },
           ]}
         />
+        <li><a href="/parque-industrial">PARQUE INDUSTRIAL</a></li>
 
         <li><a href="/ayuda">AYUDA</a></li>
 

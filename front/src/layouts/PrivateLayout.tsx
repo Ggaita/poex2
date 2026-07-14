@@ -12,7 +12,9 @@ const navByRole: Record<AuthRole, NavItem[]> = {
   admin: [
     { to: "/admin/dashboard", label: "Panel admin" },
     { to: "/admin/applications", label: "Solicitudes" },
-    { to: "/admin/profiles", label: "Perfiles" }
+    { to: "/admin/profiles", label: "Perfiles" },
+    { to: "/admin/communications", label: "Comunicaciones" },
+    { to: "/admin/special-requests", label: "Pedidos especiales" }
   ],
   empresa: [{ to: "/empresa/panel", label: "Panel empresa" }]
 };

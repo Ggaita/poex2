@@ -18,6 +18,20 @@ const modules = [
     cta: "Gestionar perfiles"
   },
   {
+    title: "Comunicaciones",
+    description:
+      "Editá plantillas de correo, segmentá destinatarios y prepará notificaciones.",
+    to: "/admin/communications",
+    cta: "Gestionar comunicaciones"
+  },
+  {
+    title: "Pedidos especiales",
+    description:
+      "Gestioná solicitudes públicas de productos/ofertas cuando la búsqueda no encuentra resultados.",
+    to: "/admin/special-requests",
+    cta: "Gestionar pedidos"
+  },
+  {
     title: "Usuarios y permisos",
     description:
       "Espacio reservado para futuras reglas de permisos y administración de accesos.",

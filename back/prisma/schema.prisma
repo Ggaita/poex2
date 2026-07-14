@@ -22,6 +22,23 @@ enum ProfileEditMode {
   company
   mixed
 }
+enum EmailOutboxStatus {
+  prepared
+  sent
+  failed
+  cancelled
+}
+enum SpecialRequestKind {
+  special_offer
+  required_product
+}
+enum SpecialRequestStatus {
+  pending
+  in_review
+  forwarded
+  resolved
+  rejected
+}
 
 model CompanyApplication {
   id              Int               @id @default(autoincrement())
@@ -52,6 +69,8 @@ model AppUser {
   updatedAt    DateTime @updatedAt
   ownedProfiles CompanyProfile[]      @relation("ProfileOwner")
   profileAuditLogs CompanyProfileAuditLog[] @relation("ProfileAuditActor")
+  createdEmailOutbox EmailOutbox[] @relation("EmailOutboxCreator")
+  reviewedSpecialRequests SpecialRequest[] @relation("SpecialRequestReviewer")
 
   @@index([role])
   @@map("app_users")
@@ -95,12 +114,105 @@ model CompanyProfile {
   ownerUser          AppUser?     @relation("ProfileOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
   visibilityRules    CompanyProfileVisibility[]
   auditLogs          CompanyProfileAuditLog[]
+  products           CompanyProduct[]
+  emailOutboxEntries EmailOutbox[] @relation("EmailOutboxRecipientProfile")
 
   @@index([isPublished])
   @@index([editMode])
   @@index([companyName])
   @@index([ownerUserId])
   @@map("company_profiles")
+}
+
+model CompanyProduct {
+  id                      Int      @id @default(autoincrement())
+  profileId               Int
+  name                    String
+  description             String?
+  imageUrl                String?
+  tariffPosition          String?
+  isTariffPositionUnknown Boolean  @default(false)
+  isAccepted              Boolean?
+  rejectionMessage        String?
+  reviewedAt              DateTime?
+  reviewedBy              String?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  profile                 CompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@index([tariffPosition])
+  @@index([isAccepted])
+  @@map("company_products")
+}
+
+model EmailTemplate {
+  id              Int      @id @default(autoincrement())
+  key             String   @unique
+  name            String
+  description     String?
+  subjectTemplate String
+  bodyTemplate    String
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  outboxEntries   EmailOutbox[] @relation("OutboxTemplate")
+
+  @@map("email_templates")
+}
+
+model EmailOutbox {
+  id               Int      @id @default(autoincrement())
+  templateKey      String?
+  triggerEvent     String
+  recipientEmail   String
+  recipientName    String?
+  recipientProfileId Int?
+  subject          String
+  body             String
+  status           EmailOutboxStatus @default(prepared)
+  scheduledAt      DateTime?
+  sentAt           DateTime?
+  errorMessage     String?
+  metadata         Json?
+  createdByUserId  Int?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  template         EmailTemplate? @relation("OutboxTemplate", fields: [templateKey], references: [key], onDelete: SetNull, onUpdate: Cascade)
+  recipientProfile CompanyProfile? @relation("EmailOutboxRecipientProfile", fields: [recipientProfileId], references: [id], onDelete: SetNull)
+  createdByUser    AppUser? @relation("EmailOutboxCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([templateKey])
+  @@index([status, createdAt])
+  @@index([recipientEmail])
+  @@index([recipientProfileId])
+  @@index([createdByUserId])
+  @@map("email_outbox")
+}
+
+model SpecialRequest {
+  id               Int      @id @default(autoincrement())
+  kind             SpecialRequestKind
+  sourceQuery      String?
+  requestedProduct String
+  details          String?
+  requesterName    String
+  requesterEmail   String
+  requesterPhone   String?
+  requesterCompany String?
+  status           SpecialRequestStatus @default(pending)
+  adminNotes       String?
+  reviewedByUserId Int?
+  reviewedByEmail  String?
+  reviewedAt       DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  reviewedByUser   AppUser? @relation("SpecialRequestReviewer", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([requesterEmail])
+  @@index([reviewedByUserId])
+  @@map("special_requests")
 }
 
 model CompanyProfileVisibility {

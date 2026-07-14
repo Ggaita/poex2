@@ -6,6 +6,7 @@ import type { ApiResponse } from "../../shared/types/api.types";
 import type {
   CompanyOwnProfile,
   CompanyPanelFormState,
+  CompanyProductView,
   ProfileEditMode
 } from "./company-panel.types";
 import "./CompanyPanelPage.css";
@@ -46,6 +47,22 @@ const emptyFormState: CompanyPanelFormState = {
   longitude: ""
 };
 
+interface CompanyProductFormState {
+  name: string;
+  description: string;
+  imageUrl: string;
+  tariffPosition: string;
+  isTariffPositionUnknown: boolean;
+}
+
+const emptyProductFormState: CompanyProductFormState = {
+  name: "",
+  description: "",
+  imageUrl: "",
+  tariffPosition: "",
+  isTariffPositionUnknown: false
+};
+
 const toFormState = (profile: CompanyOwnProfile): CompanyPanelFormState => {
   return {
     companyName: profile.companyName ?? "",
@@ -82,6 +99,84 @@ const toFormState = (profile: CompanyOwnProfile): CompanyPanelFormState => {
   };
 };
 
+const toProductFormState = (product: CompanyProductView): CompanyProductFormState => {
+  return {
+    name: product.name ?? "",
+    description: product.description ?? "",
+    imageUrl: product.imageUrl ?? "",
+    tariffPosition: product.tariffPosition ?? "",
+    isTariffPositionUnknown: Boolean(product.isTariffPositionUnknown)
+  };
+};
+
+const toProductTariffLabel = (product: CompanyProductView): string => {
+  if (product.isTariffPositionUnknown) {
+    return "P.A. no informada";
+  }
+
+  if (product.tariffPosition) {
+    return `P.A.: ${product.tariffPosition}`;
+  }
+
+  return "P.A. sin definir";
+};
+
+const toProductReviewLabel = (product: CompanyProductView): string => {
+  if (product.isAccepted === true) {
+    return "Aceptado";
+  }
+
+  if (product.isAccepted === false) {
+    return "No aceptado";
+  }
+
+  return "Pendiente de revisión";
+};
+
+const toProductReviewTone = (
+  product: CompanyProductView
+): "accepted" | "rejected" | "pending" => {
+  if (product.isAccepted === true) {
+    return "accepted";
+  }
+
+  if (product.isAccepted === false) {
+    return "rejected";
+  }
+
+  return "pending";
+};
+
+const byProductUpdatedAtDesc = (
+  left: CompanyProductView,
+  right: CompanyProductView
+): number => {
+  const leftTime = Date.parse(left.updatedAt);
+  const rightTime = Date.parse(right.updatedAt);
+
+  if (Number.isFinite(leftTime) && Number.isFinite(rightTime) && leftTime !== rightTime) {
+    return rightTime - leftTime;
+  }
+
+  return right.id - left.id;
+};
+
+const upsertProduct = (
+  currentProducts: CompanyProductView[],
+  nextProduct: CompanyProductView
+): CompanyProductView[] => {
+  return [...currentProducts.filter((product) => product.id !== nextProduct.id), nextProduct].sort(
+    byProductUpdatedAtDesc
+  );
+};
+
+const removeProduct = (
+  currentProducts: CompanyProductView[],
+  productId: number
+): CompanyProductView[] => {
+  return currentProducts.filter((product) => product.id !== productId);
+};
+
 const trimNullable = (value: string): string | null => {
   const cleaned = value.trim();
   return cleaned.length > 0 ? cleaned : null;
@@ -109,6 +204,11 @@ export default function CompanyPanelPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [infoMessage, setInfoMessage] = useState("");
+  const [productFormState, setProductFormState] =
+    useState<CompanyProductFormState>(emptyProductFormState);
+  const [editingProductId, setEditingProductId] = useState<number | null>(null);
+  const [isSavingProduct, setIsSavingProduct] = useState(false);
+  const [deletingProductId, setDeletingProductId] = useState<number | null>(null);
 
   const visibleFieldCount = useMemo(() => {
     if (!profile) {
@@ -155,6 +255,9 @@ export default function CompanyPanelPage() {
       if (response.status === 404) {
         setProfile(null);
         setFormState(emptyFormState);
+        setProductFormState(emptyProductFormState);
+        setEditingProductId(null);
+        setDeletingProductId(null);
         setInfoMessage(
           result.error ??
             "Cuando la Agencia apruebe tu solicitud, acá vas a poder cargar y completar la ficha de empresa."
@@ -170,6 +273,9 @@ export default function CompanyPanelPage() {
 
       setProfile(result.data);
       setFormState(toFormState(result.data));
+      setProductFormState(emptyProductFormState);
+      setEditingProductId(null);
+      setDeletingProductId(null);
     } catch {
       setProfile(null);
       setErrorMessage("No se pudo conectar con el backend para cargar tu perfil.");
@@ -194,6 +300,195 @@ export default function CompanyPanelPage() {
     }));
     setErrorMessage("");
     setInfoMessage("");
+  };
+
+  const handleProductFieldChange = (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = event.target;
+    setProductFormState((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+    setErrorMessage("");
+    setInfoMessage("");
+  };
+
+  const handleToggleUnknownTariff = (event: ChangeEvent<HTMLInputElement>) => {
+    const nextChecked = event.target.checked;
+    setProductFormState((prev) => ({
+      ...prev,
+      isTariffPositionUnknown: nextChecked,
+      tariffPosition: nextChecked ? "" : prev.tariffPosition
+    }));
+    setErrorMessage("");
+    setInfoMessage("");
+  };
+
+  const handleEditProduct = (product: CompanyProductView) => {
+    setEditingProductId(product.id);
+    setProductFormState(toProductFormState(product));
+    setErrorMessage("");
+    setInfoMessage("");
+  };
+
+  const handleCancelProductEdit = () => {
+    setEditingProductId(null);
+    setProductFormState(emptyProductFormState);
+    setErrorMessage("");
+    setInfoMessage("");
+  };
+
+  const handleSaveProduct = async (): Promise<void> => {
+    if (!profile) {
+      return;
+    }
+
+    if (!profile.canCompanyEdit) {
+      setErrorMessage(
+        "Este perfil está en modo gestionado por Agencia. Solicitá habilitación para editar."
+      );
+      return;
+    }
+
+    const name = productFormState.name.trim();
+    if (!name) {
+      setErrorMessage("El nombre del producto es obligatorio.");
+      return;
+    }
+
+    const authHeader = getAuthHeader();
+    if (!authHeader) {
+      handleUnauthorized();
+      return;
+    }
+
+    const isEditing = editingProductId !== null;
+    const endpoint = isEditing
+      ? `${API_BASE_URL}/api/company/profile/me/products/${editingProductId}`
+      : `${API_BASE_URL}/api/company/profile/me/products`;
+
+    const payload = {
+      name,
+      description: trimNullable(productFormState.description),
+      imageUrl: trimNullable(productFormState.imageUrl),
+      tariffPosition: productFormState.isTariffPositionUnknown
+        ? null
+        : trimNullable(productFormState.tariffPosition),
+      isTariffPositionUnknown: productFormState.isTariffPositionUnknown
+    };
+
+    setIsSavingProduct(true);
+    setErrorMessage("");
+    setInfoMessage("");
+
+    try {
+      const response = await fetch(endpoint, {
+        method: isEditing ? "PATCH" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authHeader
+        },
+        body: JSON.stringify(payload)
+      });
+      const result = (await response.json()) as ApiResponse<CompanyProductView>;
+
+      if (response.status === 401) {
+        handleUnauthorized();
+        return;
+      }
+
+      if (!response.ok || !result.success || !result.data) {
+        setErrorMessage(result.error ?? "No se pudo guardar el producto.");
+        return;
+      }
+
+      setProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              products: upsertProduct(prev.products ?? [], result.data)
+            }
+          : prev
+      );
+      setEditingProductId(null);
+      setProductFormState(emptyProductFormState);
+      setInfoMessage(
+        isEditing ? "Producto actualizado correctamente." : "Producto creado correctamente."
+      );
+    } catch {
+      setErrorMessage("No se pudo conectar con el backend para guardar el producto.");
+    } finally {
+      setIsSavingProduct(false);
+    }
+  };
+
+  const handleDeleteProduct = async (productId: number): Promise<void> => {
+    if (!profile) {
+      return;
+    }
+
+    if (!profile.canCompanyEdit) {
+      setErrorMessage(
+        "Este perfil está en modo gestionado por Agencia. Solicitá habilitación para editar."
+      );
+      return;
+    }
+
+    if (!window.confirm("¿Querés eliminar este producto?")) {
+      return;
+    }
+
+    const authHeader = getAuthHeader();
+    if (!authHeader) {
+      handleUnauthorized();
+      return;
+    }
+
+    setDeletingProductId(productId);
+    setErrorMessage("");
+    setInfoMessage("");
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/company/profile/me/products/${productId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: authHeader
+          }
+        }
+      );
+      const result = (await response.json()) as ApiResponse<null>;
+
+      if (response.status === 401) {
+        handleUnauthorized();
+        return;
+      }
+
+      if (!response.ok || !result.success) {
+        setErrorMessage(result.error ?? "No se pudo eliminar el producto.");
+        return;
+      }
+
+      setProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              products: removeProduct(prev.products ?? [], productId)
+            }
+          : prev
+      );
+      if (editingProductId === productId) {
+        setEditingProductId(null);
+        setProductFormState(emptyProductFormState);
+      }
+      setInfoMessage("Producto eliminado correctamente.");
+    } catch {
+      setErrorMessage("No se pudo conectar con el backend para eliminar el producto.");
+    } finally {
+      setDeletingProductId(null);
+    }
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -468,6 +763,157 @@ export default function CompanyPanelPage() {
                     />
                   </label>
                 </div>
+              </section>
+
+              <section className="form-card company-products-card">
+                <div className="company-products-header">
+                  <h2>Productos exportables</h2>
+                  <small>
+                    Cargá múltiples productos con imagen, descripción y Posición Arancelaria
+                    (P.A.), o marcá que la P.A. todavía no es conocida.
+                  </small>
+                </div>
+
+                <div className="company-products-form-grid">
+                  <label>
+                    Nombre del producto *
+                    <input
+                      name="name"
+                      value={productFormState.name}
+                      onChange={handleProductFieldChange}
+                      disabled={!profile.canCompanyEdit || isSavingProduct}
+                    />
+                  </label>
+                  <label>
+                    URL de imagen (http/https)
+                    <input
+                      name="imageUrl"
+                      value={productFormState.imageUrl}
+                      onChange={handleProductFieldChange}
+                      disabled={!profile.canCompanyEdit || isSavingProduct}
+                      placeholder="https://..."
+                    />
+                  </label>
+                  <label className="full">
+                    Descripción del producto
+                    <textarea
+                      name="description"
+                      rows={3}
+                      value={productFormState.description}
+                      onChange={handleProductFieldChange}
+                      disabled={!profile.canCompanyEdit || isSavingProduct}
+                    />
+                  </label>
+                  <label>
+                    Posición arancelaria (P.A.)
+                    <input
+                      name="tariffPosition"
+                      value={productFormState.tariffPosition}
+                      onChange={handleProductFieldChange}
+                      disabled={
+                        !profile.canCompanyEdit ||
+                        isSavingProduct ||
+                        productFormState.isTariffPositionUnknown
+                      }
+                      placeholder="Ej: 0201.30"
+                    />
+                  </label>
+                  <label className="full company-product-unknown-toggle">
+                    <input
+                      type="checkbox"
+                      checked={productFormState.isTariffPositionUnknown}
+                      onChange={handleToggleUnknownTariff}
+                      disabled={!profile.canCompanyEdit || isSavingProduct}
+                    />
+                    <span>No conozco la Posición Arancelaria (P.A.)</span>
+                  </label>
+                </div>
+
+                <div className="company-products-form-actions">
+                  {editingProductId !== null ? (
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={handleCancelProductEdit}
+                      disabled={isSavingProduct}
+                    >
+                      Cancelar edición
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => void handleSaveProduct()}
+                    disabled={!profile.canCompanyEdit || isSavingProduct}
+                  >
+                    {isSavingProduct
+                      ? "Guardando..."
+                      : editingProductId !== null
+                        ? "Actualizar producto"
+                        : "Agregar producto"}
+                  </button>
+                </div>
+
+                {profile.products.length === 0 ? (
+                  <p className="company-products-empty">Todavía no hay productos cargados.</p>
+                ) : (
+                  <ul className="company-products-list">
+                    {profile.products.map((product) => (
+                      <li
+                        key={product.id}
+                        className={
+                          editingProductId === product.id
+                            ? "company-product-item editing"
+                            : "company-product-item"
+                        }
+                      >
+                        <div className="company-product-main">
+                          <div className="company-product-main-head">
+                            <strong>{product.name}</strong>
+                            <span
+                              className={`company-product-review-badge ${toProductReviewTone(product)}`}
+                            >
+                              {toProductReviewLabel(product)}
+                            </span>
+                          </div>
+                          <small>{toProductTariffLabel(product)}</small>
+                          {product.isAccepted === false && product.rejectionMessage ? (
+                            <p className="company-product-rejection-message">
+                              No aceptado: {product.rejectionMessage}
+                            </p>
+                          ) : null}
+                          {product.description ? <p>{product.description}</p> : null}
+                          {product.imageUrl ? (
+                            <a href={product.imageUrl} target="_blank" rel="noreferrer">
+                              Ver imagen
+                            </a>
+                          ) : null}
+                        </div>
+                        <div className="company-product-actions">
+                          <button
+                            type="button"
+                            className="secondary"
+                            onClick={() => handleEditProduct(product)}
+                            disabled={!profile.canCompanyEdit || isSavingProduct}
+                          >
+                            Editar
+                          </button>
+                          <button
+                            type="button"
+                            className="danger"
+                            onClick={() => void handleDeleteProduct(product.id)}
+                            disabled={
+                              !profile.canCompanyEdit ||
+                              isSavingProduct ||
+                              deletingProductId === product.id
+                            }
+                          >
+                            {deletingProductId === product.id ? "Eliminando..." : "Eliminar"}
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </section>
 
               <section className="form-card">

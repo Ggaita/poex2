@@ -2,14 +2,20 @@ import {
   ProfileEditMode as PrismaProfileEditMode,
   UserRole as PrismaUserRole,
   type CompanyApplication as DbCompanyApplication,
+  type CompanyProduct as DbCompanyProduct,
   type CompanyProfile as DbCompanyProfile,
   type CompanyProfileAuditLog as DbCompanyProfileAuditLog,
   type CompanyProfileVisibility as DbCompanyProfileVisibility,
   type Prisma
 } from "@prisma/client";
 import prisma from "../../../lib/prisma";
+import { prepareProductReviewStatusChangedEmailTx } from "../../communications/services/communications.service";
 import type {
   CompanyOwnProfileView,
+  CompanyProductInput,
+  CompanyProductPatch,
+  CompanyProductReviewPatch,
+  CompanyProductView,
   CompanyProfileAdminView,
   CompanyProfileAuditLogView,
   CompanyProfileDataPatch,
@@ -57,6 +63,7 @@ type NumericFieldKey = (typeof numericFieldKeys)[number];
 
 type ProfileWithRelations = DbCompanyProfile & {
   visibilityRules: DbCompanyProfileVisibility[];
+  products: DbCompanyProduct[];
 };
 
 const defaultVisibilityByField: Record<ProfileFieldKey, boolean> = {
@@ -117,6 +124,53 @@ const asNumberOrNull = (value: unknown): number | null => {
 
   const parsed = Number.parseFloat(cleaned);
   return Number.isFinite(parsed) ? parsed : null;
+};
+
+const normalizeImageUrl = (value: unknown): string | null => {
+  const trimmed = trimToUndefined(value);
+  if (!trimmed) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return null;
+    }
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+};
+
+const normalizeTariffPosition = (value: unknown): string | null => {
+  const trimmed = trimToUndefined(value);
+  if (!trimmed) {
+    return null;
+  }
+
+  return trimmed
+    .toUpperCase()
+    .replace(/\s+/g, "")
+    .replace(/[^0-9A-Z./-]/g, "");
+};
+
+const toProductView = (product: DbCompanyProduct): CompanyProductView => {
+  return {
+    id: product.id,
+    profileId: product.profileId,
+    name: product.name,
+    description: product.description ?? undefined,
+    imageUrl: product.imageUrl ?? undefined,
+    tariffPosition: product.tariffPosition ?? undefined,
+    isTariffPositionUnknown: product.isTariffPositionUnknown,
+    isAccepted: typeof product.isAccepted === "boolean" ? product.isAccepted : null,
+    rejectionMessage: product.rejectionMessage ?? undefined,
+    reviewedAt: product.reviewedAt ? product.reviewedAt.toISOString() : undefined,
+    reviewedBy: product.reviewedBy ?? undefined,
+    createdAt: product.createdAt.toISOString(),
+    updatedAt: product.updatedAt.toISOString()
+  };
 };
 
 const toApiEditMode = (value: PrismaProfileEditMode): ProfileEditMode => {
@@ -250,7 +304,7 @@ const toOptionalNumber = (value?: number | null): number | undefined => {
 };
 
 const toAdminView = (
-  profile: DbCompanyProfile,
+  profile: ProfileWithRelations,
   visibility: Record<ProfileFieldKey, boolean>
 ): CompanyProfileAdminView => {
   return {
@@ -287,7 +341,11 @@ const toAdminView = (
     isPublished: profile.isPublished,
     createdAt: profile.createdAt.toISOString(),
     updatedAt: profile.updatedAt.toISOString(),
-    visibility
+    visibility,
+    products: profile.products
+      .slice()
+      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime() || b.id - a.id)
+      .map(toProductView)
   };
 };
 
@@ -439,13 +497,80 @@ const compareFieldValues = (
   return changes;
 };
 
+const toCompanyProductCreateData = (
+  profileId: number,
+  payload: CompanyProductInput
+): Prisma.CompanyProductUncheckedCreateInput => {
+  const isTariffPositionUnknown = payload.isTariffPositionUnknown === true;
+  const normalizedTariff = normalizeTariffPosition(payload.tariffPosition);
+
+  return {
+    profileId,
+    name: trimToUndefined(payload.name) ?? "",
+    description: trimToNullable(payload.description),
+    imageUrl: normalizeImageUrl(payload.imageUrl),
+    tariffPosition: isTariffPositionUnknown ? null : normalizedTariff,
+    isTariffPositionUnknown,
+    isAccepted: null,
+    rejectionMessage: null,
+    reviewedAt: null,
+    reviewedBy: null
+  };
+};
+
+const toCompanyProductUpdateData = (
+  payload: CompanyProductPatch,
+  options?: { resetReviewDecision?: boolean }
+): Prisma.CompanyProductUpdateInput => {
+  const data: Prisma.CompanyProductUpdateInput = {};
+
+  if ("name" in payload) {
+    const nextName = trimToUndefined(payload.name);
+    if (nextName) {
+      data.name = nextName;
+    }
+  }
+
+  if ("description" in payload) {
+    data.description = trimToNullable(payload.description);
+  }
+
+  if ("imageUrl" in payload) {
+    data.imageUrl = normalizeImageUrl(payload.imageUrl);
+  }
+
+  if ("isTariffPositionUnknown" in payload && typeof payload.isTariffPositionUnknown === "boolean") {
+    data.isTariffPositionUnknown = payload.isTariffPositionUnknown;
+    if (payload.isTariffPositionUnknown) {
+      data.tariffPosition = null;
+    }
+  }
+
+  if ("tariffPosition" in payload) {
+    const normalizedTariff = normalizeTariffPosition(payload.tariffPosition);
+    data.tariffPosition = normalizedTariff;
+    if (normalizedTariff) {
+      data.isTariffPositionUnknown = false;
+    }
+  }
+
+  if (options?.resetReviewDecision) {
+    data.isAccepted = null;
+    data.rejectionMessage = null;
+    data.reviewedAt = null;
+    data.reviewedBy = null;
+  }
+
+  return data;
+};
+
 const findProfileByCompanyActor = async (
   userId: number,
   email: string
 ): Promise<ProfileWithRelations | null> => {
   const owned = await prisma.companyProfile.findFirst({
     where: { ownerUserId: userId },
-    include: { visibilityRules: true }
+    include: includeProfileRelations
   });
 
   if (owned) {
@@ -459,7 +584,7 @@ const findProfileByCompanyActor = async (
         mode: "insensitive"
       }
     },
-    include: { visibilityRules: true }
+    include: includeProfileRelations
   });
 
   if (!byEmail) {
@@ -473,7 +598,7 @@ const findProfileByCompanyActor = async (
     const claimed = await prisma.companyProfile.update({
       where: { id: byEmail.id },
       data: { ownerUserId: userId },
-      include: { visibilityRules: true }
+      include: includeProfileRelations
     });
 
     return claimed;
@@ -483,7 +608,10 @@ const findProfileByCompanyActor = async (
 };
 
 const includeProfileRelations = {
-  visibilityRules: true
+  visibilityRules: true,
+  products: {
+    orderBy: [{ updatedAt: "desc" }, { id: "desc" }]
+  }
 } satisfies Prisma.CompanyProfileInclude;
 
 export const isProfileFieldKey = (value: unknown): value is ProfileFieldKey => {
@@ -664,6 +792,199 @@ export const updateAdminProfileData = async (
     }
 
     return toAdminView(updated, buildVisibilityMap(updated.visibilityRules));
+  });
+};
+
+export const createAdminProfileProduct = async (
+  profileId: number,
+  payload: CompanyProductInput,
+  actor?: ProfileAuditActor
+): Promise<CompanyProductView | null> => {
+  return prisma.$transaction(async (db) => {
+    const profile = await db.companyProfile.findUnique({
+      where: { id: profileId },
+      select: { id: true }
+    });
+
+    if (!profile) {
+      return null;
+    }
+
+    const created = await db.companyProduct.create({
+      data: toCompanyProductCreateData(profileId, payload)
+    });
+
+    await createAuditLog(db, profileId, actor, {
+      action: "admin_profile_product_created",
+      fieldKey: "product",
+      newValue: created.name,
+      metadata: {
+        productId: created.id,
+        tariffPosition: created.tariffPosition,
+        isTariffPositionUnknown: created.isTariffPositionUnknown
+      }
+    });
+
+    return toProductView(created);
+  });
+};
+
+export const updateAdminProfileProduct = async (
+  profileId: number,
+  productId: number,
+  payload: CompanyProductPatch,
+  actor?: ProfileAuditActor
+): Promise<CompanyProductView | null> => {
+  return prisma.$transaction(async (db) => {
+    const product = await db.companyProduct.findFirst({
+      where: { id: productId, profileId }
+    });
+
+    if (!product) {
+      return null;
+    }
+
+    const data = toCompanyProductUpdateData(payload);
+    const hasChanges = Object.keys(data).length > 0;
+    if (!hasChanges) {
+      return toProductView(product);
+    }
+
+    const updated = await db.companyProduct.update({
+      where: { id: productId },
+      data
+    });
+
+    await createAuditLog(db, profileId, actor, {
+      action: "admin_profile_product_updated",
+      fieldKey: "product",
+      oldValue: product.name,
+      newValue: updated.name,
+      metadata: {
+        productId: updated.id,
+        previousTariffPosition: product.tariffPosition,
+        nextTariffPosition: updated.tariffPosition,
+        previousIsTariffPositionUnknown: product.isTariffPositionUnknown,
+        nextIsTariffPositionUnknown: updated.isTariffPositionUnknown
+      }
+    });
+
+    return toProductView(updated);
+  });
+};
+
+export const reviewAdminProfileProduct = async (
+  profileId: number,
+  productId: number,
+  patch: CompanyProductReviewPatch,
+  actor?: ProfileAuditActor
+): Promise<CompanyProductView | null> => {
+  return prisma.$transaction(async (db) => {
+    const profile = await db.companyProfile.findUnique({
+      where: { id: profileId },
+      select: {
+        id: true,
+        companyName: true,
+        contactName: true,
+        contactEmail: true
+      }
+    });
+
+    if (!profile) {
+      return null;
+    }
+    const product = await db.companyProduct.findFirst({
+      where: { id: productId, profileId }
+    });
+
+    if (!product) {
+      return null;
+    }
+
+    const rejectionMessage = patch.isAccepted ? null : trimToNullable(patch.rejectionMessage);
+    const reviewedBy = actor?.email ?? actor?.displayName ?? null;
+    const reviewedAt = new Date();
+
+    const updated = await db.companyProduct.update({
+      where: { id: productId },
+      data: {
+        isAccepted: patch.isAccepted,
+        rejectionMessage,
+        reviewedAt,
+        reviewedBy
+      }
+    });
+
+    const previousDecision =
+      typeof product.isAccepted === "boolean"
+        ? product.isAccepted
+          ? "accepted"
+          : "rejected"
+        : "pending";
+    const nextDecision = patch.isAccepted ? "accepted" : "rejected";
+
+    await createAuditLog(db, profileId, actor, {
+      action: patch.isAccepted
+        ? "admin_profile_product_accepted"
+        : "admin_profile_product_rejected",
+      fieldKey: "product",
+      oldValue: `${product.name} (${previousDecision})`,
+      newValue: `${updated.name} (${nextDecision})`,
+      metadata: {
+        productId: updated.id,
+        isAccepted: patch.isAccepted,
+        rejectionMessage: rejectionMessage
+      }
+    });
+
+    const recipientEmail = trimToUndefined(profile.contactEmail);
+    if (recipientEmail) {
+      await prepareProductReviewStatusChangedEmailTx(db, {
+        profileId: profile.id,
+        companyName: profile.companyName,
+        contactName: trimToUndefined(profile.contactName) ?? profile.companyName,
+        recipientEmail,
+        productId: updated.id,
+        productName: updated.name,
+        isAccepted: patch.isAccepted,
+        rejectionMessage
+      });
+    }
+
+    return toProductView(updated);
+  });
+};
+
+export const deleteAdminProfileProduct = async (
+  profileId: number,
+  productId: number,
+  actor?: ProfileAuditActor
+): Promise<boolean> => {
+  return prisma.$transaction(async (db) => {
+    const product = await db.companyProduct.findFirst({
+      where: { id: productId, profileId }
+    });
+
+    if (!product) {
+      return false;
+    }
+
+    await db.companyProduct.delete({
+      where: { id: product.id }
+    });
+
+    await createAuditLog(db, profileId, actor, {
+      action: "admin_profile_product_deleted",
+      fieldKey: "product",
+      oldValue: product.name,
+      metadata: {
+        productId: product.id,
+        tariffPosition: product.tariffPosition,
+        isTariffPositionUnknown: product.isTariffPositionUnknown
+      }
+    });
+
+    return true;
   });
 };
 
@@ -874,6 +1195,181 @@ export const updateCompanyOwnProfile = async (
       canCompanyEdit: updated.editMode !== PrismaProfileEditMode.agency
     }
   };
+};
+
+export const createCompanyOwnProduct = async (
+  userId: number,
+  email: string,
+  payload: CompanyProductInput,
+  actor?: ProfileAuditActor
+): Promise<
+  | { status: "not_found" }
+  | { status: "forbidden" }
+  | { status: "ok"; product: CompanyProductView }
+> => {
+  const profile = await findProfileByCompanyActor(userId, email);
+
+  if (!profile) {
+    return { status: "not_found" };
+  }
+
+  if (profile.editMode === PrismaProfileEditMode.agency) {
+    return { status: "forbidden" };
+  }
+
+  const created = await prisma.$transaction(async (db) => {
+    const product = await db.companyProduct.create({
+      data: toCompanyProductCreateData(profile.id, payload)
+    });
+
+    await createAuditLog(db, profile.id, actor, {
+      action: "company_profile_product_created",
+      fieldKey: "product",
+      newValue: product.name,
+      metadata: {
+        productId: product.id,
+        tariffPosition: product.tariffPosition,
+        isTariffPositionUnknown: product.isTariffPositionUnknown
+      }
+    });
+
+    return product;
+  });
+
+  return {
+    status: "ok",
+    product: toProductView(created)
+  };
+};
+
+export const updateCompanyOwnProduct = async (
+  userId: number,
+  email: string,
+  productId: number,
+  payload: CompanyProductPatch,
+  actor?: ProfileAuditActor
+): Promise<
+  | { status: "not_found" }
+  | { status: "forbidden" }
+  | { status: "product_not_found" }
+  | { status: "ok"; product: CompanyProductView }
+> => {
+  const profile = await findProfileByCompanyActor(userId, email);
+
+  if (!profile) {
+    return { status: "not_found" };
+  }
+
+  if (profile.editMode === PrismaProfileEditMode.agency) {
+    return { status: "forbidden" };
+  }
+
+  const updated = await prisma.$transaction(async (db) => {
+    const product = await db.companyProduct.findFirst({
+      where: {
+        id: productId,
+        profileId: profile.id
+      }
+    });
+
+    if (!product) {
+      return null;
+    }
+
+    const data = toCompanyProductUpdateData(payload, { resetReviewDecision: true });
+    const hasChanges = Object.keys(data).length > 0;
+    if (!hasChanges) {
+      return product;
+    }
+
+    const saved = await db.companyProduct.update({
+      where: { id: product.id },
+      data
+    });
+
+    await createAuditLog(db, profile.id, actor, {
+      action: "company_profile_product_updated",
+      fieldKey: "product",
+      oldValue: product.name,
+      newValue: saved.name,
+      metadata: {
+        productId: saved.id,
+        previousTariffPosition: product.tariffPosition,
+        nextTariffPosition: saved.tariffPosition,
+        previousIsTariffPositionUnknown: product.isTariffPositionUnknown,
+        nextIsTariffPositionUnknown: saved.isTariffPositionUnknown
+      }
+    });
+
+    return saved;
+  });
+
+  if (!updated) {
+    return { status: "product_not_found" };
+  }
+
+  return {
+    status: "ok",
+    product: toProductView(updated)
+  };
+};
+
+export const deleteCompanyOwnProduct = async (
+  userId: number,
+  email: string,
+  productId: number,
+  actor?: ProfileAuditActor
+): Promise<
+  | { status: "not_found" }
+  | { status: "forbidden" }
+  | { status: "product_not_found" }
+  | { status: "ok" }
+> => {
+  const profile = await findProfileByCompanyActor(userId, email);
+
+  if (!profile) {
+    return { status: "not_found" };
+  }
+
+  if (profile.editMode === PrismaProfileEditMode.agency) {
+    return { status: "forbidden" };
+  }
+
+  const deleted = await prisma.$transaction(async (db) => {
+    const product = await db.companyProduct.findFirst({
+      where: {
+        id: productId,
+        profileId: profile.id
+      }
+    });
+
+    if (!product) {
+      return null;
+    }
+
+    await db.companyProduct.delete({
+      where: { id: product.id }
+    });
+
+    await createAuditLog(db, profile.id, actor, {
+      action: "company_profile_product_deleted",
+      fieldKey: "product",
+      oldValue: product.name,
+      metadata: {
+        productId: product.id,
+        tariffPosition: product.tariffPosition,
+        isTariffPositionUnknown: product.isTariffPositionUnknown
+      }
+    });
+
+    return product.id;
+  });
+
+  if (!deleted) {
+    return { status: "product_not_found" };
+  }
+
+  return { status: "ok" };
 };
 
 export const listPublicProfiles = async (query?: string): Promise<PublicCompanyProfileView[]> => {

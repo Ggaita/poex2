@@ -77,6 +77,42 @@ export interface CompanyProfileVisibilityPatch {
   isVisible: boolean;
 }
 
+export interface CompanyProductInput {
+  name: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  tariffPosition?: string | null;
+  isTariffPositionUnknown?: boolean;
+}
+
+export interface CompanyProductPatch {
+  name?: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  tariffPosition?: string | null;
+  isTariffPositionUnknown?: boolean;
+}
+export interface CompanyProductReviewPatch {
+  isAccepted: boolean;
+  rejectionMessage?: string | null;
+}
+
+export interface CompanyProductView {
+  id: number;
+  profileId: number;
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  tariffPosition?: string;
+  isTariffPositionUnknown: boolean;
+  isAccepted: boolean | null;
+  rejectionMessage?: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface CompanyProfileAdminView {
   id: number;
   applicationId?: number;
@@ -112,6 +148,7 @@ export interface CompanyProfileAdminView {
   createdAt: string;
   updatedAt: string;
   visibility: Record<ProfileFieldKey, boolean>;
+  products: CompanyProductView[];
 }
 
 export interface CompanyOwnProfileView extends CompanyProfileAdminView {

@@ -140,6 +140,10 @@
   grid-column: 1 / -1;
 }
 
+.form-grid .full-width {
+  grid-column: 1 / -1;
+}
+
 .form-grid input,
 .form-grid textarea,
 .form-grid select {
@@ -153,6 +157,38 @@
 
 .form-grid textarea {
   resize: vertical;
+}
+
+.register-map-block {
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+  padding: 0.7rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.register-map-head {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.register-map-head p {
+  color: var(--color-text);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.register-map-head small {
+  color: var(--color-text-soft);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.register-map-block > span {
+  font-size: 0.82rem;
+  color: var(--color-danger);
+  font-weight: 600;
 }
 
 .form-grid label span,
