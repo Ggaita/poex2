@@ -14,7 +14,7 @@
 }
 
 .btn-primary {
-  background-color: var(--color-primary);
+  background-color: var(--brand-magenta);
   color: var(--color-white);
 }
 
