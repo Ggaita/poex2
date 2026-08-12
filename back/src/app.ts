@@ -1,4 +1,4 @@
-import express from "express";
+﻿import express from "express";
 import cors from "cors";
 import companiesRoutes from "./modules/companies/routes/companies.routes";
 import publicApplicationsRoutes from "./modules/applications/routes/public-applications.routes";
@@ -11,11 +11,14 @@ import publicProfilesRoutes from "./modules/profiles/routes/public-profiles.rout
 import adminCommunicationsRoutes from "./modules/communications/routes/admin-communications.routes";
 import publicSpecialRequestsRoutes from "./modules/special-requests/routes/public-special-requests.routes";
 import adminSpecialRequestsRoutes from "./modules/special-requests/routes/admin-special-requests.routes";
+import uploadsRoutes from "./modules/uploads/routes/uploads.routes";
+import { getUploadsRoot } from "./lib/uploads";
 
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "2mb" }));
+app.use("/uploads", express.static(getUploadsRoot()));
 
 app.use("/api/companies", companiesRoutes);
 app.use("/api/public/applications", publicApplicationsRoutes);
@@ -28,5 +31,7 @@ app.use("/api/public/profiles", publicProfilesRoutes);
 app.use("/api/admin/communications", adminCommunicationsRoutes);
 app.use("/api/public/special-requests", publicSpecialRequestsRoutes);
 app.use("/api/admin/special-requests", adminSpecialRequestsRoutes);
+app.use("/api/uploads", uploadsRoutes);
 
 export default app;
+

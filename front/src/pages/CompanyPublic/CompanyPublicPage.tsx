@@ -4,6 +4,7 @@ import MainLayout from "../../layouts/MainLayouts";
 import type { ApiResponse } from "../../shared/types/api.types";
 import type { PublicCompanyProfileView } from "../../shared/types/profile.types";
 import OsmLocationPicker from "../../shared/components/OsmLocationPicker/OsmLocationPicker";
+import { toDisplaySrc } from "../../shared/components/ImageField/ImageField";
 import "./CompanyPublicPage.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
@@ -104,10 +105,10 @@ export default function CompanyPublicPage() {
 
           {!shouldShowLoading && profile ? (
             <article className="company-public-card">
-              {profile.logoUrl ? (
+{profile.logoUrl ? (
                 <img
                   className="company-public-logo"
-                  src={profile.logoUrl}
+                  src={toDisplaySrc(profile.logoUrl)}
                   alt={`Logo de ${profile.companyName ?? "empresa"}`}
                 />
               ) : null}

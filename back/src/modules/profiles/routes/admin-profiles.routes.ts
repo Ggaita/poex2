@@ -10,6 +10,7 @@ import {
   patchAdminProfileData,
   patchAdminProfileSettings,
   patchAdminProfileVisibility,
+  postAdminProfile,
   postAdminProfileProduct
 } from "../controllers/admin-profiles.controller";
 
@@ -18,6 +19,7 @@ const router = Router();
 router.use(authenticateRequest, requireRole("admin"));
 
 router.get("/", getAdminProfiles);
+router.post("/", postAdminProfile);
 router.get("/:id", getAdminProfileDetail);
 router.get("/:id/audit", getAdminProfileAuditTrail);
 router.patch("/:id/data", patchAdminProfileData);

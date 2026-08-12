@@ -1,6 +1,7 @@
-import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from "react";
+﻿import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PrivateLayout from "../../layouts/PrivateLayout";
+import ImageField, { toDisplaySrc } from "../../shared/components/ImageField/ImageField";
 import { clearAuthSession, getAuthSession } from "../../shared/auth/session";
 import type { ApiResponse } from "../../shared/types/api.types";
 import type {
@@ -677,21 +678,20 @@ export default function CompanyPanelPage() {
                       disabled={!profile.canCompanyEdit}
                     />
                   </label>
-                  <label>
-                    URL logo empresa (http/https)
-                    <input
-                      name="logoUrl"
+<div className="full">
+                    <ImageField
+                      label="Logo empresa"
+                      kind="logo"
                       value={formState.logoUrl}
-                      onChange={handleInputChange}
                       disabled={!profile.canCompanyEdit}
-                      placeholder="https://..."
+                      onChange={(nextValue) =>
+                        setFormState((prev) => ({
+                          ...prev,
+                          logoUrl: nextValue
+                        }))
+                      }
                     />
-                  </label>
-                  {formState.logoUrl.trim() ? (
-                    <div className="company-logo-preview full">
-                      <img src={formState.logoUrl.trim()} alt="Logo empresa" />
-                    </div>
-                  ) : null}
+                  </div>
                 </div>
               </section>
 
@@ -802,16 +802,20 @@ export default function CompanyPanelPage() {
                       disabled={!profile.canCompanyEdit || isSavingProduct}
                     />
                   </label>
-                  <label>
-                    URL de imagen (http/https)
-                    <input
-                      name="imageUrl"
+<div className="full">
+                    <ImageField
+                      label="Imagen del producto"
+                      kind="product-image"
                       value={productFormState.imageUrl}
-                      onChange={handleProductFieldChange}
                       disabled={!profile.canCompanyEdit || isSavingProduct}
-                      placeholder="https://..."
+                      onChange={(nextValue) =>
+                        setProductFormState((prev) => ({
+                          ...prev,
+                          imageUrl: nextValue
+                        }))
+                      }
                     />
-                  </label>
+                  </div>
                   <label className="full">
                     Descripción del producto
                     <textarea
@@ -904,10 +908,10 @@ export default function CompanyPanelPage() {
                             <div className="company-product-image-preview-wrap">
                               <img
                                 className="company-product-image-preview"
-                                src={product.imageUrl}
+                                src={toDisplaySrc(product.imageUrl)}
                                 alt={`Imagen de ${product.name}`}
                               />
-                              <a href={product.imageUrl} target="_blank" rel="noreferrer">
+                              <a href={toDisplaySrc(product.imageUrl)} target="_blank" rel="noreferrer">
                                 Ver imagen
                               </a>
                             </div>
@@ -1070,3 +1074,4 @@ export default function CompanyPanelPage() {
     </PrivateLayout>
   );
 }
+

@@ -1,4 +1,4 @@
-import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from "react";
+﻿import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PrivateLayout from "../../layouts/PrivateLayout";
 import { clearAuthSession, getAuthSession } from "../../shared/auth/session";
@@ -12,6 +12,9 @@ import type {
   ProfileFieldKey
 } from "./admin-profiles.types";
 import OsmLocationPicker from "../../shared/components/OsmLocationPicker/OsmLocationPicker";
+import ImageField, {
+  toDisplaySrc
+} from "../../shared/components/ImageField/ImageField";
 import "./AdminProfilesPage.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
@@ -291,6 +294,16 @@ export default function AdminProfilesPage() {
   const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [isSavingData, setIsSavingData] = useState(false);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [isSavingVisibility, setIsSavingVisibility] = useState(false);
+  const [isCreatingProfile, setIsCreatingProfile] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [createFormState, setCreateFormState] =
+    useState<AdminProfileFormState>(emptyFormState);
+  const [createEditMode, setCreateEditMode] = useState<ProfileEditMode>("mixed");
+  const [createIsPublished, setCreateIsPublished] = useState(false);
+  const [visibilityDraft, setVisibilityDraft] = useState<
+    Record<ProfileFieldKey, boolean> | null
+  >(null);
   const [isSavingProduct, setIsSavingProduct] = useState(false);
   const [reviewingProductId, setReviewingProductId] = useState<number | null>(null);
   const [deletingProductId, setDeletingProductId] = useState<number | null>(null);
@@ -304,13 +317,25 @@ export default function AdminProfilesPage() {
     Record<number, string>
   >({});
 
+  const activeVisibility = visibilityDraft ?? selectedProfile?.visibility ?? null;
+
   const visibleFieldsCount = useMemo(() => {
-    if (!selectedProfile) {
+    if (!activeVisibility) {
       return 0;
     }
 
-    return Object.values(selectedProfile.visibility).filter(Boolean).length;
-  }, [selectedProfile]);
+    return Object.values(activeVisibility).filter(Boolean).length;
+  }, [activeVisibility]);
+
+  const hasVisibilityChanges = useMemo(() => {
+    if (!selectedProfile || !visibilityDraft) {
+      return false;
+    }
+
+    return visibilityFieldOrder.some(
+      (fieldKey) => visibilityDraft[fieldKey] !== selectedProfile.visibility[fieldKey]
+    );
+  }, [selectedProfile, visibilityDraft]);
 
   const filteredProducts = useMemo(() => {
     if (!selectedProfile) {
@@ -375,10 +400,11 @@ export default function AdminProfilesPage() {
       const nextSelectedId = keepSelected ? selectedId : (rows[0]?.id ?? null);
       setSelectedId(nextSelectedId);
 
-      if (nextSelectedId === null) {
+if (nextSelectedId === null) {
         setSelectedProfile(null);
         setAuditRows([]);
         setFormState(emptyFormState);
+        setVisibilityDraft(null);
         setProductFormState(emptyProductFormState);
         setEditingProductId(null);
         setReviewingProductId(null);
@@ -388,8 +414,9 @@ export default function AdminProfilesPage() {
     } catch {
       setProfiles([]);
       setSelectedId(null);
-      setSelectedProfile(null);
+setSelectedProfile(null);
       setAuditRows([]);
+      setVisibilityDraft(null);
       setProductFormState(emptyProductFormState);
       setEditingProductId(null);
       setReviewingProductId(null);
@@ -431,9 +458,10 @@ export default function AdminProfilesPage() {
         return;
       }
 
-      if (!detailResponse.ok || !detailResult.success) {
+if (!detailResponse.ok || !detailResult.success) {
         setSelectedProfile(null);
         setAuditRows([]);
+        setVisibilityDraft(null);
         setProductFormState(emptyProductFormState);
         setEditingProductId(null);
         setReviewingProductId(null);
@@ -445,6 +473,7 @@ export default function AdminProfilesPage() {
 
       setSelectedProfile(detailResult.data);
       setFormState(toFormState(detailResult.data));
+      setVisibilityDraft({ ...detailResult.data.visibility });
       setAuditRows(Array.isArray(auditResult.data) ? auditResult.data : []);
       setProductFormState(emptyProductFormState);
       setEditingProductId(null);
@@ -458,9 +487,10 @@ export default function AdminProfilesPage() {
           ])
         )
       );
-    } catch {
+} catch {
       setSelectedProfile(null);
       setAuditRows([]);
+      setVisibilityDraft(null);
       setProductFormState(emptyProductFormState);
       setEditingProductId(null);
       setReviewingProductId(null);
@@ -926,11 +956,27 @@ export default function AdminProfilesPage() {
     }
   };
 
-  const handleToggleVisibility = async (
-    fieldKey: ProfileFieldKey,
-    nextVisible: boolean
-  ): Promise<void> => {
-    if (!selectedProfile) {
+  const handleCreateFormChange = (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ): void => {
+    const { name, value } = event.target;
+    setCreateFormState((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+    setErrorMessage("");
+    setInfoMessage("");
+  };
+
+  const handleCreateProfile = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
+    event.preventDefault();
+
+    if (
+      !createFormState.companyName.trim() ||
+      !createFormState.contactName.trim() ||
+      !createFormState.contactEmail.trim()
+    ) {
+      setErrorMessage("Para crear una empresa completá nombre, contacto y email.");
       return;
     }
 
@@ -940,6 +986,118 @@ export default function AdminProfilesPage() {
       return;
     }
 
+    setIsCreatingProfile(true);
+    setErrorMessage("");
+    setInfoMessage("");
+
+    try {
+      const payload = {
+        companyName: createFormState.companyName.trim(),
+        contactName: createFormState.contactName.trim(),
+        contactEmail: createFormState.contactEmail.trim(),
+        phone: trimNullable(createFormState.phone),
+        taxId: trimNullable(createFormState.taxId),
+        description: trimNullable(createFormState.description),
+        sector: trimNullable(createFormState.sector),
+        subSector: trimNullable(createFormState.subSector),
+        product: trimNullable(createFormState.product),
+        keywords: trimNullable(createFormState.keywords),
+        tariffPosition: trimNullable(createFormState.tariffPosition),
+        exportDestinations: trimNullable(createFormState.exportDestinations),
+        awards: trimNullable(createFormState.awards),
+        certifications: trimNullable(createFormState.certifications),
+        logoUrl: trimNullable(createFormState.logoUrl),
+        website: trimNullable(createFormState.website),
+        facebook: trimNullable(createFormState.facebook),
+        instagram: trimNullable(createFormState.instagram),
+        linkedin: trimNullable(createFormState.linkedin),
+        youtube: trimNullable(createFormState.youtube),
+        otherLink: trimNullable(createFormState.otherLink),
+        address: trimNullable(createFormState.address),
+        city: trimNullable(createFormState.city),
+        googleMapsEmbed: trimNullable(createFormState.googleMapsEmbed),
+        latitude: parseNullableNumber(createFormState.latitude),
+        longitude: parseNullableNumber(createFormState.longitude),
+        editMode: createEditMode,
+        isPublished: createIsPublished
+      };
+
+      const response = await fetch(`${API_BASE_URL}/api/admin/profiles`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authHeader
+        },
+        body: JSON.stringify(payload)
+      });
+      const result = (await response.json()) as ApiResponse<CompanyProfileAdminView>;
+
+      if (response.status === 401) {
+        handleUnauthorized();
+        return;
+      }
+
+      if (!response.ok || !result.success || !result.data) {
+        setErrorMessage(result.error ?? "No se pudo crear la empresa.");
+        return;
+      }
+
+      setCreateFormState(emptyFormState);
+      setCreateEditMode("mixed");
+      setCreateIsPublished(false);
+      setShowCreateForm(false);
+      setInfoMessage(`Empresa creada: ${result.data.companyName}.`);
+      setSelectedId(result.data.id);
+      await loadProfiles(query);
+      await loadProfileDetail(result.data.id);
+    } catch {
+      setErrorMessage("No se pudo conectar con el backend para crear la empresa.");
+    } finally {
+      setIsCreatingProfile(false);
+    }
+  };
+
+  const handleToggleVisibilityDraft = (
+    fieldKey: ProfileFieldKey,
+    nextVisible: boolean
+  ): void => {
+    setVisibilityDraft((prev) => {
+      const base = prev ?? selectedProfile?.visibility;
+      if (!base) {
+        return prev;
+      }
+
+      return {
+        ...base,
+        [fieldKey]: nextVisible
+      };
+    });
+    setErrorMessage("");
+    setInfoMessage("");
+  };
+
+  const handleResetVisibilityDraft = (): void => {
+    if (!selectedProfile) {
+      return;
+    }
+
+    setVisibilityDraft({ ...selectedProfile.visibility });
+    setErrorMessage("");
+    setInfoMessage("Cambios de visibilidad descartados.");
+  };
+
+  const handleSaveVisibility = async (): Promise<void> => {
+    if (!selectedProfile || !visibilityDraft) {
+      return;
+    }
+
+    const authHeader = getAuthHeader();
+    if (!authHeader) {
+      handleUnauthorized();
+      return;
+    }
+
+    setIsSavingVisibility(true);
     setErrorMessage("");
     setInfoMessage("");
 
@@ -953,8 +1111,7 @@ export default function AdminProfilesPage() {
             Authorization: authHeader
           },
           body: JSON.stringify({
-            fieldKey,
-            isVisible: nextVisible
+            visibility: visibilityDraft
           })
         }
       );
@@ -965,16 +1122,19 @@ export default function AdminProfilesPage() {
         return;
       }
 
-      if (!response.ok || !result.success) {
-        setErrorMessage(result.error ?? "No se pudo actualizar visibilidad.");
+      if (!response.ok || !result.success || !result.data) {
+        setErrorMessage(result.error ?? "No se pudo guardar la visibilidad.");
         return;
       }
 
       setSelectedProfile(result.data);
-      setInfoMessage(`Visibilidad actualizada: ${fieldLabels[fieldKey]}.`);
+      setVisibilityDraft({ ...result.data.visibility });
+      setInfoMessage("Visibilidad por campo guardada correctamente.");
       await loadProfileDetail(result.data.id);
     } catch {
-      setErrorMessage("No se pudo conectar con el backend para actualizar visibilidad.");
+      setErrorMessage("No se pudo conectar con el backend para guardar visibilidad.");
+    } finally {
+      setIsSavingVisibility(false);
     }
   };
 
@@ -996,7 +1156,7 @@ export default function AdminProfilesPage() {
 
           <div className="admin-profiles-grid">
             <aside className="profiles-list-card">
-              <div className="profiles-list-toolbar">
+<div className="profiles-list-toolbar">
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
@@ -1010,6 +1170,108 @@ export default function AdminProfilesPage() {
                   {isListLoading ? "Cargando..." : "Buscar"}
                 </button>
               </div>
+
+              <button
+                type="button"
+                className="create-company-toggle"
+                onClick={() => {
+                  setShowCreateForm((prev) => !prev);
+                  setErrorMessage("");
+                  setInfoMessage("");
+                }}
+              >
+                {showCreateForm ? "Cerrar alta de empresa" : "+ Nueva empresa"}
+              </button>
+
+              {showCreateForm ? (
+                <form className="create-company-card" onSubmit={handleCreateProfile}>
+                  <h3>Crear empresa</h3>
+                  <div className="create-company-grid">
+                    <label>
+                      Nombre empresa *
+                      <input
+                        name="companyName"
+                        value={createFormState.companyName}
+                        onChange={handleCreateFormChange}
+                        disabled={isCreatingProfile}
+                      />
+                    </label>
+                    <label>
+                      Contacto *
+                      <input
+                        name="contactName"
+                        value={createFormState.contactName}
+                        onChange={handleCreateFormChange}
+                        disabled={isCreatingProfile}
+                      />
+                    </label>
+                    <label>
+                      Email *
+                      <input
+                        name="contactEmail"
+                        value={createFormState.contactEmail}
+                        onChange={handleCreateFormChange}
+                        disabled={isCreatingProfile}
+                      />
+                    </label>
+                    <label>
+                      Teléfono
+                      <input
+                        name="phone"
+                        value={createFormState.phone}
+                        onChange={handleCreateFormChange}
+                        disabled={isCreatingProfile}
+                      />
+                    </label>
+                    <label>
+                      Sector
+                      <input
+                        name="sector"
+                        value={createFormState.sector}
+                        onChange={handleCreateFormChange}
+                        disabled={isCreatingProfile}
+                      />
+                    </label>
+                    <label>
+                      Ciudad
+                      <input
+                        name="city"
+                        value={createFormState.city}
+                        onChange={handleCreateFormChange}
+                        disabled={isCreatingProfile}
+                      />
+                    </label>
+                    <label>
+                      Modo de edición
+                      <select
+                        value={createEditMode}
+                        onChange={(event) =>
+                          setCreateEditMode(event.target.value as ProfileEditMode)
+                        }
+                        disabled={isCreatingProfile}
+                      >
+                        {editModeOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="settings-publish">
+                      <input
+                        type="checkbox"
+                        checked={createIsPublished}
+                        onChange={(event) => setCreateIsPublished(event.target.checked)}
+                        disabled={isCreatingProfile}
+                      />
+                      <span>Publicar al crear</span>
+                    </label>
+                  </div>
+                  <button type="submit" disabled={isCreatingProfile}>
+                    {isCreatingProfile ? "Creando..." : "Crear empresa"}
+                  </button>
+                </form>
+              ) : null}
 
               {isListLoading ? <p className="list-feedback">Cargando perfiles...</p> : null}
 
@@ -1134,15 +1396,19 @@ export default function AdminProfilesPage() {
                             onChange={handleFormChange}
                           />
                         </label>
-                        <label>
-                          URL logo empresa (http/https)
-                          <input
-                            name="logoUrl"
+<div className="full">
+                          <ImageField
+                            label="Logo empresa"
+                            kind="logo"
                             value={formState.logoUrl}
-                            onChange={handleFormChange}
-                            placeholder="https://..."
+                            onChange={(nextValue) =>
+                              setFormState((prev) => ({
+                                ...prev,
+                                logoUrl: nextValue
+                              }))
+                            }
                           />
-                        </label>
+                        </div>
                         <label>
                           Teléfono
                           <input
@@ -1151,11 +1417,6 @@ export default function AdminProfilesPage() {
                             onChange={handleFormChange}
                           />
                         </label>
-                        {formState.logoUrl.trim() ? (
-                          <div className="admin-logo-preview full">
-                            <img src={formState.logoUrl.trim()} alt="Logo empresa" />
-                          </div>
-                        ) : null}
                         <label>
                           Sector
                           <input
@@ -1268,16 +1529,20 @@ export default function AdminProfilesPage() {
                           disabled={isSavingProduct}
                         />
                       </label>
-                      <label>
-                        URL de imagen (http/https)
-                        <input
-                          name="imageUrl"
+<div className="full">
+                        <ImageField
+                          label="Imagen del producto"
+                          kind="product-image"
                           value={productFormState.imageUrl}
-                          onChange={handleProductFieldChange}
                           disabled={isSavingProduct}
-                          placeholder="https://..."
+                          onChange={(nextValue) =>
+                            setProductFormState((prev) => ({
+                              ...prev,
+                              imageUrl: nextValue
+                            }))
+                          }
                         />
-                      </label>
+                      </div>
                       <label className="full">
                         Descripción del producto
                         <textarea
@@ -1375,10 +1640,10 @@ export default function AdminProfilesPage() {
                                 <div className="product-image-preview-wrap">
                                   <img
                                     className="product-image-preview"
-                                    src={product.imageUrl}
+                                    src={toDisplaySrc(product.imageUrl)}
                                     alt={`Imagen de ${product.name}`}
                                   />
-                                  <a href={product.imageUrl} target="_blank" rel="noreferrer">
+                                  <a href={toDisplaySrc(product.imageUrl)} target="_blank" rel="noreferrer">
                                     Ver imagen
                                   </a>
                                 </div>
@@ -1454,21 +1719,44 @@ export default function AdminProfilesPage() {
                     )}
                   </form>
 
-                  <section className="settings-card">
-                    <h3>Visibilidad por campo</h3>
+<section className="settings-card">
+                    <div className="section-head">
+                      <h3>Visibilidad por campo</h3>
+                      <small>
+                        Marcá qué datos se muestran en la ficha pública y guardá esta sección.
+                      </small>
+                    </div>
                     <div className="visibility-grid">
                       {visibilityFieldOrder.map((fieldKey) => (
                         <label key={fieldKey}>
                           <input
                             type="checkbox"
-                            checked={selectedProfile.visibility[fieldKey]}
+                            checked={Boolean(activeVisibility?.[fieldKey])}
                             onChange={(event) =>
-                              void handleToggleVisibility(fieldKey, event.target.checked)
+                              handleToggleVisibilityDraft(fieldKey, event.target.checked)
                             }
+                            disabled={isSavingVisibility}
                           />
                           <span>{fieldLabels[fieldKey]}</span>
                         </label>
                       ))}
+                    </div>
+                    <div className="section-actions">
+                      <button
+                        type="button"
+                        className="secondary"
+                        onClick={handleResetVisibilityDraft}
+                        disabled={isSavingVisibility || !hasVisibilityChanges}
+                      >
+                        Descartar cambios
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void handleSaveVisibility()}
+                        disabled={isSavingVisibility || !hasVisibilityChanges}
+                      >
+                        {isSavingVisibility ? "Guardando..." : "Guardar visibilidad"}
+                      </button>
                     </div>
                   </section>
 
@@ -1530,3 +1818,4 @@ export default function AdminProfilesPage() {
     </PrivateLayout>
   );
 }
+

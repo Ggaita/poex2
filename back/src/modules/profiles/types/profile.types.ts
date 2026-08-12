@@ -40,6 +40,37 @@ export interface ProfileAuditActor {
   displayName?: string;
 }
 
+export interface CreateAdminCompanyProfileInput {
+  companyName: string;
+  contactName: string;
+  contactEmail: string;
+  phone?: string | null;
+  taxId?: string | null;
+  description?: string | null;
+  sector?: string | null;
+  subSector?: string | null;
+  product?: string | null;
+  keywords?: string | null;
+  tariffPosition?: string | null;
+  exportDestinations?: string | null;
+  awards?: string | null;
+  certifications?: string | null;
+  logoUrl?: string | null;
+  website?: string | null;
+  facebook?: string | null;
+  instagram?: string | null;
+  linkedin?: string | null;
+  youtube?: string | null;
+  otherLink?: string | null;
+  address?: string | null;
+  city?: string | null;
+  googleMapsEmbed?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  editMode?: ProfileEditMode;
+  isPublished?: boolean;
+}
+
 export interface CompanyProfileDataPatch {
   companyName?: string;
   contactName?: string;
@@ -78,6 +109,10 @@ export interface CompanyProfileVisibilityPatch {
   fieldKey: ProfileFieldKey;
   isVisible: boolean;
 }
+
+export type CompanyProfileVisibilityBulkPatch = Partial<
+  Record<ProfileFieldKey, boolean>
+>;
 
 export interface CompanyProductInput {
   name: string;

@@ -1,14 +1,18 @@
-import type { Request, Response } from "express";
+﻿import type { Request, Response } from "express";
 import type {
   CompanyProductInput,
   CompanyProductPatch,
   CompanyProductReviewPatch,
   CompanyProfileDataPatch,
   CompanyProfileSettingsPatch,
+  CompanyProfileVisibilityBulkPatch,
+  CreateAdminCompanyProfileInput,
   ProfileAuditActor,
-  ProfileEditMode
+  ProfileEditMode,
+  ProfileFieldKey
 } from "../types/profile.types";
 import {
+  createAdminProfile,
   createAdminProfileProduct,
   deleteAdminProfileProduct,
   getAdminProfileById,
@@ -70,6 +74,22 @@ const isValidHttpUrl = (value: string): boolean => {
   }
 };
 
+const isValidImageRef = (value: string): boolean => {
+  const cleaned = value.trim();
+  if (!cleaned) {
+    return true;
+  }
+
+  if (
+    (cleaned.startsWith("/uploads/logos/") || cleaned.startsWith("/uploads/products/")) &&
+    !cleaned.includes("..")
+  ) {
+    return true;
+  }
+
+  return isValidHttpUrl(cleaned);
+};
+
 const isValidTariffPosition = (value: string): boolean => {
   const cleaned = value.trim();
   if (!cleaned) {
@@ -119,8 +139,8 @@ const parseAdminProductPayload = (
     }
 
     const imageUrl = typeof source.imageUrl === "string" ? source.imageUrl.trim() : "";
-    if (imageUrl && !isValidHttpUrl(imageUrl)) {
-      return { ok: false, error: "La imagen debe ser una URL http/https válida." };
+    if (imageUrl && !isValidImageRef(imageUrl)) {
+      return { ok: false, error: "La imagen debe ser un archivo subido o una URL http/https válida." };
     }
     payload.imageUrl = imageUrl || null;
   }
@@ -217,6 +237,128 @@ export const getAdminProfiles = async (req: Request, res: Response): Promise<voi
     res.status(500).json({
       success: false,
       error: "No se pudieron obtener los perfiles de empresa"
+    });
+  }
+};
+
+export const postAdminProfile = async (req: Request, res: Response): Promise<void> => {
+  const body = (req.body ?? {}) as Record<string, unknown>;
+
+  const companyName = getOptionalString(body.companyName);
+  const contactName = getOptionalString(body.contactName);
+  const contactEmail = getOptionalString(body.contactEmail);
+
+  if (!companyName || !contactName || !contactEmail) {
+    res.status(400).json({
+      success: false,
+      error: "companyName, contactName y contactEmail son obligatorios"
+    });
+    return;
+  }
+
+  const payload: CreateAdminCompanyProfileInput = {
+    companyName,
+    contactName,
+    contactEmail,
+    phone: typeof body.phone === "string" || body.phone === null ? (body.phone as string | null) : undefined,
+    taxId: typeof body.taxId === "string" || body.taxId === null ? (body.taxId as string | null) : undefined,
+    description:
+      typeof body.description === "string" || body.description === null
+        ? (body.description as string | null)
+        : undefined,
+    sector: typeof body.sector === "string" || body.sector === null ? (body.sector as string | null) : undefined,
+    subSector:
+      typeof body.subSector === "string" || body.subSector === null
+        ? (body.subSector as string | null)
+        : undefined,
+    product:
+      typeof body.product === "string" || body.product === null ? (body.product as string | null) : undefined,
+    keywords:
+      typeof body.keywords === "string" || body.keywords === null
+        ? (body.keywords as string | null)
+        : undefined,
+    tariffPosition:
+      typeof body.tariffPosition === "string" || body.tariffPosition === null
+        ? (body.tariffPosition as string | null)
+        : undefined,
+    exportDestinations:
+      typeof body.exportDestinations === "string" || body.exportDestinations === null
+        ? (body.exportDestinations as string | null)
+        : undefined,
+    awards: typeof body.awards === "string" || body.awards === null ? (body.awards as string | null) : undefined,
+    certifications:
+      typeof body.certifications === "string" || body.certifications === null
+        ? (body.certifications as string | null)
+        : undefined,
+    logoUrl:
+      typeof body.logoUrl === "string" || body.logoUrl === null ? (body.logoUrl as string | null) : undefined,
+    website:
+      typeof body.website === "string" || body.website === null ? (body.website as string | null) : undefined,
+    facebook:
+      typeof body.facebook === "string" || body.facebook === null
+        ? (body.facebook as string | null)
+        : undefined,
+    instagram:
+      typeof body.instagram === "string" || body.instagram === null
+        ? (body.instagram as string | null)
+        : undefined,
+    linkedin:
+      typeof body.linkedin === "string" || body.linkedin === null
+        ? (body.linkedin as string | null)
+        : undefined,
+    youtube:
+      typeof body.youtube === "string" || body.youtube === null ? (body.youtube as string | null) : undefined,
+    otherLink:
+      typeof body.otherLink === "string" || body.otherLink === null
+        ? (body.otherLink as string | null)
+        : undefined,
+    address:
+      typeof body.address === "string" || body.address === null ? (body.address as string | null) : undefined,
+    city: typeof body.city === "string" || body.city === null ? (body.city as string | null) : undefined,
+    googleMapsEmbed:
+      typeof body.googleMapsEmbed === "string" || body.googleMapsEmbed === null
+        ? (body.googleMapsEmbed as string | null)
+        : undefined,
+latitude:
+      typeof body.latitude === "number"
+        ? body.latitude
+        : typeof body.latitude === "string"
+          ? Number.parseFloat(body.latitude)
+          : body.latitude === null
+            ? null
+            : undefined,
+    longitude:
+      typeof body.longitude === "number"
+        ? body.longitude
+        : typeof body.longitude === "string"
+          ? Number.parseFloat(body.longitude)
+          : body.longitude === null
+            ? null
+            : undefined,
+    editMode: isEditMode(body.editMode) ? body.editMode : undefined,
+    isPublished: typeof body.isPublished === "boolean" ? body.isPublished : undefined
+  };
+
+  try {
+    const profile = await createAdminProfile(payload, getAuditActor(req));
+    res.status(201).json({
+      success: true,
+      message: "Empresa creada",
+      data: profile
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (message.toLowerCase().includes("unique") || message.toLowerCase().includes("slug")) {
+      res.status(409).json({
+        success: false,
+        error: "Ya existe una empresa con datos similares"
+      });
+      return;
+    }
+
+    res.status(500).json({
+      success: false,
+      error: "No se pudo crear la empresa"
     });
   }
 };
@@ -375,13 +517,38 @@ export const patchAdminProfileVisibility = async (
     return;
   }
 
-  const fieldKey = req.body?.fieldKey;
-  const isVisible = req.body?.isVisible;
+  const body = (req.body ?? {}) as Record<string, unknown>;
+  const fieldKey = body.fieldKey;
+  const isVisible = body.isVisible;
+  const bulkSource =
+    body.visibility && typeof body.visibility === "object"
+      ? (body.visibility as Record<string, unknown>)
+      : body;
 
-  if (!isProfileFieldKey(fieldKey) || typeof isVisible !== "boolean") {
+  let patch:
+    | { fieldKey: ProfileFieldKey; isVisible: boolean }
+    | CompanyProfileVisibilityBulkPatch
+    | null = null;
+
+  if (isProfileFieldKey(fieldKey) && typeof isVisible === "boolean") {
+    patch = { fieldKey, isVisible };
+  } else {
+    const bulk: CompanyProfileVisibilityBulkPatch = {};
+    Object.entries(bulkSource).forEach(([key, value]) => {
+      if (isProfileFieldKey(key) && typeof value === "boolean") {
+        bulk[key] = value;
+      }
+    });
+
+    if (Object.keys(bulk).length > 0) {
+      patch = bulk;
+    }
+  }
+
+  if (!patch) {
     res.status(400).json({
       success: false,
-      error: "fieldKey o isVisible inválidos"
+      error: "Enviá fieldKey/isVisible o un mapa de visibilidad por campo"
     });
     return;
   }
@@ -389,7 +556,7 @@ export const patchAdminProfileVisibility = async (
   try {
     const profile = await updateAdminProfileVisibility(
       profileId,
-      { fieldKey, isVisible },
+      patch,
       getAuditActor(req)
     );
 
@@ -644,3 +811,4 @@ export const getAdminProfileAuditTrail = async (
     });
   }
 };
+

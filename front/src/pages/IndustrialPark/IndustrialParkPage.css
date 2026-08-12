@@ -85,25 +85,25 @@
 }
 
 .industrial-map-canvas {
-  min-height: 440px;
+  height: 480px;
+  min-height: 480px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   overflow: hidden;
+  background: var(--color-surface-soft);
 }
 
 .industrial-map-canvas .leaflet-container {
-  min-height: 440px;
   height: 100%;
   width: 100%;
+  min-height: 480px;
 }
 
-.industrial-selected-location {
+.industrial-map-hint {
+  margin: 0;
   color: var(--color-text-muted);
   font-size: 0.86rem;
-}
-
-.industrial-selected-location strong {
-  color: var(--color-text);
+  line-height: 1.45;
 }
 
 .industrial-list-card > header {
@@ -144,11 +144,6 @@
   gap: 0.35rem;
 }
 
-.industrial-company-item.active {
-  border-color: var(--color-primary);
-  background: var(--color-primary-soft);
-}
-
 .industrial-company-item-top {
   display: flex;
   justify-content: space-between;
@@ -187,7 +182,6 @@
   flex-wrap: wrap;
 }
 
-.industrial-company-actions button,
 .industrial-company-actions a {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-sm);
@@ -197,12 +191,6 @@
   font-weight: 700;
   text-decoration: none;
   padding: 0.35rem 0.62rem;
-  cursor: pointer;
-}
-
-.industrial-company-actions button:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
 }
 
 @media (max-width: 1080px) {
@@ -212,7 +200,8 @@
 
   .industrial-map-canvas,
   .industrial-map-canvas .leaflet-container {
-    min-height: 360px;
+    height: 380px;
+    min-height: 380px;
   }
 }
 
@@ -223,14 +212,14 @@
 
   .industrial-map-canvas,
   .industrial-map-canvas .leaflet-container {
-    min-height: 310px;
+    height: 320px;
+    min-height: 320px;
   }
 
   .industrial-company-actions {
     flex-direction: column;
   }
 
-  .industrial-company-actions button,
   .industrial-company-actions a {
     width: 100%;
     text-align: center;
@@ -249,6 +238,7 @@
 
   .industrial-map-canvas,
   .industrial-map-canvas .leaflet-container {
-    min-height: 270px;
+    height: 280px;
+    min-height: 280px;
   }
 }

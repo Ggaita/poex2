@@ -1,0 +1,64 @@
+.trade-service-page {
+  width: 100%;
+  padding: 1.7rem 1rem 3rem;
+}
+
+.trade-service-shell {
+  width: min(920px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 0.95rem;
+}
+
+.trade-service-header {
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  padding: 1.15rem 1.2rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.trade-service-header p {
+  margin: 0;
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.trade-service-header h1 {
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-heading);
+  font-size: clamp(1.45rem, 2.4vw, 2rem);
+  line-height: 1.2;
+}
+
+.trade-service-header small {
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.trade-service-card {
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  padding: 1.15rem 1.2rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.trade-service-prose {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.trade-service-prose p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  line-height: 1.65;
+}

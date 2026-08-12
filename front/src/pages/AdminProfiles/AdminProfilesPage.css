@@ -106,6 +106,92 @@
   cursor: not-allowed;
 }
 
+.create-company-toggle {
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-primary-soft);
+  color: var(--color-primary-strong);
+  font-weight: 700;
+  padding: 0.55rem 0.75rem;
+  cursor: pointer;
+}
+
+.create-company-card {
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.create-company-card h3 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.95rem;
+}
+
+.create-company-grid {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.create-company-card label {
+  display: grid;
+  gap: 0.25rem;
+  color: var(--color-text);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.create-company-card input,
+.create-company-card select {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.55rem;
+  font: inherit;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.create-company-card button[type="submit"] {
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-weight: 700;
+  padding: 0.55rem 0.75rem;
+  cursor: pointer;
+}
+
+.create-company-card button[type="submit"]:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.section-head {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.section-head small {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+}
+
+.section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.settings-card button.secondary,
+.section-actions button.secondary {
+  border: 1px solid var(--color-border-soft);
+  background: var(--color-surface-soft);
+  color: var(--color-text-muted);
+}
+
 .list-feedback,
 .detail-feedback {
   color: var(--color-text-soft);

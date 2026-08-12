@@ -16,11 +16,13 @@ import type {
   CompanyProductPatch,
   CompanyProductReviewPatch,
   CompanyProductView,
-  CompanyProfileAdminView,
+CompanyProfileAdminView,
   CompanyProfileAuditLogView,
   CompanyProfileDataPatch,
   CompanyProfileSettingsPatch,
+  CompanyProfileVisibilityBulkPatch,
   CompanyProfileVisibilityPatch,
+  CreateAdminCompanyProfileInput,
   ProfileAuditActor,
   ProfileEditMode,
   ProfileFieldKey,
@@ -132,6 +134,14 @@ const normalizeImageUrl = (value: unknown): string | null => {
   const trimmed = trimToUndefined(value);
   if (!trimmed) {
     return null;
+  }
+
+  // Local uploaded assets: /uploads/logos/... or /uploads/products/...
+  if (trimmed.startsWith("/uploads/logos/") || trimmed.startsWith("/uploads/products/")) {
+    if (trimmed.includes("..")) {
+      return null;
+    }
+    return trimmed;
   }
 
   try {
@@ -764,6 +774,89 @@ export const getAdminProfileById = async (
   return toAdminView(row, buildVisibilityMap(row.visibilityRules));
 };
 
+export const createAdminProfile = async (
+  input: CreateAdminCompanyProfileInput,
+  actor?: ProfileAuditActor
+): Promise<CompanyProfileAdminView> => {
+  return prisma.$transaction(async (db) => {
+    const companyName = input.companyName.trim();
+    const contactName = input.contactName.trim();
+    const contactEmail = input.contactEmail.trim();
+
+    const ownerUser = await db.appUser.findFirst({
+      where: {
+        email: {
+          equals: contactEmail,
+          mode: "insensitive"
+        },
+        role: PrismaUserRole.empresa
+      },
+      select: { id: true }
+    });
+
+    const created = await db.companyProfile.create({
+      data: {
+        ownerUserId: ownerUser?.id ?? null,
+        slug: await generateUniqueSlug(db, companyName),
+        companyName,
+        contactName,
+        contactEmail,
+        phone: trimToNullable(input.phone),
+        taxId: trimToNullable(input.taxId),
+        description: trimToNullable(input.description),
+        sector: trimToNullable(input.sector),
+        subSector: trimToNullable(input.subSector),
+        product: trimToNullable(input.product),
+        keywords: trimToNullable(input.keywords),
+        tariffPosition: trimToNullable(input.tariffPosition),
+        exportDestinations: trimToNullable(input.exportDestinations),
+        awards: trimToNullable(input.awards),
+        certifications: trimToNullable(input.certifications),
+        logoUrl: normalizeImageUrl(input.logoUrl),
+        website: trimToNullable(input.website),
+        facebook: trimToNullable(input.facebook),
+        instagram: trimToNullable(input.instagram),
+        linkedin: trimToNullable(input.linkedin),
+        youtube: trimToNullable(input.youtube),
+        otherLink: trimToNullable(input.otherLink),
+        address: trimToNullable(input.address),
+        city: trimToNullable(input.city),
+        googleMapsEmbed: trimToNullable(input.googleMapsEmbed),
+        latitude: asNumberOrNull(input.latitude),
+        longitude: asNumberOrNull(input.longitude),
+        editMode: input.editMode
+          ? toPrismaEditMode(input.editMode)
+          : PrismaProfileEditMode.mixed,
+        isPublished: Boolean(input.isPublished)
+      }
+    });
+
+    await db.companyProfileVisibility.createMany({
+      data: defaultVisibilityCreateRows(created.id)
+    });
+
+    await createAuditLog(db, created.id, actor, {
+      action: "admin_profile_created",
+      metadata: {
+        profileId: created.id,
+        companyName: created.companyName,
+        contactEmail: created.contactEmail
+      }
+    });
+
+    const withRelations = await db.companyProfile.findUnique({
+      where: { id: created.id },
+      include: includeProfileRelations
+    });
+
+    if (!withRelations) {
+      throw new Error("No se pudo recargar el perfil creado");
+    }
+
+    return toAdminView(withRelations, buildVisibilityMap(withRelations.visibilityRules));
+  });
+};
+
 export const updateAdminProfileData = async (
   id: number,
   patch: CompanyProfileDataPatch,
@@ -1055,7 +1148,7 @@ export const updateAdminProfileSettings = async (
 
 export const updateAdminProfileVisibility = async (
   id: number,
-  patch: CompanyProfileVisibilityPatch,
+  patch: CompanyProfileVisibilityPatch | CompanyProfileVisibilityBulkPatch,
   actor?: ProfileAuditActor
 ): Promise<CompanyProfileAdminView | null> => {
   return prisma.$transaction(async (db) => {
@@ -1068,34 +1161,56 @@ export const updateAdminProfileVisibility = async (
       return null;
     }
 
-    const previousVisibility = buildVisibilityMap(current.visibilityRules)[patch.fieldKey];
+    const previousVisibility = buildVisibilityMap(current.visibilityRules);
+    const updates: Array<{ fieldKey: ProfileFieldKey; isVisible: boolean }> = [];
 
-    await db.companyProfileVisibility.upsert({
-      where: {
-        profileId_fieldKey: {
-          profileId: id,
-          fieldKey: patch.fieldKey
-        }
-      },
-      update: {
-        isVisible: patch.isVisible,
-        updatedBy: actor?.displayName ?? actor?.email ?? null
-      },
-      create: {
-        profileId: id,
+    if ("fieldKey" in patch && typeof patch.isVisible === "boolean") {
+      updates.push({
         fieldKey: patch.fieldKey,
-        isVisible: patch.isVisible,
-        updatedBy: actor?.displayName ?? actor?.email ?? null
-      }
-    });
-
-    if (previousVisibility !== patch.isVisible) {
-      await createAuditLog(db, id, actor, {
-        action: "admin_profile_visibility_changed",
-        fieldKey: patch.fieldKey,
-        oldValue: String(previousVisibility),
-        newValue: String(patch.isVisible)
+        isVisible: patch.isVisible
       });
+    } else {
+      Object.entries(patch).forEach(([fieldKey, isVisible]) => {
+        if (isProfileFieldKey(fieldKey) && typeof isVisible === "boolean") {
+          updates.push({ fieldKey, isVisible });
+        }
+      });
+    }
+
+    if (updates.length === 0) {
+      return toAdminView(current, previousVisibility);
+    }
+
+    const updatedBy = actor?.displayName ?? actor?.email ?? null;
+
+    for (const update of updates) {
+      await db.companyProfileVisibility.upsert({
+        where: {
+          profileId_fieldKey: {
+            profileId: id,
+            fieldKey: update.fieldKey
+          }
+        },
+        update: {
+          isVisible: update.isVisible,
+          updatedBy
+        },
+        create: {
+          profileId: id,
+          fieldKey: update.fieldKey,
+          isVisible: update.isVisible,
+          updatedBy
+        }
+      });
+
+      if (previousVisibility[update.fieldKey] !== update.isVisible) {
+        await createAuditLog(db, id, actor, {
+          action: "admin_profile_visibility_changed",
+          fieldKey: update.fieldKey,
+          oldValue: String(previousVisibility[update.fieldKey]),
+          newValue: String(update.isVisible)
+        });
+      }
     }
 
     const updated = await db.companyProfile.findUnique({

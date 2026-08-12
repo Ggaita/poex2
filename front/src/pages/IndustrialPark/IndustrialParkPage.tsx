@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -9,6 +9,7 @@ import "./IndustrialParkPage.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
 const FALLBACK_CENTER: [number, number] = [-27.4516, -58.9866];
+const FALLBACK_ZOOM = 7;
 
 const markerStyle: L.CircleMarkerOptions = {
   color: "#0f172a",
@@ -18,18 +19,11 @@ const markerStyle: L.CircleMarkerOptions = {
   weight: 2
 };
 
-const selectedMarkerStyle: L.CircleMarkerOptions = {
-  color: "#1d4ed8",
-  fillColor: "#60a5fa",
-  fillOpacity: 0.95,
-  radius: 9,
-  weight: 2
-};
-
 type LocatedProfile = PublicCompanyProfileView & {
   latitude: number;
   longitude: number;
 };
+
 const parseCoordinate = (value: unknown): number | null => {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value;
@@ -57,6 +51,10 @@ const toLocatedProfile = (profile: PublicCompanyProfileView): LocatedProfile | n
     return null;
   }
 
+  if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+    return null;
+  }
+
   return {
     ...profile,
     latitude,
@@ -72,17 +70,14 @@ const toCompanyTitle = (profile: PublicCompanyProfileView): string => {
   return `Empresa #${profile.id}`;
 };
 
-const formatCoordinate = (value: number): string => value.toFixed(5);
-
 export default function IndustrialParkPage() {
   const [profiles, setProfiles] = useState<PublicCompanyProfileView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
-  const [selectedProfileId, setSelectedProfileId] = useState<number | null>(null);
 
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
-  const markerRefs = useRef<Map<number, L.CircleMarker>>(new Map());
+  const markersLayerRef = useRef<L.LayerGroup | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -136,104 +131,97 @@ export default function IndustrialParkPage() {
     return new Set(locatedProfiles.map((profile) => profile.id));
   }, [locatedProfiles]);
 
-  const activeSelectedProfileId = useMemo(() => {
-    if (
-      selectedProfileId !== null &&
-      locatedProfiles.some((profile) => profile.id === selectedProfileId)
-    ) {
-      return selectedProfileId;
-    }
-
-    return locatedProfiles[0]?.id ?? null;
-  }, [locatedProfiles, selectedProfileId]);
-
-  const selectedLocatedProfile = useMemo(() => {
-    if (activeSelectedProfileId === null) {
-      return null;
-    }
-    return locatedProfiles.find((profile) => profile.id === activeSelectedProfileId) ?? null;
-  }, [activeSelectedProfileId, locatedProfiles]);
-
+  // El contenedor del mapa solo existe cuando termina la carga.
+  // Hay que inicializar Leaflet despues de ese render, no en mount vacio.
   useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current) {
+    if (isLoading || errorMessage || !mapContainerRef.current || mapRef.current) {
       return;
     }
 
     const map = L.map(mapContainerRef.current, {
-      zoomControl: true
-    }).setView(FALLBACK_CENTER, 7);
+      zoomControl: true,
+      scrollWheelZoom: true
+    }).setView(FALLBACK_CENTER, FALLBACK_ZOOM);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap contributors",
       maxZoom: 19
     }).addTo(map);
 
+    const markersLayer = L.layerGroup().addTo(map);
     mapRef.current = map;
-    const markers = markerRefs.current;
+    markersLayerRef.current = markersLayer;
 
     const resizeTimer = window.setTimeout(() => {
       map.invalidateSize();
-    }, 0);
+    }, 50);
 
     return () => {
       window.clearTimeout(resizeTimer);
-      markers.forEach((marker) => marker.remove());
-      markers.clear();
+      markersLayer.clearLayers();
       map.remove();
       mapRef.current = null;
+      markersLayerRef.current = null;
     };
-  }, []);
+  }, [isLoading, errorMessage]);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map) {
+    const markersLayer = markersLayerRef.current;
+    if (!map || !markersLayer) {
       return;
     }
 
-    markerRefs.current.forEach((marker) => marker.remove());
-    markerRefs.current.clear();
+    markersLayer.clearLayers();
 
     if (locatedProfiles.length === 0) {
-      map.setView(FALLBACK_CENTER, 7);
+      map.setView(FALLBACK_CENTER, FALLBACK_ZOOM);
+      window.setTimeout(() => map.invalidateSize(), 0);
       return;
     }
 
     const bounds = L.latLngBounds([]);
-    locatedProfiles.forEach((profile) => {
-      const marker = L.circleMarker([profile.latitude, profile.longitude], markerStyle)
-        .addTo(map)
-        .bindTooltip(toCompanyTitle(profile), {
-          direction: "top",
-          offset: [0, -8]
-        });
 
-      marker.on("click", () => {
-        setSelectedProfileId(profile.id);
+    locatedProfiles.forEach((profile) => {
+      const point: L.LatLngExpression = [profile.latitude, profile.longitude];
+      const title = toCompanyTitle(profile);
+      const details = [profile.sector, profile.city, profile.address]
+        .filter((value): value is string => Boolean(value && value.trim()))
+        .join(" · ");
+
+      const marker = L.circleMarker(point, markerStyle).bindPopup(
+        `<strong>${title}</strong>${details ? `<br/><span>${details}</span>` : ""}<br/><a href="/empresas/${profile.id}">Ver ficha</a>`
+      );
+
+      marker.bindTooltip(title, {
+        direction: "top",
+        offset: [0, -8],
+        opacity: 0.95
       });
 
-      markerRefs.current.set(profile.id, marker);
-      bounds.extend([profile.latitude, profile.longitude]);
+      markersLayer.addLayer(marker);
+      bounds.extend(point);
     });
 
-    map.fitBounds(bounds.pad(0.2), { maxZoom: 12 });
-  }, [locatedProfiles]);
-
-  useEffect(() => {
-    markerRefs.current.forEach((marker, profileId) => {
-      marker.setStyle(
-        profileId === activeSelectedProfileId ? selectedMarkerStyle : markerStyle
-      );
-    });
-
-    if (!selectedLocatedProfile || !mapRef.current) {
-      return;
+    if (locatedProfiles.length === 1) {
+      map.setView([locatedProfiles[0].latitude, locatedProfiles[0].longitude], 12);
+    } else {
+      map.fitBounds(bounds.pad(0.18), {
+        maxZoom: 12,
+        animate: false
+      });
     }
 
-    mapRef.current.panTo([selectedLocatedProfile.latitude, selectedLocatedProfile.longitude], {
-      animate: true,
-      duration: 0.5
-    });
-  }, [activeSelectedProfileId, selectedLocatedProfile]);
+    window.setTimeout(() => {
+      map.invalidateSize();
+      if (locatedProfiles.length > 1 && bounds.isValid()) {
+        map.fitBounds(bounds.pad(0.18), {
+          maxZoom: 12,
+          animate: false
+        });
+      }
+    }, 80);
+  }, [locatedProfiles]);
 
   const profilesWithoutCoordinates = profiles.length - locatedProfiles.length;
 
@@ -243,10 +231,10 @@ export default function IndustrialParkPage() {
         <div className="industrial-park-shell">
           <header className="industrial-park-header">
             <p>Parque Industrial</p>
-            <h1>Empresas geolocalizadas</h1>
+            <h1>Mapa de empresas</h1>
             <small>
-              Explorá en el mapa de OpenStreetMap las empresas publicadas y su
-              ubicación.
+              Vista global de empresas publicadas. El mapa se ajusta solo para
+              mostrar todas las ubicaciones disponibles.
             </small>
           </header>
 
@@ -268,17 +256,11 @@ export default function IndustrialParkPage() {
                   ) : null}
                 </div>
                 <div ref={mapContainerRef} className="industrial-map-canvas" />
-                {selectedLocatedProfile ? (
-                  <p className="industrial-selected-location">
-                    Seleccionada: <strong>{toCompanyTitle(selectedLocatedProfile)}</strong> ·{" "}
-                    {formatCoordinate(selectedLocatedProfile.latitude)},{" "}
-                    {formatCoordinate(selectedLocatedProfile.longitude)}
-                  </p>
-                ) : (
-                  <p className="industrial-selected-location">
-                    No hay empresas con coordenadas para mostrar en el mapa.
-                  </p>
-                )}
+                <p className="industrial-map-hint">
+                  {locatedProfiles.length > 0
+                    ? "Todas las empresas con ubicación se muestran a la vez. Hacé clic en un marcador para ver el detalle."
+                    : "No hay empresas con coordenadas para mostrar en el mapa."}
+                </p>
               </article>
 
               <aside className="industrial-list-card">
@@ -295,14 +277,7 @@ export default function IndustrialParkPage() {
                     {profiles.map((profile) => {
                       const located = locatedProfileIds.has(profile.id);
                       return (
-                        <li
-                          key={profile.id}
-                          className={
-                            profile.id === activeSelectedProfileId
-                              ? "industrial-company-item active"
-                              : "industrial-company-item"
-                          }
-                        >
+                        <li key={profile.id} className="industrial-company-item">
                           <div className="industrial-company-item-top">
                             <h3>{toCompanyTitle(profile)}</h3>
                             <span>{located ? "Con ubicación" : "Sin coordenadas"}</span>
@@ -313,17 +288,6 @@ export default function IndustrialParkPage() {
                             {profile.address ? ` · ${profile.address}` : ""}
                           </small>
                           <div className="industrial-company-actions">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (located) {
-                                  setSelectedProfileId(profile.id);
-                                }
-                              }}
-                              disabled={!located}
-                            >
-                              Ver en mapa
-                            </button>
                             <Link to={`/empresas/${profile.id}`}>Ver ficha</Link>
                           </div>
                         </li>

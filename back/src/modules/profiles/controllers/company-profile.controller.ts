@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+﻿import type { Request, Response } from "express";
 import type {
   CompanyProductInput,
   CompanyProductPatch,
@@ -292,6 +292,22 @@ const isValidHttpUrl = (value: string): boolean => {
   }
 };
 
+const isValidImageRef = (value: string): boolean => {
+  const cleaned = value.trim();
+  if (!cleaned) {
+    return true;
+  }
+
+  if (
+    (cleaned.startsWith("/uploads/logos/") || cleaned.startsWith("/uploads/products/")) &&
+    !cleaned.includes("..")
+  ) {
+    return true;
+  }
+
+  return isValidHttpUrl(cleaned);
+};
+
 const isValidTariffPosition = (value: string): boolean => {
   const cleaned = value.trim();
   if (!cleaned) {
@@ -341,8 +357,8 @@ const parseCompanyProductPayload = (
     }
 
     const imageUrl = typeof source.imageUrl === "string" ? source.imageUrl.trim() : "";
-    if (imageUrl && !isValidHttpUrl(imageUrl)) {
-      return { ok: false, error: "La imagen debe ser una URL http/https válida." };
+    if (imageUrl && !isValidImageRef(imageUrl)) {
+      return { ok: false, error: "La imagen debe ser un archivo subido o una URL http/https válida." };
     }
     payload.imageUrl = imageUrl || null;
   }
@@ -431,3 +447,4 @@ export const patchCompanyProfileMe = async (
     });
   }
 };
+
