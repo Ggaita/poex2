@@ -1,7 +1,10 @@
+import bandera from "../../../assets/Images/flag_of_Argentina.webp";
+
 const FooterBottom = () => {
   return (
     <div className="footer-bottom">
-      <p>© 2026 Mi App. Todos los derechos reservados.</p>
+      <p>© 2026 <i>Desarrollado por Argentinos</i></p>
+      <img src={bandera} alt="Bandera de Argentina" className="footer-logo" />
     </div>
   );
 };

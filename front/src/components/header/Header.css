@@ -3,13 +3,13 @@
    ========================= */
 
 .header {
-  margin-top: 15px;
-  min-height: 20vh;
+  margin-top: 2px;
+  min-height: 10vh;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
-  padding: 16px;
+  padding: 5px;
   background-color: var(--color-surface);
   color: var(--color-text);
   border-bottom: 1px solid var(--color-border-soft);
@@ -36,7 +36,7 @@
 }
 
 .logo-img {
-  height: 60px;
+  height: 90px;
   width: auto;
   object-fit: contain;
 }
@@ -98,7 +98,7 @@
 
   display: flex;
   flex-direction: column;
-  padding: 6px 0;
+  padding: 5px 0;
   margin: 0;
 
   opacity: 0;

@@ -1,10 +1,11 @@
 import "../HeroSection.css";
+import fotoHero from "../../../../../../assets/Images/background-hero-cexp.png";
 
 export const HeroBackground = () => {
   return (
     <div className="hero-background">
       <img
-        src="/heroback.jpg"
+        src= {fotoHero}
         alt="Fondo de comercio internacional"
         className="hero-image"
       />

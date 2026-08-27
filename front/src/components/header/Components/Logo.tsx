@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import logo from "/isologotipo-gobierno-del-chaco-azulsinfondo-1x-65d489dfc91ee411941976.png";
+import logo from "../../../assets/Images/logo-gobierno-chaco-agencia.png";
 
 export default function Logo() {
   return (
