@@ -15,6 +15,8 @@
     "seed:auth-users": "node scripts/seed-auth-users.mjs",
     "seed:demo-companies": "node scripts/seed-demo-companies.mjs",
     "seed:relevamiento": "node scripts/seed-relevamiento-companies.mjs",
+    "clean:demo-companies": "node scripts/clean-demo-companies.mjs",
+    "clean:all-profiles": "node scripts/clean-demo-companies.mjs all-profiles",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",

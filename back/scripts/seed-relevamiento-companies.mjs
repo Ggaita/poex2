@@ -1,10 +1,13 @@
 import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { PrismaClient, ProfileEditMode } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const DEFAULT_BASE_CSV =
-  "C:\\Users\\gaita\\Downloads\\Chaco_Oferta_Exportable_NCM_validado.xlsx - Base completa.csv";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// CSV versionado en back/data (sube con git push; override con RELEVAMIENTO_CSV)
+const DEFAULT_BASE_CSV = path.join(__dirname, "..", "data", "base-completa.csv");
 
 const profileFieldKeys = [
   "companyName",

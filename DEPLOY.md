@@ -112,17 +112,35 @@ Defaults (cambiables con env `SEED_ADMIN_*` / `SEED_EMPRESA_*`):
 **Empresas del relevamiento** (35 perfiles publicados + productos/NCM):
 
 ```bash
-# Opcional: apuntar a los CSV en el servidor
-# set RELEVAMIENTO_CSV=C:\ruta\Base completa.csv
-# set NCM_CSV=C:\ruta\correcciones NCM.csv
-
 npm run seed:relevamiento
 ```
 
-Por defecto el script busca los CSV en `C:\Users\gaita\Downloads\...`.  
-En el servidor **definí las rutas** con `RELEVAMIENTO_CSV` (y si aplica `NCM_CSV`) o copiá los CSV a esas rutas.
+El CSV va en el repo: `back/data/base-completa.csv` (se baja con el `git pull`).  
+Solo si está en otra ruta: `RELEVAMIENTO_CSV=/ruta/archivo.csv npm run seed:relevamiento`.
+
+Docker:
+
+```bash
+docker compose run --rm poex-back npm run seed:relevamiento
+```
 
 **No uses** `seed:demo-companies` en producción (eran datos de demo; ya se limpiaron en local).
+
+**Limpiar demos** (si el entorno todavía las tiene):
+
+```bash
+npm run clean:demo-companies
+# Docker:
+# docker compose run --rm poex-back npm run clean:demo-companies
+```
+
+**Vaciar TODOS los perfiles** (cuidado: borra empresas/productos; no toca users ni applications):
+
+```bash
+npm run clean:all-profiles
+# después:
+npm run seed:relevamiento
+```
 
 ---
 
