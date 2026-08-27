@@ -1,4 +1,8 @@
-export const specialRequestKinds = ["special_offer", "required_product"] as const;
+export const specialRequestKinds = [
+  "special_offer",
+  "required_product",
+  "info_request"
+] as const;
 export type SpecialRequestKind = (typeof specialRequestKinds)[number];
 
 export const specialRequestStatuses = [
@@ -10,11 +14,24 @@ export const specialRequestStatuses = [
 ] as const;
 export type SpecialRequestStatus = (typeof specialRequestStatuses)[number];
 
+export interface SpecialRequestProfileSummary {
+  id: number;
+  companyName: string;
+  contactName?: string;
+  contactEmail?: string;
+  phone?: string;
+  city?: string;
+  sector?: string;
+}
+
 export interface SpecialRequestView {
   id: number;
   kind: SpecialRequestKind;
   sourceQuery?: string;
   requestedProduct: string;
+  productName?: string;
+  profileId?: number;
+  profile?: SpecialRequestProfileSummary;
   details?: string;
   requesterName: string;
   requesterEmail: string;
@@ -26,12 +43,15 @@ export interface SpecialRequestView {
   reviewedAt?: string;
   createdAt: string;
   updatedAt: string;
+  whatsappUrl?: string;
 }
 
 export interface CreateSpecialRequestInput {
   kind: SpecialRequestKind;
   sourceQuery?: string;
   requestedProduct: string;
+  productName?: string;
+  profileId?: number;
   details?: string;
   requesterName: string;
   requesterEmail: string;

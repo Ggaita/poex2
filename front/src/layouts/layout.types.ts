@@ -7,4 +7,5 @@ export type LayoutProps = {
 export type NavItem = {
   to: string;
   label: string;
+  badgeKey?: "applications" | "specialRequests";
 };

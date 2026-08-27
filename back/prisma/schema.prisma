@@ -31,6 +31,7 @@ enum EmailOutboxStatus {
 enum SpecialRequestKind {
   special_offer
   required_product
+  info_request
 }
 enum SpecialRequestStatus {
   pending
@@ -117,6 +118,7 @@ model CompanyProfile {
   auditLogs          CompanyProfileAuditLog[]
   products           CompanyProduct[]
   emailOutboxEntries EmailOutbox[] @relation("EmailOutboxRecipientProfile")
+  infoRequests       SpecialRequest[] @relation("SpecialRequestProfile")
 
   @@index([isPublished])
   @@index([editMode])
@@ -196,6 +198,8 @@ model SpecialRequest {
   kind             SpecialRequestKind
   sourceQuery      String?
   requestedProduct String
+  productName      String?
+  profileId        Int?
   details          String?
   requesterName    String
   requesterEmail   String
@@ -209,10 +213,12 @@ model SpecialRequest {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   reviewedByUser   AppUser? @relation("SpecialRequestReviewer", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+  profile          CompanyProfile? @relation("SpecialRequestProfile", fields: [profileId], references: [id], onDelete: SetNull)
 
   @@index([status, createdAt])
   @@index([requesterEmail])
   @@index([reviewedByUserId])
+  @@index([profileId])
   @@map("special_requests")
 }
 

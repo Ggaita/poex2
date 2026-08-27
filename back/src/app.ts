@@ -1,4 +1,4 @@
-﻿import express from "express";
+import express from "express";
 import cors from "cors";
 import companiesRoutes from "./modules/companies/routes/companies.routes";
 import publicApplicationsRoutes from "./modules/applications/routes/public-applications.routes";

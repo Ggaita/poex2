@@ -1,5 +1,7 @@
 import type { Request, Response } from "express";
+import { replyToInfoRequest } from "../../communications/services/communications.service";
 import {
+  countPendingSpecialRequests,
   getSpecialRequestById,
   listSpecialRequests,
   updateSpecialRequest
@@ -38,6 +40,24 @@ const parseLimit = (value: unknown): number => {
   }
 
   return Math.max(1, Math.min(200, parsed));
+};
+
+export const getAdminSpecialRequestsPendingCount = async (
+  _req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const count = await countPendingSpecialRequests();
+    res.json({
+      success: true,
+      data: { count }
+    });
+  } catch {
+    res.status(500).json({
+      success: false,
+      error: "No se pudo obtener el contador de solicitudes pendientes"
+    });
+  }
 };
 
 export const getAdminSpecialRequests = async (
@@ -108,6 +128,113 @@ export const getAdminSpecialRequestById = async (
     res.status(500).json({
       success: false,
       error: "No se pudo cargar el pedido especial"
+    });
+  }
+};
+
+export const postAdminSpecialRequestReplyEmail = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const id = parseId(req.params?.id);
+  if (id === null) {
+    res.status(400).json({
+      success: false,
+      error: "id inválido"
+    });
+    return;
+  }
+
+  const source = (req.body ?? {}) as Record<string, unknown>;
+  const subject = getOptionalString(source.subject);
+  const messageBody = getOptionalString(source.messageBody);
+  const markResolved = source.markResolved !== false;
+
+  if (!subject || !messageBody) {
+    res.status(400).json({
+      success: false,
+      error: "subject y messageBody son obligatorios"
+    });
+    return;
+  }
+
+  try {
+    const request = await getSpecialRequestById(id);
+    if (!request) {
+      res.status(404).json({
+        success: false,
+        error: "Pedido especial no encontrado"
+      });
+      return;
+    }
+
+    const reply = await replyToInfoRequest(
+      {
+        requestId: request.id,
+        recipientEmail: request.requesterEmail,
+        recipientName: request.requesterName,
+        subject,
+        messageBody,
+        companyName: request.profile?.companyName,
+        productName: request.productName ?? request.requestedProduct,
+        requesterCompany: request.requesterCompany
+      },
+      {
+        userId: req.authUser?.userId,
+        email: req.authUser?.email,
+        displayName: req.authUser?.displayName
+      }
+    );
+
+    let updatedRequest = request;
+    if (markResolved) {
+      const nextStatus: SpecialRequestStatus =
+        reply.delivery.status === "sent" ? "resolved" : "forwarded";
+      const notesPrefix =
+        reply.delivery.status === "sent"
+          ? "[Email enviado]"
+          : reply.delivery.status === "prepared"
+            ? "[Email preparado en outbox - SMTP no configurado]"
+            : "[Email falló]";
+      const composedNotes = [request.adminNotes, `${notesPrefix} ${subject}`]
+        .filter(Boolean)
+        .join("\n");
+
+      updatedRequest =
+        (await updateSpecialRequest(id, {
+          status: nextStatus,
+          adminNotes: composedNotes,
+          reviewedByUserId: req.authUser?.userId,
+          reviewedByEmail: req.authUser?.email ?? req.authUser?.displayName
+        })) ?? request;
+    }
+
+    res.json({
+      success: true,
+      message:
+        reply.delivery.status === "sent"
+          ? "Respuesta enviada por email"
+          : reply.delivery.status === "prepared"
+            ? "Respuesta guardada en outbox (Outlook/SMTP pendiente de configurar)"
+            : "No se pudo enviar el email",
+      data: {
+        request: updatedRequest,
+        outbox: reply.outbox,
+        delivery: reply.delivery
+      }
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === "invalid_reply_payload") {
+      res.status(400).json({
+        success: false,
+        error: "Datos de respuesta inválidos"
+      });
+      return;
+    }
+
+    res.status(500).json({
+      success: false,
+      error: "No se pudo preparar/enviar la respuesta por email"
     });
   }
 };

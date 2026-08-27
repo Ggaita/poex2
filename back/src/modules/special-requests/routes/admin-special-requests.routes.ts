@@ -3,7 +3,9 @@ import { authenticateRequest, requireRole } from "../../../middlewares/auth.midd
 import {
   getAdminSpecialRequestById,
   getAdminSpecialRequests,
-  patchAdminSpecialRequest
+  getAdminSpecialRequestsPendingCount,
+  patchAdminSpecialRequest,
+  postAdminSpecialRequestReplyEmail
 } from "../controllers/admin-special-requests.controller";
 
 const router = Router();
@@ -11,7 +13,9 @@ const router = Router();
 router.use(authenticateRequest, requireRole("admin"));
 
 router.get("/", getAdminSpecialRequests);
+router.get("/pending-count", getAdminSpecialRequestsPendingCount);
 router.get("/:id", getAdminSpecialRequestById);
 router.patch("/:id", patchAdminSpecialRequest);
+router.post("/:id/reply-email", postAdminSpecialRequestReplyEmail);
 
 export default router;

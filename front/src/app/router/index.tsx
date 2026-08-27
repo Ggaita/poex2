@@ -1,80 +1,88 @@
+/**
+ * Router principal de POEX.
+ * Las pantallas están agrupadas por dominio:
+ * - pages/public/*  sitio público
+ * - pages/auth/*    login/registro
+ * - pages/admin/*   panel administración
+ * - pages/company/* panel empresa
+ */
 import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import RequireRoleRoute from "./RequireRoleRoute";
 
-const HomePage = lazy(() => import("../../pages/Home/HomePage"));
-const SearchPage = lazy(() => import("../../pages/SearchPage/SearchPage"));
+const HomePage = lazy(() => import("../../pages/public/Home/HomePage"));
+const SearchPage = lazy(() => import("../../pages/public/Search/SearchPage"));
 const CompanyPublicPage = lazy(
-  () => import("../../pages/CompanyPublic/CompanyPublicPage")
+  () => import("../../pages/public/CompanyPublic/CompanyPublicPage")
 );
 const IndustrialParkPage = lazy(
-  () => import("../../pages/IndustrialPark/IndustrialParkPage")
+  () => import("../../pages/public/IndustrialPark/IndustrialParkPage")
 );
-const RegisterPage = lazy(() => import("../../pages/Register/RegisterPage"));
-const LoginPage = lazy(() => import("../../pages/Login/LoginPage"));
+const RegisterPage = lazy(() => import("../../pages/auth/Register/RegisterPage"));
+const LoginPage = lazy(() => import("../../pages/auth/Login/LoginPage"));
 const AdminDashboardPage = lazy(
-  () => import("../../pages/AdminDashboard/AdminDashboardPage")
+  () => import("../../pages/admin/Dashboard/AdminDashboardPage")
 );
 const AdminApplicationsPage = lazy(
-  () => import("../../pages/AdminApplications/AdminApplicationsPage")
+  () => import("../../pages/admin/Applications/AdminApplicationsPage")
 );
 const AdminProfilesPage = lazy(
-  () => import("../../pages/AdminProfiles/AdminProfilesPage")
+  () => import("../../pages/admin/Profiles/AdminProfilesPage")
 );
 const AdminCommunicationsPage = lazy(
-  () => import("../../pages/AdminCommunications/AdminCommunicationsPage")
+  () => import("../../pages/admin/Communications/AdminCommunicationsPage")
 );
 const AdminSpecialRequestsPage = lazy(
-  () => import("../../pages/AdminSpecialRequests/AdminSpecialRequestsPage")
+  () => import("../../pages/admin/SpecialRequests/AdminSpecialRequestsPage")
 );
 const CompanyPanelPage = lazy(
-  () => import("../../pages/CompanyPanel/CompanyPanelPage")
+  () => import("../../pages/company/Panel/CompanyPanelPage")
 );
 const QuienesSomosPage = lazy(
-  () => import("../../pages/Institutional/QuienesSomosPage")
+  () => import("../../pages/public/Institutional/QuienesSomosPage")
 );
 const ObjetivosPage = lazy(
-  () => import("../../pages/Institutional/ObjetivosPage")
+  () => import("../../pages/public/Institutional/ObjetivosPage")
 );
 const OrganismosVinculadosPage = lazy(
-  () => import("../../pages/Institutional/OrganismosVinculadosPage")
+  () => import("../../pages/public/Institutional/OrganismosVinculadosPage")
 );
 const ContactoInstitucionalPage = lazy(
-  () => import("../../pages/Institutional/ContactoInstitucionalPage")
+  () => import("../../pages/public/Institutional/ContactoInstitucionalPage")
 );
 const AgroYAlimentosPage = lazy(
-  () => import("../../pages/Sectors/AgroYAlimentosPage")
+  () => import("../../pages/public/Sectors/AgroYAlimentosPage")
 );
-const IndustriaPage = lazy(() => import("../../pages/Sectors/IndustriaPage"));
+const IndustriaPage = lazy(() => import("../../pages/public/Sectors/IndustriaPage"));
 const IndustriasCreativasPage = lazy(
-  () => import("../../pages/Sectors/IndustriasCreativasPage")
+  () => import("../../pages/public/Sectors/IndustriasCreativasPage")
 );
 const ServiciosTecnologicosPage = lazy(
-  () => import("../../pages/Sectors/ServiciosTecnologicosPage")
+  () => import("../../pages/public/Sectors/ServiciosTecnologicosPage")
 );
 const AsistenciaExportadoraPage = lazy(
-  () => import("../../pages/TradeServices/AsistenciaExportadoraPage")
+  () => import("../../pages/public/TradeServices/AsistenciaExportadoraPage")
 );
 const CertificacionesPage = lazy(
-  () => import("../../pages/TradeServices/CertificacionesPage")
+  () => import("../../pages/public/TradeServices/CertificacionesPage")
 );
 const NormativasPage = lazy(
-  () => import("../../pages/TradeServices/NormativasPage")
+  () => import("../../pages/public/TradeServices/NormativasPage")
 );
 const LogisticaYAduanaPage = lazy(
-  () => import("../../pages/TradeServices/LogisticaYAduanaPage")
+  () => import("../../pages/public/TradeServices/LogisticaYAduanaPage")
 );
 const CapacitacionPage = lazy(
-  () => import("../../pages/TradeServices/CapacitacionPage")
+  () => import("../../pages/public/TradeServices/CapacitacionPage")
 );
 const CatalogoExportablePage = lazy(
-  () => import("../../pages/CommercialOpportunities/CatalogoExportablePage")
+  () => import("../../pages/public/CommercialOpportunities/CatalogoExportablePage")
 );
 const FormulariosDeConsultaPage = lazy(
-  () => import("../../pages/CommercialOpportunities/FormulariosDeConsultaPage")
+  () => import("../../pages/public/CommercialOpportunities/FormulariosDeConsultaPage")
 );
 const OportunidadesDeInversionPage = lazy(
-  () => import("../../pages/CommercialOpportunities/OportunidadesDeInversionPage")
+  () => import("../../pages/public/CommercialOpportunities/OportunidadesDeInversionPage")
 );
 
 export default function AppRouter() {

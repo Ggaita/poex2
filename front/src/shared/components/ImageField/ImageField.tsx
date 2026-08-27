@@ -26,11 +26,13 @@ const toDisplaySrc = (value: string): string => {
   if (!cleaned) {
     return "";
   }
-  if (cleaned.startsWith("http://") || cleaned.startsWith("https://")) {
+  if (cleaned.startsWith("http://") || cleaned.startsWith("https://") || cleaned.startsWith("blob:")) {
     return cleaned;
   }
-  if (cleaned.startsWith("/uploads/")) {
-    return `${API_BASE_URL}${cleaned}`;
+  // Accept both "/uploads/..." and "uploads/..."
+  if (cleaned.startsWith("/uploads/") || cleaned.startsWith("uploads/")) {
+    const path = cleaned.startsWith("/") ? cleaned : `/${cleaned}`;
+    return `${API_BASE_URL.replace(/\/$/, "")}${path}`;
   }
   return cleaned;
 };

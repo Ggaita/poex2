@@ -3,12 +3,15 @@ import {
   type Prisma
 } from "@prisma/client";
 import prisma from "../../../lib/prisma";
+import { sendMail } from "../../../lib/mailer";
 import type {
   CommunicationRecipientsCatalog,
   EmailOutboxEntryView,
   EmailTemplateKey,
   EmailTemplatePatch,
   EmailTemplateView,
+  InfoRequestReplyInput,
+  InfoRequestReplyResult,
   ManualNotificationInput,
   ManualNotificationResult,
   RecipientCompanyOption
@@ -64,7 +67,7 @@ const templateDefinitionsByKey: Record<EmailTemplateKey, TemplateDefinition> = {
       "rejectionMessage"
     ]
   },
-  general_information: {
+general_information: {
     key: "general_information",
     name: "Notificación general a empresas",
     description:
@@ -73,6 +76,52 @@ const templateDefinitionsByKey: Record<EmailTemplateKey, TemplateDefinition> = {
     defaultBodyTemplate:
       "Hola {{contactName}},\n\n{{messageBody}}\n\nSaludos,\nEquipo POEX",
     variables: ["companyName", "contactName", "messageTitle", "messageBody"]
+  },
+info_request_response: {
+    key: "info_request_response",
+    name: "Respuesta a solicitud de información",
+    description:
+      "Respuesta del administrador a una solicitud de información de empresa/producto.",
+    defaultSubjectTemplate: "{{messageTitle}}",
+    defaultBodyTemplate:
+      "Hola {{contactName}},\n\nGracias por tu consulta{{companySuffix}}.\n\n{{messageBody}}\n\nSaludos,\nEquipo de la Agencia",
+    variables: ["contactName", "companyName", "companySuffix", "messageTitle", "messageBody", "productName"]
+  },
+  admin_new_info_request: {
+    key: "admin_new_info_request",
+    name: "Aviso admin: nueva solicitud de información",
+    description: "Notificación interna al equipo cuando ingresa una solicitud de información.",
+    defaultSubjectTemplate: "Nueva solicitud de información #{{requestId}}",
+    defaultBodyTemplate:
+      "Ingresó una nueva solicitud de información.\n\nID: {{requestId}}\nTipo: {{requestKind}}\nSolicitante: {{requesterName}}\nEmail: {{requesterEmail}}\nTeléfono/WhatsApp: {{requesterPhone}}\nEmpresa del solicitante: {{requesterCompany}}\nEmpresa consultada: {{companyName}}\nProducto: {{productName}}\nDetalle: {{details}}\n\nRevisala en el panel admin: {{adminUrl}}",
+    variables: [
+      "requestId",
+      "requestKind",
+      "requesterName",
+      "requesterEmail",
+      "requesterPhone",
+      "requesterCompany",
+      "companyName",
+      "productName",
+      "details",
+      "adminUrl"
+    ]
+  },
+  admin_new_application: {
+    key: "admin_new_application",
+    name: "Aviso admin: nueva alta de empresa",
+    description: "Notificación interna al equipo cuando ingresa una solicitud de alta.",
+    defaultSubjectTemplate: "Nueva solicitud de alta #{{applicationId}} - {{companyName}}",
+    defaultBodyTemplate:
+      "Ingresó una nueva solicitud de alta de empresa.\n\nID: {{applicationId}}\nEmpresa: {{companyName}}\nContacto: {{contactName}}\nEmail: {{contactEmail}}\nTeléfono: {{phone}}\n\nRevisala en el panel admin: {{adminUrl}}",
+    variables: [
+      "applicationId",
+      "companyName",
+      "contactName",
+      "contactEmail",
+      "phone",
+      "adminUrl"
+    ]
   }
 };
 
@@ -471,6 +520,155 @@ export const listEmailOutboxEntries = async (
   return rows.map(toOutboxView);
 };
 
+const getAdminNotificationEmail = (): string | undefined => {
+  return (
+    trimOptional(process.env.ADMIN_NOTIFICATION_EMAIL) ??
+    trimOptional(process.env.SMTP_FROM)?.replace(/^.*<([^>]+)>.*$/, "$1") ??
+    trimOptional(process.env.SMTP_USER) ??
+    trimOptional(process.env.OUTLOOK_SMTP_USER)
+  );
+};
+
+const getAdminPanelBaseUrl = (): string => {
+  return (
+    trimOptional(process.env.ADMIN_PANEL_URL) ??
+    trimOptional(process.env.PUBLIC_APP_URL) ??
+    "http://localhost:5173"
+  ).replace(/\/$/, "");
+};
+
+const queueAndMaybeSendAdminEmail = async (input: {
+  templateKey: EmailTemplateKey;
+  triggerEvent: string;
+  context: Record<string, string>;
+  metadata?: Prisma.InputJsonValue;
+}): Promise<void> => {
+  const adminEmail = getAdminNotificationEmail();
+  if (!adminEmail) {
+    return;
+  }
+
+  const created = await prisma.$transaction(async (db) => {
+    await ensureDefaultTemplatesTx(db);
+    const template = await db.emailTemplate.findUnique({
+      where: { key: input.templateKey }
+    });
+    if (!template || !template.isActive) {
+      return null;
+    }
+
+    const subject = renderTemplate(template.subjectTemplate, input.context).trim();
+    const body = renderTemplate(template.bodyTemplate, input.context).trim();
+    if (!subject || !body) {
+      return null;
+    }
+
+    return db.emailOutbox.create({
+      data: {
+        templateKey: input.templateKey,
+        triggerEvent: input.triggerEvent,
+        recipientEmail: adminEmail,
+        recipientName: "Administración POEX",
+        subject,
+        body,
+        status: PrismaEmailOutboxStatus.prepared,
+        metadata: input.metadata
+      }
+    });
+  });
+
+  if (!created) {
+    return;
+  }
+
+  const delivery = await sendMail({
+    to: created.recipientEmail,
+    subject: created.subject,
+    text: created.body
+  });
+
+  if (delivery.ok) {
+    await prisma.emailOutbox.update({
+      where: { id: created.id },
+      data: {
+        status: PrismaEmailOutboxStatus.sent,
+        sentAt: new Date(),
+        errorMessage: null
+      }
+    });
+    return;
+  }
+
+  if (delivery.mode === "smtp") {
+    await prisma.emailOutbox.update({
+      where: { id: created.id },
+      data: {
+        status: PrismaEmailOutboxStatus.failed,
+        errorMessage: delivery.error
+      }
+    });
+  }
+};
+
+export const notifyAdminNewInfoRequest = async (input: {
+  requestId: number;
+  requestKind: string;
+  requesterName: string;
+  requesterEmail: string;
+  requesterPhone?: string;
+  requesterCompany?: string;
+  companyName?: string;
+  productName?: string;
+  details?: string;
+}): Promise<void> => {
+  const adminUrl = `${getAdminPanelBaseUrl()}/admin/special-requests`;
+  await queueAndMaybeSendAdminEmail({
+    templateKey: "admin_new_info_request",
+    triggerEvent: "special_request_created",
+    context: {
+      requestId: String(input.requestId),
+      requestKind: input.requestKind,
+      requesterName: input.requesterName,
+      requesterEmail: input.requesterEmail,
+      requesterPhone: input.requesterPhone ?? "-",
+      requesterCompany: input.requesterCompany ?? "-",
+      companyName: input.companyName ?? "-",
+      productName: input.productName ?? "-",
+      details: input.details ?? "-",
+      adminUrl
+    },
+    metadata: {
+      requestId: input.requestId,
+      requestKind: input.requestKind
+    } satisfies Prisma.InputJsonValue
+  });
+};
+
+export const notifyAdminNewApplication = async (input: {
+  applicationId: number;
+  companyName: string;
+  contactName: string;
+  contactEmail: string;
+  phone?: string;
+}): Promise<void> => {
+  const adminUrl = `${getAdminPanelBaseUrl()}/admin/applications`;
+  await queueAndMaybeSendAdminEmail({
+    templateKey: "admin_new_application",
+    triggerEvent: "application_created_admin_notice",
+    context: {
+      applicationId: String(input.applicationId),
+      companyName: input.companyName,
+      contactName: input.contactName,
+      contactEmail: input.contactEmail,
+      phone: input.phone ?? "-",
+      adminUrl
+    },
+    metadata: {
+      applicationId: input.applicationId
+    } satisfies Prisma.InputJsonValue
+  });
+};
+
 export const prepareApplicationReceivedEmail = async (input: {
   applicationId: number;
   companyName: string;
@@ -553,4 +751,122 @@ export const prepareProductReviewStatusChangedEmailTx = async (
       isAccepted: input.isAccepted
     } satisfies Prisma.InputJsonValue
   });
+};
+
+export const replyToInfoRequest = async (
+  input: InfoRequestReplyInput,
+  actor?: {
+    userId?: number;
+    email?: string;
+    displayName?: string;
+  }
+): Promise<InfoRequestReplyResult> => {
+  const recipientEmail = input.recipientEmail.trim().toLowerCase();
+  const recipientName = input.recipientName.trim();
+  const subject = input.subject.trim();
+  const messageBody = input.messageBody.trim();
+  const companyName = trimOptional(input.companyName) ?? "";
+  const productName = trimOptional(input.productName) ?? "";
+
+  if (!recipientEmail || !recipientName || !subject || !messageBody) {
+    throw new Error("invalid_reply_payload");
+  }
+
+  const outbox = await prisma.$transaction(async (db) => {
+    await ensureDefaultTemplatesTx(db);
+
+    const template = await db.emailTemplate.findUnique({
+      where: { key: "info_request_response" }
+    });
+
+    const context = {
+      contactName: recipientName,
+      companyName,
+      companySuffix: companyName ? ` sobre ${companyName}` : "",
+      messageTitle: subject,
+      messageBody,
+      productName
+    };
+
+    const renderedSubject = template
+      ? renderTemplate(template.subjectTemplate, context).trim() || subject
+      : subject;
+    const renderedBody = template
+      ? renderTemplate(template.bodyTemplate, context).trim() || messageBody
+      : `Hola ${recipientName},\n\n${messageBody}\n\nSaludos,\nEquipo de la Agencia`;
+
+    return db.emailOutbox.create({
+      data: {
+        templateKey: "info_request_response",
+        triggerEvent: "info_request_admin_reply",
+        recipientEmail,
+        recipientName,
+        subject: renderedSubject,
+        body: renderedBody,
+        status: PrismaEmailOutboxStatus.prepared,
+        metadata: {
+          requestId: input.requestId,
+          companyName: companyName || null,
+          productName: productName || null,
+          requesterCompany: trimOptional(input.requesterCompany) ?? null,
+          actorEmail: actor?.email ?? actor?.displayName ?? null
+        } satisfies Prisma.InputJsonValue,
+        createdByUserId: typeof actor?.userId === "number" ? actor.userId : null
+      }
+    });
+  });
+
+  const deliveryAttempt = await sendMail({
+    to: outbox.recipientEmail,
+    subject: outbox.subject,
+    text: outbox.body
+  });
+
+  if (deliveryAttempt.ok) {
+    const sent = await prisma.emailOutbox.update({
+      where: { id: outbox.id },
+      data: {
+        status: PrismaEmailOutboxStatus.sent,
+        sentAt: new Date(),
+        errorMessage: null
+      }
+    });
+
+    return {
+      outbox: toOutboxView(sent),
+      delivery: {
+        status: "sent",
+        mode: "smtp",
+        messageId: deliveryAttempt.messageId
+      }
+    };
+  }
+
+  if (deliveryAttempt.mode === "unconfigured") {
+    return {
+      outbox: toOutboxView(outbox),
+      delivery: {
+        status: "prepared",
+        mode: "unconfigured",
+        reason: deliveryAttempt.error
+      }
+    };
+  }
+
+  const failed = await prisma.emailOutbox.update({
+    where: { id: outbox.id },
+    data: {
+      status: PrismaEmailOutboxStatus.failed,
+      errorMessage: deliveryAttempt.error
+    }
+  });
+
+  return {
+    outbox: toOutboxView(failed),
+    delivery: {
+      status: "failed",
+      mode: "smtp",
+      error: deliveryAttempt.error
+    }
+  };
 };

@@ -1,3 +1,8 @@
+/*
+ * tokens.css — variables de marca y UI.
+ * Usar estas variables en CSS de páginas/componentes en lugar de hex sueltos.
+ * Cambios globales de color/tipografía: empezar acá.
+ */
 :root {
   /* Manual de marca - paleta principal */
   --brand-verde-agricultura: #c8d29c;

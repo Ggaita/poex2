@@ -16,6 +16,7 @@ import type {
 } from "../types/applications-service.types";
 import { syncProfileFromApprovedApplicationTx } from "../../profiles/services/profiles.service";
 import {
+  notifyAdminNewApplication,
   prepareApplicationApprovedEmailTx,
   prepareApplicationReceivedEmail
 } from "../../communications/services/communications.service";
@@ -136,14 +137,28 @@ export const createApplication = async (
     }
   });
 
-  await prepareApplicationReceivedEmail({
+await prepareApplicationReceivedEmail({
     applicationId: application.id,
     companyName: application.companyName,
     contactName: application.contactName,
     recipientEmail: application.email
   });
 
+  void notifyAdminNewApplication({
+    applicationId: application.id,
+    companyName: application.companyName,
+    contactName: application.contactName,
+    contactEmail: application.email,
+    phone: application.phone ?? undefined
+  }).catch(() => undefined);
+
   return { application: toApiApplication(application) };
+};
+
+export const countPendingApplications = async (): Promise<number> => {
+  return prisma.companyApplication.count({
+    where: { status: PrismaApplicationStatus.pending }
+  });
 };
 
 export const updateApplicationStatus = async (

@@ -6,14 +6,18 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test:integration:applications": "node scripts/integration-applications.mjs",
     "test:integration:auth-flow": "node scripts/integration-auth-flow.mjs",
+    "test:security:roles": "node scripts/security-roles-access.mjs",
     "seed:auth-users": "node scripts/seed-auth-users.mjs",
     "seed:demo-companies": "node scripts/seed-demo-companies.mjs",
+    "seed:relevamiento": "node scripts/seed-relevamiento-companies.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio"
   },
   "keywords": [],
@@ -26,7 +30,8 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
-    "multer": "^2.2.0"
+    "multer": "^2.2.0",
+    "nodemailer": "^9.0.5"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -34,6 +39,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.2.0",
     "@types/node": "^25.9.1",
+    "@types/nodemailer": "^8.0.1",
     "prisma": "^6.18.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"

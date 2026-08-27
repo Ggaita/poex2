@@ -2,7 +2,10 @@ export const emailTemplateKeys = [
   "application_received",
   "application_approved",
   "product_review_status_changed",
-  "general_information"
+  "general_information",
+  "info_request_response",
+  "admin_new_info_request",
+  "admin_new_application"
 ] as const;
 
 export type EmailTemplateKey = (typeof emailTemplateKeys)[number];
@@ -75,4 +78,23 @@ export interface EmailOutboxEntryView {
   createdAt: string;
   sentAt?: string;
   errorMessage?: string;
+}
+
+export interface InfoRequestReplyInput {
+  requestId: number;
+  recipientEmail: string;
+  recipientName: string;
+  subject: string;
+  messageBody: string;
+  companyName?: string;
+  productName?: string;
+  requesterCompany?: string;
+}
+
+export interface InfoRequestReplyResult {
+  outbox: EmailOutboxEntryView;
+  delivery:
+    | { status: "sent"; mode: "smtp"; messageId?: string }
+    | { status: "prepared"; mode: "unconfigured" | "dry_run"; reason: string }
+    | { status: "failed"; mode: "smtp"; error: string };
 }

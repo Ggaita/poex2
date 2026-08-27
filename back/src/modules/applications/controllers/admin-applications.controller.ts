@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import {
+  countPendingApplications,
   getApplicationById,
   listApplications,
   updateApplicationStatus
@@ -26,6 +27,24 @@ const getOptionalString = (value: unknown): string | undefined => {
 
 const isStatus = (value: unknown): value is ApplicationStatus => {
   return value === "pending" || value === "approved" || value === "rejected";
+};
+
+export const getAdminApplicationsPendingCount = async (
+  _req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const count = await countPendingApplications();
+    res.json({
+      success: true,
+      data: { count }
+    });
+  } catch {
+    res.status(500).json({
+      success: false,
+      error: "No se pudo obtener el contador de solicitudes pendientes"
+    });
+  }
 };
 
 export const getAdminApplications = async (

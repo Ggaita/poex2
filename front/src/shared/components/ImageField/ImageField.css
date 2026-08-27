@@ -65,17 +65,23 @@
 }
 
 .image-field-preview {
-  width: min(180px, 100%);
+  width: min(220px, 100%);
+  min-height: 140px;
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-sm);
   background: var(--color-surface-soft);
-  padding: 0.4rem;
+  padding: 0.55rem;
+  display: grid;
+  place-items: center;
 }
 
 .image-field-preview img {
   display: block;
   width: 100%;
-  height: auto;
-  max-height: 140px;
+  max-width: 200px;
+  height: 140px;
   object-fit: contain;
+  object-position: center;
+  background: #fff;
+  border-radius: 6px;
 }
