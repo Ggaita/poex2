@@ -6,8 +6,30 @@ import { PrismaClient, ProfileEditMode } from "@prisma/client";
 const prisma = new PrismaClient();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// CSV versionado en back/data (sube con git push; override con RELEVAMIENTO_CSV)
-const DEFAULT_BASE_CSV = path.join(__dirname, "..", "data", "base-completa.csv");
+
+// Candidatos: env, back/data junto al script, cwd/data (Docker a veces monta distinto)
+const resolveBaseCsvPath = () => {
+  const fromEnv = process.env.RELEVAMIENTO_CSV?.trim();
+  const candidates = [
+    fromEnv,
+    path.join(__dirname, "..", "data", "base-completa.csv"),
+    path.join(process.cwd(), "data", "base-completa.csv"),
+    path.join(process.cwd(), "back", "data", "base-completa.csv"),
+    "/app/data/base-completa.csv",
+    "/data/base-completa.csv"
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return path.resolve(candidate);
+    }
+  }
+
+  return {
+    missing: true,
+    tried: candidates.map((c) => path.resolve(c))
+  };
+};
 
 const profileFieldKeys = [
   "companyName",
@@ -796,12 +818,19 @@ const mergeCompanies = (base, extra) => {
 };
 
 const run = async () => {
-  const basePath = process.env.RELEVAMIENTO_CSV || DEFAULT_BASE_CSV;
-
-  if (!fs.existsSync(basePath)) {
-    throw new Error(`No se encontró la base completa CSV: ${basePath}`);
+  const resolved = resolveBaseCsvPath();
+  if (resolved?.missing) {
+    throw new Error(
+      "No se encontró base-completa.csv. Probé:\n- " +
+        resolved.tried.join("\n- ") +
+        "\n\nSoluciones:\n" +
+        "1) Asegurate de que back/data/base-completa.csv esté en el repo y rebuild/pull.\n" +
+        "2) Docker (montar data): docker compose run --rm -v \"${PWD}/back/data:/app/data\" poex-back npm run seed:relevamiento\n" +
+        "3) O: RELEVAMIENTO_CSV=/ruta/dentro/del/contenedor/base-completa.csv npm run seed:relevamiento"
+    );
   }
 
+  const basePath = resolved;
   const rows = parseCsv(basePath);
   const builtCompanies = rows
     .map((row) => buildCompanyFromRow(row))
