@@ -10,13 +10,12 @@
 }
 .home-hero {
   position: relative;
-  min-height: 58vh;
+  min-height: 59.5vh;
   display: flex;
   align-items: center;
   justify-content:flex-start;
   overflow: hidden;
   background: var(--brand-azul-noche);
-  padding-bottom: 5rem;
 }
 
 /* ===== BACKGROUND ===== */
@@ -32,7 +31,7 @@
   height: 100%;
   object-fit: cover;
   transform: scale(1.05);
-  filter: brightness(1) saturate(1.5) contrast(1.1);
+  filter: brightness(1) saturate(1.9) contrast(1.1);
 }
 
 /* Overlay oscuro profesional */
@@ -41,8 +40,8 @@
   inset: 0;
   background: linear-gradient(
       to right,
-      rgba(0, 0, 0, 0.445),
-      rgba(0, 0, 0, 0)
+      rgba(0, 0, 0, 0.63),
+      rgba(165, 163, 163, 0)
     );
 }
 
@@ -157,7 +156,7 @@
 }
 @media (max-width: 1024px) {
   .home-hero {
-    min-height: 56vh;
+    min-height: 59.5vh;
     padding-bottom: 4.5rem;
   }
 
@@ -172,8 +171,8 @@
 
 @media (max-width: 768px) {
   .home-hero {
-    min-height: 52vh;
-    padding-bottom: 3.8rem;
+    min-height: 59.5vh;
+    padding-bottom: 4.5rem;
   }
 
   .home-hero-container {
@@ -207,8 +206,8 @@
 
 @media (max-width: 480px) {
   .home-hero {
-    min-height: 48vh;
-    padding-bottom: 3rem;
+    min-height: 59.5vh;
+    padding-bottom: 4.5rem;
   }
 
   .home-hero-container {

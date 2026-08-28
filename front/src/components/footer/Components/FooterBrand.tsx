@@ -1,8 +1,8 @@
 const FooterBrand = () => {
   return (
     <div className="footer-brand">
-      <h2>Mi App</h2>
-      <p>Descripción corta de la app.</p>
+      <h2>POEX</h2>
+      <p>Plataforma de comercio exportable</p>
     </div>
   );
 };

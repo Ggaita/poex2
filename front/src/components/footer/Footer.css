@@ -2,7 +2,7 @@
   width: 100%;
   background-color: var(--color-surface);
   color: var(--color-text);
-  padding: 1.5rem 1rem 1rem;
+  padding: 1rem 1rem 1rem;
   display: flex;
   flex-direction: column;
   border-top: 1px solid var(--color-border-soft);
@@ -29,16 +29,15 @@
   text-align: center;
   display: flex;
   justify-content: center;
-  margin-top: 0.4rem;
+  align-items: center;
   color: var(--color-text-muted);
-  line-height: 0.8;
+  font-size: 0.9rem;
 }
 
 .footer-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  
 }
 
 .footer-social,
@@ -51,11 +50,25 @@
   padding: 0;
 }
 
+.icon-footer {
+  width: 17px;
+  height: 17px;
+  fill: var(--color-text);
+  transition: fill 0.3s ease;
+  margin: 0 auto;
+}
+
 .footer-links a {
   text-decoration: none;
   color: var(--color-text);
   transition: color 0.3s ease;
+  
 }
+
+.icon-footer:hover {
+  fill: var(--color-primary);
+}
+
 
 .footer-links a:hover {
   color: var(--color-primary);
@@ -64,13 +77,23 @@
 .footer-social a {
   text-decoration: none;
   color: var(--color-text);
-
   transition: color 0.3s ease;
 }
 
 .footer-social a:hover {
   color: var(--color-primary);
 }
+
+.footer-social-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-social-item:hover {
+  color: var(--color-primary);
+}
+
 
 .footer-logo {
   width: 30px;

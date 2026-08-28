@@ -5,7 +5,7 @@
 .private-header {
   margin-top: 0;
   min-height: auto;
-  background: var(--brand-azul-laguna);
+  background: var(--brand-rio-azulado);
   color: var(--color-text-inverse);
   padding: 0.9rem 1rem 0.85rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
@@ -116,7 +116,7 @@
 
 .private-footer {
   width: 100%;
-  background: var(--brand-azul-noche);
+  background: var(--brand-rio-azulado);
   color: rgba(255, 255, 255, 0.85);
   text-align: center;
   padding: 0.65rem 1rem;

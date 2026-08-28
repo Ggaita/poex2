@@ -15,14 +15,20 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  color: var(--color-primary);
+  color: var(--color-white);
   font-weight: 700;
   text-decoration: none;
-  margin-bottom: 0.9rem;
+  margin: 1rem 1rem;
+  background: var(--brand-magenta);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--brand-magenta);
 }
 
 .register-back-link:hover {
-  text-decoration: underline;
+  text-decoration: none;
+  background: var(--brand-rio-azulado);
+  color: var(--color-white);
 }
 
 .register-header {
@@ -311,12 +317,12 @@
 }
 
 .register-btn-primary {
-  background: var(--color-primary);
+  background: var(--brand-magenta);
   color: var(--color-white);
 }
 
 .register-btn-primary:hover {
-  background: var(--color-primary-strong);
+  background: var(--brand-rio-azulado);
 }
 
 .form-success {
