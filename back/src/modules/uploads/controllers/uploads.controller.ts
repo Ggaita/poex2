@@ -39,6 +39,14 @@ export const postProductImageUpload = (req: Request, res: Response): void => {
   respondUpload(req, res, "products");
 };
 
+export const postOpportunityImageUpload = (req: Request, res: Response): void => {
+  respondUpload(req, res, "opportunities");
+};
+
+export const postOpportunityDocumentUpload = (req: Request, res: Response): void => {
+  respondUpload(req, res, "documents");
+};
+
 export const handleUploadError = (
   error: unknown,
   _req: Request,

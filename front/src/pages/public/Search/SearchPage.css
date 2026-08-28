@@ -38,6 +38,51 @@
   word-break: break-word;
 }
 
+
+/* Formulario de búsqueda (HeroSearchForm compartido con Home) */
+.search-form {
+  width: 100%;
+  max-width: 650px;
+  margin-top: 0.35rem;
+}
+
+.search-box {
+  display: flex;
+  gap: 0.5rem;
+  background: var(--color-primary-soft);
+  padding: 0.5rem;
+  border-radius: 14px;
+  border: 1px solid var(--color-border-soft);
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--color-text);
+  font-size: 1rem;
+  padding: 0.9rem 1rem;
+}
+
+.search-input::placeholder {
+  color: var(--color-text-soft);
+}
+
+.search-button {
+  background: var(--brand-magenta);
+  color: var(--color-white);
+  border: none;
+  padding: 0.9rem 1.4rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search-button:hover {
+  background: var(--color-primary-strong);
+}
 .search-page-header .search-form {
   max-width: 100%;
 }

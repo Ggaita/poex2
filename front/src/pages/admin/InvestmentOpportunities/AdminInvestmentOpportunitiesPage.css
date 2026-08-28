@@ -1,0 +1,275 @@
+/* Panel admin: Oportunidades de inversión
+ * CRUD de oportunidades + bandeja de consultas.
+ * Tokens: styles/tokens.css
+ */
+
+.admin-investment-opportunities-page {
+  width: 100%;
+  padding: 2rem 1rem 3rem;
+}
+
+.admin-investment-opportunities-shell {
+  width: min(1280px, 100%);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Cabecera del módulo */
+.admin-investment-opportunities-header {
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.admin-investment-opportunities-header p {
+  margin: 0;
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.admin-investment-opportunities-header h1 {
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-heading);
+  font-size: clamp(1.25rem, 2.1vw, 1.9rem);
+}
+
+.admin-investment-opportunities-header small {
+  color: var(--color-text-muted);
+}
+
+/* Tabs Oportunidades / Consultas */
+.admin-investment-opportunities-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin-investment-opportunities-tabs button {
+  border: 1px solid var(--color-border-soft);
+  background: var(--color-surface-soft);
+  color: var(--color-text);
+  border-radius: 999px;
+  padding: 0.45rem 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-investment-opportunities-tabs button.active {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border-color: var(--color-primary);
+}
+
+.admin-investment-alert {
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  padding: 0.65rem 0.78rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.admin-investment-alert-error {
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger-border);
+  color: var(--color-danger);
+}
+
+.admin-investment-alert-success {
+  background: var(--color-success-bg);
+  border-color: var(--color-success-border);
+  color: var(--color-success);
+}
+
+/* Layout lista + detalle/form */
+.admin-investment-opportunities-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(0, 1.1fr);
+  gap: 0.9rem;
+  align-items: start;
+}
+
+.admin-investment-list-card,
+.admin-investment-form-card {
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  padding: 0.9rem;
+}
+
+.admin-investment-list-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.admin-investment-list-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.admin-investment-list-toolbar label,
+.admin-investment-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  color: var(--color-text);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.admin-investment-list-toolbar input,
+.admin-investment-list-toolbar select,
+.admin-investment-form input,
+.admin-investment-form textarea,
+.admin-investment-form select {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  padding: 0.55rem 0.65rem;
+  font: inherit;
+}
+
+.admin-investment-form textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.admin-investment-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 70vh;
+  overflow: auto;
+}
+
+.admin-investment-list-item {
+  width: 100%;
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-soft);
+  padding: 0.7rem 0.75rem;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.admin-investment-list-item.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.admin-investment-list-item strong {
+  color: var(--color-text);
+  font-size: 0.92rem;
+}
+
+.admin-investment-list-item span,
+.admin-investment-meta {
+  color: var(--color-text-soft);
+  font-size: 0.82rem;
+}
+
+/* Formulario de oportunidad */
+.admin-investment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.admin-investment-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
+}
+
+.admin-investment-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+
+.admin-investment-checks label {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.admin-investment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin-investment-actions button,
+.admin-investment-btn {
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-weight: 700;
+  padding: 0.6rem 0.85rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.admin-investment-actions button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.admin-investment-btn-danger {
+  background: var(--color-danger);
+}
+
+.admin-investment-btn-ghost {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  border: 1px solid var(--color-border-soft);
+}
+
+/* Galería / documentos en el form */
+.admin-investment-assets {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.admin-investment-assets strong {
+  color: var(--color-text);
+  font-size: 0.92rem;
+}
+
+.admin-investment-asset-row {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr auto;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+@media (max-width: 980px) {
+  .admin-investment-opportunities-grid,
+  .admin-investment-form-grid,
+  .admin-investment-asset-row {
+    grid-template-columns: 1fr;
+  }
+}

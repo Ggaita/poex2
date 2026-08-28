@@ -5,7 +5,7 @@ import "./ImageField.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
 
-type ImageUploadKind = "logo" | "product-image";
+type ImageUploadKind = "logo" | "product-image" | "opportunity-image";
 
 type ImageFieldProps = {
   label: string;
@@ -51,7 +51,11 @@ export default function ImageField({
   const [errorMessage, setErrorMessage] = useState("");
 
   const endpoint =
-    kind === "logo" ? `${API_BASE_URL}/api/uploads/logo` : `${API_BASE_URL}/api/uploads/product-image`;
+    kind === "logo"
+      ? `${API_BASE_URL}/api/uploads/logo`
+      : kind === "opportunity-image"
+        ? `${API_BASE_URL}/api/uploads/opportunity-image`
+        : `${API_BASE_URL}/api/uploads/product-image`;
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>): Promise<void> => {
     const file = event.target.files?.[0];

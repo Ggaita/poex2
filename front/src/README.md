@@ -27,7 +27,7 @@ src/
 | Footer | `components/footer/` |
 | Colores, tipografías, radios | `styles/tokens.css` |
 | Reset / tipografía base | `styles/base.css` |
-| Home y buscador | `pages/public/Home`, `pages/public/Search` |
+| Home y buscador | `pages/public/Home/HomePage.css`, `pages/public/Search/SearchPage.css` |
 | Páginas institucionales / sectores | `pages/public/Institutional`, `Sectors`, `TradeServices`, `CommercialOpportunities` |
 | Admin perfiles / solicitudes / mails | `pages/admin/*` |
 | Panel empresa | `pages/company/Panel` |

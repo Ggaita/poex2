@@ -1,0 +1,420 @@
+/* Micrositio público: Oportunidades de inversión
+ * Listado (hero + catálogo) y ficha detalle.
+ * Tokens: styles/tokens.css
+ */
+
+/* Shell de página */
+.investment-opportunities-page {
+  width: 100%;
+  padding: 1.7rem 1rem 3rem;
+  background: var(--color-bg-app);
+  color: var(--color-text);
+}
+
+.investment-opportunities-shell {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 1.1rem;
+}
+
+/* Hero institucional + CTA a catálogo */
+.investment-opportunities-hero {
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-primary) 10%, transparent),
+      color-mix(in srgb, var(--brand-azul-laguna) 6%, transparent)
+    ),
+    var(--color-surface);
+  padding: 1.2rem 1.25rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.investment-opportunities-hero > p:first-child {
+  margin: 0;
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.investment-opportunities-hero h1,
+.investment-opportunity-detail-body h1 {
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-heading);
+  font-size: clamp(1.55rem, 2.8vw, 2.25rem);
+  line-height: 1.15;
+}
+
+.investment-opportunities-hero-copy,
+.investment-opportunity-detail-lead,
+.investment-opportunity-detail-prose p,
+.investment-opportunities-empty,
+.investment-opportunity-inquiry-card > p {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.investment-opportunities-hero-actions,
+.investment-opportunity-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.investment-opportunities-btn-primary,
+.investment-opportunities-btn-secondary,
+.investment-opportunity-card-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0.7rem 1rem;
+  border: 0;
+  cursor: pointer;
+}
+
+.investment-opportunities-btn-primary {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+
+.investment-opportunities-btn-primary:hover {
+  background: var(--color-primary-strong);
+}
+
+.investment-opportunities-btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.investment-opportunities-btn-secondary,
+.investment-opportunity-card-link {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  border: 1px solid var(--color-border-soft);
+}
+
+.investment-opportunities-btn-secondary:hover,
+.investment-opportunity-card-link:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+/* Catálogo + filtros */
+.investment-opportunities-catalog {
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  padding: 1.2rem 1.25rem;
+  display: grid;
+  gap: 1rem;
+  scroll-margin-top: 1rem;
+}
+
+.investment-opportunities-catalog-header h2,
+.investment-opportunity-assets-block h2,
+.investment-opportunity-inquiry-card h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  color: var(--color-text);
+  font-size: 1.2rem;
+}
+
+.investment-opportunities-catalog-header small {
+  color: var(--color-text-soft);
+}
+
+.investment-opportunities-filters {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.investment-opportunities-filters label,
+.investment-opportunity-inquiry-form label {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--color-text);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.investment-opportunities-filters input,
+.investment-opportunities-filters select,
+.investment-opportunity-inquiry-form input,
+.investment-opportunity-inquiry-form textarea {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  padding: 0.7rem 0.8rem;
+}
+
+.investment-opportunity-inquiry-form textarea {
+  min-height: 130px;
+  resize: vertical;
+}
+
+/* Tarjetas del catálogo */
+.investment-opportunities-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.investment-opportunity-card {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-surface-soft);
+  display: grid;
+  grid-template-rows: 170px 1fr;
+}
+
+.investment-opportunity-card-media {
+  position: relative;
+  background: var(--color-surface-accent);
+}
+
+.investment-opportunity-card-media img,
+.investment-opportunity-detail-hero-media img,
+.investment-opportunity-gallery-grid img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.investment-opportunity-card-media-fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--color-text-soft);
+  font-weight: 600;
+}
+
+.investment-opportunity-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-strong);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.28rem 0.6rem;
+}
+
+.investment-opportunity-badge-soft {
+  background: var(--color-surface-soft);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.investment-opportunity-badge-featured {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.7rem;
+  background: var(--brand-magenta);
+  color: var(--color-white);
+}
+
+.investment-opportunity-card-body {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.95rem;
+  align-content: start;
+}
+
+.investment-opportunity-card-body h3 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 1.05rem;
+  line-height: 1.3;
+}
+
+.investment-opportunity-card-body p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.investment-opportunity-card-meta {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.25rem;
+  color: var(--color-text-soft);
+  font-size: 0.86rem;
+}
+
+/* Feedbacks */
+.investment-opportunities-feedback {
+  margin: 0;
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.8rem;
+  font-size: 0.9rem;
+}
+
+.investment-opportunities-feedback-error {
+  border: 1px solid var(--color-danger-border);
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.investment-opportunities-feedback-success {
+  border: 1px solid var(--color-success-border);
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+/* Ficha detalle */
+.investment-opportunity-detail-top {
+  display: flex;
+}
+
+.investment-opportunity-detail-back {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.investment-opportunity-detail-grid {
+  display: grid;
+  grid-template-columns: 1.55fr 0.85fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.investment-opportunity-detail-main {
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  padding: 0;
+  overflow: hidden;
+}
+
+.investment-opportunity-detail-hero-media {
+  height: 280px;
+  background: var(--color-surface-accent);
+}
+
+.investment-opportunity-detail-body {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1.15rem 1.2rem 1.3rem;
+}
+
+.investment-opportunity-detail-meta {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.investment-opportunity-detail-meta li {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+  padding: 0.75rem 0.85rem;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.investment-opportunity-detail-meta strong {
+  color: var(--color-text-soft);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.investment-opportunity-detail-meta span {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.investment-opportunity-detail-prose {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.investment-opportunity-assets-block {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.investment-opportunity-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.investment-opportunity-gallery-grid a {
+  display: block;
+  height: 120px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--color-border-subtle);
+}
+
+.investment-opportunity-doc-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.investment-opportunity-doc-list a {
+  color: var(--color-primary);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+/* Consulta lateral en ficha */
+.investment-opportunity-inquiry-card {
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  padding: 1.2rem 1.25rem;
+  display: grid;
+  gap: 0.8rem;
+  position: sticky;
+  top: 1rem;
+}
+
+.investment-opportunity-inquiry-form {
+  display: grid;
+  gap: 0.7rem;
+}
+
+@media (max-width: 980px) {
+  .investment-opportunities-card-grid,
+  .investment-opportunities-filters,
+  .investment-opportunity-detail-grid,
+  .investment-opportunity-detail-meta,
+  .investment-opportunity-gallery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .investment-opportunity-inquiry-card {
+    position: static;
+  }
+}

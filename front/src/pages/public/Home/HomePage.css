@@ -1,4 +1,14 @@
-.hero {
+/* HomePage — inicio público del portal.
+ * Hero de búsqueda y estilos del buscador en portada oscura.
+ * Componentes: components/Hero/*
+ * Tokens: styles/tokens.css
+ */
+
+/* Cascarón de la página */
+.home-page {
+  width: 100%;
+}
+.home-hero {
   position: relative;
   min-height: 58vh;
   display: flex;
@@ -11,13 +21,13 @@
 
 /* ===== BACKGROUND ===== */
 
-.hero-background {
+.home-hero-background {
   position: absolute;
   inset: 0;
   z-index: 0;
 }
 
-.hero-background img {
+.home-hero-background img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -26,7 +36,7 @@
 }
 
 /* Overlay oscuro profesional */
-.hero-overlay {
+.home-hero-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(
@@ -38,7 +48,7 @@
 
 /* ===== CONTAINER ===== */
 
-.hero-container {
+.home-hero-container {
   position: relative;
   z-index: 2;
   max-width: 1200px;
@@ -52,7 +62,7 @@
 
 /* ===== CONTENT ===== */
 
-.hero-content {
+.home-hero-content {
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
@@ -61,7 +71,7 @@
 
 /* TITLE */
 
-.hero-title {
+.home-hero-title {
   font-size: clamp(2rem, 4vw, 3.5rem);
   font-weight: 800;
   color: var(--color-white);
@@ -71,7 +81,7 @@
 
 /* SUBTITLE */
 
-.hero-subtitle {
+.home-hero-subtitle {
   font-size: clamp(1rem, 1.5vw, 1.2rem);
   max-width: 700px;
   color: rgba(255, 255, 255, 0.82);
@@ -80,13 +90,13 @@
 
 /* ===== SEARCH ===== */
 
-.search-form {
+.home-hero .search-form {
   width: 100%;
   max-width: 650px;
   margin-top: 1.5rem;
 }
 
-.search-box {
+.home-hero .search-box {
   display: flex;
   gap: 0.5rem;
   background: rgba(255, 255, 255, 0.08);
@@ -98,7 +108,7 @@
 
 /* INPUT */
 
-.search-input {
+.home-hero .search-input {
   flex: 1;
   border: none;
   outline: none;
@@ -108,13 +118,13 @@
   padding: 0.9rem 1rem;
 }
 
-.search-input::placeholder {
+.home-hero .search-input::placeholder {
   color: rgba(255, 255, 255, 0.5);
 }
 
 /* BUTTON */
 
-.search-button {
+.home-hero .search-button {
   background: var(--brand-magenta);
   color: var(--color-white);
   border: none;
@@ -125,12 +135,12 @@
   transition: all 0.2s ease;
 }
 
-.search-button:hover {
+.home-hero .search-button:hover {
   background: var(--color-primary-strong);
   transform: translateY(-1px);
 }
 
-.search-button:active {
+.home-hero .search-button:active {
   transform: translateY(0px);
 }
 
@@ -146,35 +156,35 @@
   }
 }
 @media (max-width: 1024px) {
-  .hero {
+  .home-hero {
     min-height: 56vh;
     padding-bottom: 4.5rem;
   }
 
-  .hero-title {
+  .home-hero-title {
     font-size: clamp(1.8rem, 4.6vw, 3rem);
   }
 
-  .hero-subtitle {
+  .home-hero-subtitle {
     max-width: 620px;
   }
 }
 
 @media (max-width: 768px) {
-  .hero {
+  .home-hero {
     min-height: 52vh;
     padding-bottom: 3.8rem;
   }
 
-  .hero-container {
+  .home-hero-container {
     padding: 0 0.85rem;
   }
 
-  .hero-content {
+  .home-hero-content {
     gap: 0.95rem;
   }
 
-  .hero-subtitle {
+  .home-hero-subtitle {
     font-size: 0.98rem;
     line-height: 1.5;
   }
@@ -196,21 +206,21 @@
 }
 
 @media (max-width: 480px) {
-  .hero {
+  .home-hero {
     min-height: 48vh;
     padding-bottom: 3rem;
   }
 
-  .hero-container {
+  .home-hero-container {
     padding: 0 0.65rem;
   }
 
-  .hero-title {
+  .home-hero-title {
     font-size: clamp(1.5rem, 7vw, 2rem);
     line-height: 1.15;
   }
 
-  .hero-subtitle {
+  .home-hero-subtitle {
     font-size: 0.9rem;
   }
 

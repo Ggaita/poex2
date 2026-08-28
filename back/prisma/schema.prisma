@@ -40,6 +40,30 @@ enum SpecialRequestStatus {
   resolved
   rejected
 }
+enum InvestmentOpportunityType {
+  inversiones
+  exportaciones
+  proyectos_productivos
+  licitaciones
+  alianzas_comerciales
+  proveedores
+  parques_industriales
+}
+enum InvestmentOpportunityStatus {
+  licitacion_vigente
+  proxima_licitacion
+  licitacion_cerrada
+}
+enum InvestmentAssetKind {
+  gallery
+  document
+}
+enum InvestmentInquiryStatus {
+  pending
+  in_review
+  resolved
+  rejected
+}
 
 model CompanyApplication {
   id              Int               @id @default(autoincrement())
@@ -72,6 +96,7 @@ model AppUser {
   profileAuditLogs CompanyProfileAuditLog[] @relation("ProfileAuditActor")
   createdEmailOutbox EmailOutbox[] @relation("EmailOutboxCreator")
   reviewedSpecialRequests SpecialRequest[] @relation("SpecialRequestReviewer")
+  reviewedInvestmentInquiries InvestmentInquiry[] @relation("InvestmentInquiryReviewer")
 
   @@index([role])
   @@map("app_users")
@@ -234,6 +259,72 @@ model CompanyProfileVisibility {
   @@unique([profileId, fieldKey])
   @@index([profileId])
   @@map("company_profile_visibility")
+}
+
+model InvestmentOpportunity {
+  id                   Int                         @id @default(autoincrement())
+  slug                 String                      @unique
+  title                String
+  shortDescription     String?
+  fullDescription      String
+  sector               String
+  locality             String
+  type                 InvestmentOpportunityType
+  status               InvestmentOpportunityStatus
+  estimatedInvestment  String?
+  mainImageUrl         String
+  isFeatured           Boolean                     @default(false)
+  isPublished          Boolean                     @default(false)
+  sortOrder            Int                         @default(0)
+  createdAt            DateTime                    @default(now())
+  updatedAt            DateTime                    @updatedAt
+  assets               InvestmentOpportunityAsset[]
+  inquiries            InvestmentInquiry[]
+
+  @@index([isPublished, sortOrder])
+  @@index([isFeatured])
+  @@index([type])
+  @@index([status])
+  @@map("investment_opportunities")
+}
+
+model InvestmentOpportunityAsset {
+  id            Int                 @id @default(autoincrement())
+  opportunityId Int
+  kind          InvestmentAssetKind
+  url           String
+  label         String?
+  sortOrder     Int                 @default(0)
+  createdAt     DateTime            @default(now())
+  opportunity   InvestmentOpportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+
+  @@index([opportunityId, kind, sortOrder])
+  @@map("investment_opportunity_assets")
+}
+
+model InvestmentInquiry {
+  id               Int                      @id @default(autoincrement())
+  opportunityId    Int
+  requesterName    String
+  requesterEmail   String
+  requesterPhone   String?
+  requesterCompany String?
+  message          String
+  status           InvestmentInquiryStatus  @default(pending)
+  adminNotes       String?
+  reviewedByUserId Int?
+  reviewedByEmail  String?
+  reviewedAt       DateTime?
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+  opportunity      InvestmentOpportunity    @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  reviewedByUser   AppUser?                 @relation("InvestmentInquiryReviewer", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([opportunityId])
+  @@index([requesterEmail])
+  @@index([reviewedByUserId])
+  @@map("investment_inquiries")
 }
 
 model CompanyProfileAuditLog {

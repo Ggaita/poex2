@@ -32,6 +32,13 @@ const modules = [
     cta: "Gestionar pedidos"
   },
   {
+    title: "Oportunidades de inversión",
+    description:
+      "Administrá el micrositio: altas, publicación, destacados, orden y consultas de inversores.",
+    to: "/admin/investment-opportunities",
+    cta: "Gestionar oportunidades"
+  },
+  {
     title: "Usuarios y permisos",
     description:
       "Espacio reservado para futuras reglas de permisos y administración de accesos.",

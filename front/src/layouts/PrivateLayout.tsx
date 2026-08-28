@@ -23,6 +23,11 @@ const navByRole: Record<AuthRole, NavItem[]> = {
       to: "/admin/special-requests",
       label: "Solicitudes de info",
       badgeKey: "specialRequests"
+    },
+    {
+      to: "/admin/investment-opportunities",
+      label: "Oportunidades",
+      badgeKey: "investmentInquiries"
     }
   ],
   empresa: [{ to: "/empresa/panel", label: "Panel empresa" }]
@@ -31,6 +36,7 @@ const navByRole: Record<AuthRole, NavItem[]> = {
 type PendingBadgeCounts = {
   applications: number;
   specialRequests: number;
+  investmentInquiries: number;
 };
 
 const formatBadgeCount = (count: number): string => {
@@ -50,7 +56,8 @@ export default function PrivateLayout({ children }: LayoutProps) {
   const displayName = session?.displayName ?? "";
   const [pendingCounts, setPendingCounts] = useState<PendingBadgeCounts>({
     applications: 0,
-    specialRequests: 0
+    specialRequests: 0,
+    investmentInquiries: 0
   });
 
   const handleLogout = () => {
@@ -60,19 +67,28 @@ export default function PrivateLayout({ children }: LayoutProps) {
 
   const loadPendingCounts = useCallback(async (): Promise<void> => {
     if (role !== "admin" || !session?.token) {
-      setPendingCounts({ applications: 0, specialRequests: 0 });
+      setPendingCounts({ applications: 0, specialRequests: 0, investmentInquiries: 0 });
       return;
     }
 
     const headers = { Authorization: `Bearer ${session.token}` };
 
     try {
-      const [applicationsResponse, specialRequestsResponse] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/admin/applications/pending-count`, { headers }),
-        fetch(`${API_BASE_URL}/api/admin/special-requests/pending-count`, { headers })
-      ]);
+      const [applicationsResponse, specialRequestsResponse, investmentInquiriesResponse] =
+        await Promise.all([
+          fetch(`${API_BASE_URL}/api/admin/applications/pending-count`, { headers }),
+          fetch(`${API_BASE_URL}/api/admin/special-requests/pending-count`, { headers }),
+          fetch(
+            `${API_BASE_URL}/api/admin/investment-opportunities/inquiries/pending-count`,
+            { headers }
+          )
+        ]);
 
-      if (applicationsResponse.status === 401 || specialRequestsResponse.status === 401) {
+      if (
+        applicationsResponse.status === 401 ||
+        specialRequestsResponse.status === 401 ||
+        investmentInquiriesResponse.status === 401
+      ) {
         clearAuthSession();
         navigate("/login", { replace: true });
         return;
@@ -82,6 +98,8 @@ export default function PrivateLayout({ children }: LayoutProps) {
         (await applicationsResponse.json()) as ApiResponse<{ count: number }>;
       const specialRequestsPayload =
         (await specialRequestsResponse.json()) as ApiResponse<{ count: number }>;
+      const investmentInquiriesPayload =
+        (await investmentInquiriesResponse.json()) as ApiResponse<{ count: number }>;
 
       setPendingCounts({
         applications:
@@ -91,6 +109,10 @@ export default function PrivateLayout({ children }: LayoutProps) {
         specialRequests:
           specialRequestsResponse.ok && specialRequestsPayload.success
             ? Math.max(0, Number(specialRequestsPayload.data?.count) || 0)
+            : 0,
+        investmentInquiries:
+          investmentInquiriesResponse.ok && investmentInquiriesPayload.success
+            ? Math.max(0, Number(investmentInquiriesPayload.data?.count) || 0)
             : 0
       });
     } catch {

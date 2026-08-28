@@ -84,6 +84,13 @@ const FormulariosDeConsultaPage = lazy(
 const OportunidadesDeInversionPage = lazy(
   () => import("../../pages/public/CommercialOpportunities/OportunidadesDeInversionPage")
 );
+const OportunidadDetallePage = lazy(
+  () => import("../../pages/public/CommercialOpportunities/OportunidadDetallePage")
+);
+const HelpPage = lazy(() => import("../../pages/public/Help/HelpPage"));
+const AdminInvestmentOpportunitiesPage = lazy(
+  () => import("../../pages/admin/InvestmentOpportunities/AdminInvestmentOpportunitiesPage")
+);
 
 export default function AppRouter() {
   return (
@@ -109,6 +116,11 @@ export default function AppRouter() {
         <Route path="/catalogo-exportable" element={<CatalogoExportablePage />} />
         <Route path="/formularios-de-consulta" element={<FormulariosDeConsultaPage />} />
         <Route path="/oportunidades-de-inversion" element={<OportunidadesDeInversionPage />} />
+        <Route
+          path="/oportunidades-de-inversion/:slug"
+          element={<OportunidadDetallePage />}
+        />
+        <Route path="/ayuda" element={<HelpPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route element={<RequireRoleRoute allowedRoles={["admin"]} />}>
@@ -119,6 +131,10 @@ export default function AppRouter() {
           <Route
             path="/admin/special-requests"
             element={<AdminSpecialRequestsPage />}
+          />
+          <Route
+            path="/admin/investment-opportunities"
+            element={<AdminInvestmentOpportunitiesPage />}
           />
         </Route>
         <Route element={<RequireRoleRoute allowedRoles={["empresa"]} />}>
