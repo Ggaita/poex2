@@ -525,7 +525,7 @@ export default function RegisterPage() {
   const mapLongitude = parseCoordinate(formState.longitude);
 
   return (
-    <PrivateLayout>
+    <PrivateLayout guestContext="register">
       <section className="register-page">
         <div className="register-shell">
           <Link to="/" className="register-back-link">

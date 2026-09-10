@@ -1,4 +1,4 @@
-﻿import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import PrivateLayout from "../../../layouts/PrivateLayout";
 import "./AdminDashboardPage.css";
 
@@ -37,6 +37,13 @@ const modules = [
       "Administrá el micrositio: altas, publicación, destacados, orden y consultas de inversores.",
     to: "/admin/investment-opportunities",
     cta: "Gestionar oportunidades"
+  },
+  {
+    title: "Analítica del sitio",
+    description:
+      "Visitas, búsquedas, empresas y productos más vistos del portal público por mes.",
+    to: "/admin/analytics",
+    cta: "Ver dashboard"
   },
   {
     title: "Usuarios y permisos",

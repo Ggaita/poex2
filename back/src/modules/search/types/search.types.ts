@@ -46,9 +46,35 @@ export interface SearchResultItem {
   matchScore: number;
 }
 
+export type SearchResultKindFilter = SearchResultKind | "all";
+
+export type SearchHasPaFilter = "all" | "yes" | "no";
+
+export interface SearchFilters {
+  sector?: string;
+  city?: string;
+  kind?: SearchResultKindFilter;
+  hasPa?: SearchHasPaFilter;
+}
+
+export interface SearchFacetOption {
+  value: string;
+  label: string;
+  count: number;
+}
+
+export interface SearchFacets {
+  kinds: SearchFacetOption[];
+  sectors: SearchFacetOption[];
+  cities: SearchFacetOption[];
+  hasPa: SearchFacetOption[];
+}
+
 export interface SearchResponseData {
   query: string;
   mode: SearchMode;
   total: number;
+  filters: Required<SearchFilters>;
+  facets: SearchFacets;
   results: SearchResultItem[];
 }

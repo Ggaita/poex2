@@ -1,10 +1,29 @@
+/*
+ * =============================================================================
+ * MainLayout.css — layout público (header + main + footer)
+ * Ruta: layouts/MainLayout.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Cascarón layout
+ * 2. Main content
+ *
+ * NOTA: Envuelve páginas públicas.
+ *
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
+ */
 .layout {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: transparent;
 }
 
 .main-content {
   flex: 1;
   width: 100%;
+  background: transparent;
 }
+

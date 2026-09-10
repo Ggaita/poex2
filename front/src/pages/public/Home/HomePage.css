@@ -1,13 +1,55 @@
-/* HomePage — inicio público del portal.
- * Hero de búsqueda y estilos del buscador en portada oscura.
- * Componentes: components/Hero/*
+/*
+ * =============================================================================
+ * HomePage.css — inicio / hero
+ * Ruta: pages/public/Home/HomePage.css
  * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Cascarón
+ * 2. Hero fondo
+ * 3. Buscador oscuro
+ * 4. Responsive
+ *
+ * NOTA: Overrides de .search-* para hero.
+ *
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
  */
-
-/* Cascarón de la página */
+/* --- Página / shell --- */
 .home-page {
   width: 100%;
+  position: relative;
 }
+
+/*
+ * Home: debajo del hero la marca de agua se apaga todavía más
+ * para no contrastar con el HeroSearch.
+ */
+.home-page::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 0,
+    color-mix(in srgb, var(--color-bg-app) 70%, transparent) 38%,
+    color-mix(in srgb, var(--color-bg-app) 88%, transparent) 58%,
+    color-mix(in srgb, var(--color-bg-app) 96%, transparent) 100%
+  );
+}
+
+.home-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* --- Hero --- */
 .home-hero {
   position: relative;
   min-height: 59.5vh;
@@ -18,7 +60,7 @@
   background: var(--brand-azul-noche);
 }
 
-/* ===== BACKGROUND ===== */
+/* --- 2. Hero: BACKGROUND --- */
 
 .home-hero-background {
   position: absolute;
@@ -57,8 +99,6 @@
   text-align: left;
 }
 
-
-
 /* ===== CONTENT ===== */
 
 .home-hero-content {
@@ -87,7 +127,7 @@
   line-height: 1.6;
 }
 
-/* ===== SEARCH ===== */
+/* --- 3. Buscador en hero oscuro (overrides de .search-*) --- */
 
 .home-hero .search-form {
   width: 100%;
@@ -143,18 +183,24 @@
   transform: translateY(0px);
 }
 
-/* ===== RESPONSIVE ===== */
+/* --- 4. Responsive --- */
 
+/* --- Responsive --- */
 @media (max-width: 640px) {
+
+/* --- Buscador / filtros --- */
   .search-box {
     flex-direction: column;
   }
 
+/* --- Acciones / botones --- */
   .search-button {
     width: 100%;
   }
 }
 @media (max-width: 1024px) {
+
+/* --- Hero --- */
   .home-hero {
     min-height: 59.5vh;
     padding-bottom: 4.5rem;
@@ -188,6 +234,7 @@
     line-height: 1.5;
   }
 
+/* --- Buscador / filtros --- */
   .search-form {
     margin-top: 0.75rem;
   }
@@ -199,12 +246,16 @@
   }
 
   .search-input,
+
+/* --- Acciones / botones --- */
   .search-button {
     width: 100%;
   }
 }
 
 @media (max-width: 480px) {
+
+/* --- Hero --- */
   .home-hero {
     min-height: 59.5vh;
     padding-bottom: 4.5rem;
@@ -223,13 +274,16 @@
     font-size: 0.9rem;
   }
 
+/* --- Buscador / filtros --- */
   .search-input {
     padding: 0.78rem 0.85rem;
     font-size: 0.92rem;
   }
 
+/* --- Acciones / botones --- */
   .search-button {
     padding: 0.78rem 0.95rem;
     font-size: 0.9rem;
   }
 }
+

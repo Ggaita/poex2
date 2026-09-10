@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import MainLayout from "../../../layouts/MainLayouts";
 import type { ApiResponse } from "../../../shared/types/api.types";
@@ -6,6 +6,7 @@ import type { PublicCompanyProfileView } from "../../../shared/types/profile.typ
 import OsmLocationPicker from "../../../shared/components/OsmLocationPicker/OsmLocationPicker";
 import { toDisplaySrc } from "../../../shared/components/ImageField/ImageField";
 import InfoRequestForm from "../../../shared/components/InfoRequestForm/InfoRequestForm";
+import { trackCompanyView } from "../../../shared/analytics/tracker";
 import "./CompanyPublicPage.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
@@ -62,6 +63,13 @@ export default function CompanyPublicPage() {
         }
 
         setProfile(result.data);
+        if (result.data?.id) {
+          trackCompanyView({
+            profileId: result.data.id,
+            companyName: result.data.companyName,
+            path: `/empresas/${result.data.id}`
+          });
+        }
       } catch {
         if (!active) {
           return;
@@ -114,7 +122,7 @@ export default function CompanyPublicPage() {
                 />
               ) : null}
               {profile.companyName ? <h1>{profile.companyName}</h1> : null}
-              {profile.description ? <p>{profile.description}</p> : null}
+              {profile.description ? <p className="company-public-description">{profile.description}</p> : null}
 
               <div className="company-public-grid">
                 {profile.sector ? (
@@ -132,13 +140,26 @@ export default function CompanyPublicPage() {
                 {profile.product ? (
                   <div>
                     <dt>Producto</dt>
-                    <dd>{profile.product}</dd>
+                    <dd className="company-public-multiline">{profile.product}</dd>
                   </div>
                 ) : null}
                 {profile.keywords ? (
                   <div>
                     <dt>Keywords</dt>
-                    <dd>{profile.keywords}</dd>
+                    <dd className="company-public-multiline">{profile.keywords}</dd>
+                  </div>
+                ) : null}
+                {profile.tariffPosition ? (
+                  <div className="company-public-pa-field">
+                    <dt>Posición arancelaria (P.A.)</dt>
+                    <dd>
+                      <span
+                        className="company-public-pa-badge"
+                        title="Posición arancelaria / NCM"
+                      >
+                        P.A. {profile.tariffPosition}
+                      </span>
+                    </dd>
                   </div>
                 ) : null}
                 {profile.city ? (

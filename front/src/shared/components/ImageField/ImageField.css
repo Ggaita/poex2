@@ -1,3 +1,21 @@
+/*
+ * =============================================================================
+ * ImageField.css — input/preview de imagen
+ * Ruta: shared/components/ImageField/ImageField.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Campo
+ * 2. Preview
+ * 3. Acciones
+ *
+ * NOTA: Usado en admin/empresa para logos e imágenes.
+ *
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
+ */
+/* --- Formularios --- */
 .image-field {
   display: grid;
   gap: 0.4rem;
@@ -85,3 +103,4 @@
   background: #fff;
   border-radius: 6px;
 }
+

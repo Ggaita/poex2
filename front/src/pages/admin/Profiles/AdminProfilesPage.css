@@ -1,3 +1,25 @@
+/*
+ * =============================================================================
+ * AdminProfilesPage.css — perfiles de empresas (admin)
+ * Ruta: pages/admin/Profiles/AdminProfilesPage.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Página/shell
+ * 2. Listado/filtros
+ * 3. Formulario de ficha
+ * 4. Visibilidad por campo
+ * 5. Productos
+ * 6. Uploads/imágenes
+ * 7. Responsive
+ *
+ * NOTA: CSS grande: editar por secciones de formulario y listado.
+ *
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
+ */
+/* --- Página / shell --- */
 .admin-profiles-page {
   width: 100%;
   padding: 1.4rem 1rem 3rem;
@@ -10,6 +32,7 @@
   gap: 1rem;
 }
 
+/* --- Header --- */
 .admin-profiles-header {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-lg);
@@ -36,6 +59,7 @@
   color: var(--color-text-muted);
 }
 
+/* --- Feedback / mensajes --- */
 .admin-profiles-feedback {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
@@ -56,6 +80,7 @@
   color: var(--color-info);
 }
 
+/* --- Listados / grillas --- */
 .admin-profiles-grid {
   display: grid;
   grid-template-columns: 300px 1fr;
@@ -63,6 +88,8 @@
 }
 
 .profiles-list-card,
+
+/* --- Tarjetas / cards --- */
 .profile-detail-card {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
@@ -78,6 +105,7 @@
   align-content: start;
 }
 
+/* --- Listados / grillas --- */
 .profiles-list-toolbar {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -117,6 +145,7 @@
   cursor: pointer;
 }
 
+/* --- Tarjetas / cards --- */
 .create-company-card {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
@@ -159,6 +188,7 @@
   font-size: 0.98rem;
 }
 
+/* --- Listados / grillas --- */
 .create-company-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -169,6 +199,7 @@
   grid-column: 1 / -1;
 }
 
+/* --- Tarjetas / cards --- */
 .create-company-card label {
   display: grid;
   gap: 0.28rem;
@@ -188,6 +219,7 @@
   color: var(--color-text);
 }
 
+/* --- Acciones / botones --- */
 .create-company-actions {
   display: flex;
   flex-wrap: wrap;
@@ -205,6 +237,7 @@
   cursor: pointer;
 }
 
+/* --- Tarjetas / cards --- */
 .create-company-card button[type="button"].secondary {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
@@ -220,7 +253,10 @@
   cursor: not-allowed;
 }
 
+/* --- Responsive --- */
 @media (max-width: 760px) {
+
+/* --- Listados / grillas --- */
   .create-company-grid {
     grid-template-columns: 1fr;
   }
@@ -236,6 +272,7 @@
   font-size: 0.82rem;
 }
 
+/* --- Acciones / botones --- */
 .section-actions {
   display: flex;
   flex-wrap: wrap;
@@ -250,11 +287,14 @@
 }
 
 .list-feedback,
+
+/* --- Feedback / mensajes --- */
 .detail-feedback {
   color: var(--color-text-soft);
   font-size: 0.9rem;
 }
 
+/* --- Listados / grillas --- */
 .profiles-list {
   list-style: none;
   margin: 0;
@@ -296,6 +336,7 @@
   gap: 0.8rem;
 }
 
+/* --- Header --- */
 .profile-detail-header {
   display: grid;
   gap: 0.2rem;
@@ -310,6 +351,7 @@
   color: var(--color-text-muted);
 }
 
+/* --- Tarjetas / cards --- */
 .settings-card {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
@@ -323,6 +365,7 @@
   font-size: 0.98rem;
 }
 
+/* --- Listados / grillas --- */
 .settings-grid {
   display: grid;
   grid-template-columns: minmax(210px, 280px) 1fr;
@@ -352,6 +395,7 @@
   gap: 0.5rem;
 }
 
+/* --- Tarjetas / cards --- */
 .settings-card button {
   width: fit-content;
   border: none;
@@ -368,10 +412,12 @@
   cursor: not-allowed;
 }
 
+/* --- Formularios --- */
 .admin-profile-form {
   display: grid;
 }
 
+/* --- Listados / grillas --- */
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -421,6 +467,7 @@
   font-size: 0.88rem;
 }
 
+/* --- Mapa --- */
 .admin-map-block {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
@@ -447,10 +494,12 @@
   line-height: 1.35;
 }
 
+/* --- Tarjetas / cards --- */
 .products-management-card {
   gap: 0.85rem;
 }
 
+/* --- Productos --- */
 .products-head {
   display: grid;
   gap: 0.22rem;
@@ -462,6 +511,7 @@
   line-height: 1.4;
 }
 
+/* --- Listados / grillas --- */
 .products-form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -490,6 +540,7 @@
   font-size: 0.88rem;
 }
 
+/* --- Productos --- */
 .product-unknown-toggle {
   display: flex !important;
   align-items: center;
@@ -501,6 +552,7 @@
   height: 1rem;
 }
 
+/* --- Formularios --- */
 .products-form-actions {
   display: flex;
   justify-content: flex-end;
@@ -508,6 +560,7 @@
   gap: 0.55rem;
 }
 
+/* --- Buscador / filtros --- */
 .products-pending-filter {
   display: flex;
   align-items: center;
@@ -524,6 +577,8 @@
 
 .products-management-card .products-form-actions button,
 .products-management-card .product-actions button,
+
+/* --- Tarjetas / cards --- */
 .products-management-card .product-review-actions button {
   width: fit-content;
   border: none;
@@ -555,6 +610,7 @@
   color: var(--color-white);
 }
 
+/* --- Feedback / mensajes --- */
 .products-empty {
   color: var(--color-text-soft);
   font-size: 0.88rem;
@@ -564,6 +620,7 @@
   padding: 0.78rem;
 }
 
+/* --- Listados / grillas --- */
 .products-list {
   list-style: none;
   margin: 0;
@@ -572,6 +629,7 @@
   gap: 0.62rem;
 }
 
+/* --- Productos --- */
 .product-item {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
@@ -606,6 +664,7 @@
   word-break: break-word;
 }
 
+/* --- Chips / badges --- */
 .product-review-badge {
   border-radius: 999px;
   padding: 0.2rem 0.58rem;
@@ -632,6 +691,7 @@
   background: rgba(220, 53, 69, 0.13);
 }
 
+/* --- Productos --- */
 .product-main small {
   color: var(--color-text-muted);
   font-size: 0.78rem;
@@ -679,6 +739,7 @@
   border: 1px solid var(--color-border-soft);
 }
 
+/* --- Acciones / botones --- */
 .product-actions {
   display: flex;
   gap: 0.45rem;
@@ -687,6 +748,7 @@
   justify-content: flex-end;
 }
 
+/* --- Productos --- */
 .product-controls {
   display: grid;
   gap: 0.55rem;
@@ -716,6 +778,7 @@
   font-size: 0.84rem;
 }
 
+/* --- Acciones / botones --- */
 .product-review-actions {
   display: flex;
   justify-content: flex-end;
@@ -723,11 +786,13 @@
   gap: 0.42rem;
 }
 
+/* --- Tarjetas / cards --- */
 .products-management-card .product-review-actions button.success {
   background: #198754;
   color: var(--color-white);
 }
 
+/* --- Listados / grillas --- */
 .visibility-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -742,11 +807,13 @@
   font-size: 0.82rem;
 }
 
+/* --- Tarjetas / cards --- */
 .audit-card {
   gap: 0.85rem;
   background: linear-gradient(180deg, rgba(248, 250, 255, 0.45) 0%, rgba(255, 255, 255, 0) 55%);
 }
 
+/* --- Header --- */
 .audit-header {
   display: flex;
   justify-content: space-between;
@@ -768,6 +835,7 @@
   background: var(--color-surface-soft);
 }
 
+/* --- Feedback / mensajes --- */
 .audit-empty {
   color: var(--color-text-soft);
   font-size: 0.9rem;
@@ -777,6 +845,7 @@
   padding: 0.8rem;
 }
 
+/* --- Listados / grillas --- */
 .audit-list {
   list-style: none;
   margin: 0;
@@ -808,6 +877,7 @@
   white-space: nowrap;
 }
 
+/* --- Acciones / botones --- */
 .audit-action-badge {
   border-radius: 999px;
   padding: 0.23rem 0.62rem;
@@ -865,6 +935,8 @@
 }
 
 .audit-field-chip,
+
+/* --- Chips / badges --- */
 .audit-actor-chip {
   border: 1px solid var(--color-border-soft);
   border-radius: 999px;
@@ -874,6 +946,7 @@
   background: var(--color-surface-soft);
 }
 
+/* --- Formularios --- */
 .audit-field-chip {
   color: var(--color-primary);
   border-color: rgba(37, 99, 235, 0.34);
@@ -881,16 +954,21 @@
 }
 
 @media (max-width: 1100px) {
+
+/* --- Listados / grillas --- */
   .admin-profiles-grid {
     grid-template-columns: 1fr;
   }
 
+/* --- Tarjetas / cards --- */
   .profiles-list-card {
     min-height: 0;
   }
 }
 
 @media (max-width: 860px) {
+
+/* --- Listados / grillas --- */
   .form-grid {
     grid-template-columns: 1fr;
   }
@@ -922,7 +1000,9 @@
     white-space: normal;
   }
 
+/* --- Productos --- */
   .product-item {
     flex-direction: column;
   }
 }
+

@@ -8,10 +8,14 @@ import type { ProfileFieldKey } from "../../profiles/types/profile.types";
 import { profileFieldKeys } from "../../profiles/types/profile.types";
 import type {
   SearchCompanyProductSummary,
+  SearchFacets,
   SearchFieldName,
+  SearchFilters,
+  SearchHasPaFilter,
   SearchMode,
   SearchResponseData,
-  SearchResultItem
+  SearchResultItem,
+  SearchResultKindFilter
 } from "../types/search.types";
 
 type ProfileWithRelations = DbCompanyProfile & {
@@ -64,13 +68,51 @@ const normalizeText = (value: string): string => {
     .trim();
 };
 
+/** PA/NCM: solo dígitos, para matchear 0802.10.00 ≈ 08021000 ≈ 0802 */
+const normalizeTariffCode = (value: string): string => {
+  return value.replace(/\D+/g, "");
+};
+
 const tokenize = (value: string): string[] => {
   const normalized = normalizeText(value);
   if (!normalized) {
     return [];
   }
 
-  return [...new Set(normalized.split(" ").filter((token) => token.length >= 2))];
+  const tokens = normalized.split(" ").filter((token) => token.length >= 2);
+
+  // Conservar el código arancelario compacto (solo dígitos) si la query parece una PA.
+  const tariffDigits = normalizeTariffCode(value);
+  if (tariffDigits.length >= 4) {
+    tokens.push(tariffDigits);
+  }
+
+  return [...new Set(tokens)];
+};
+
+const scoreTariffMatch = (query: string, tariffValue: string | undefined): number => {
+  if (!tariffValue) {
+    return 0;
+  }
+
+  const queryDigits = normalizeTariffCode(query);
+  const fieldDigits = normalizeTariffCode(tariffValue);
+  if (!queryDigits || !fieldDigits) {
+    return 0;
+  }
+
+  // Match exacto o por prefijo (importador busca capítulo/partida/subpartida).
+  if (fieldDigits === queryDigits || fieldDigits.startsWith(queryDigits) || queryDigits.startsWith(fieldDigits)) {
+    // Más dígitos en común ⇒ más específico ⇒ más score.
+    const shared = Math.min(queryDigits.length, fieldDigits.length);
+    return 12 + shared * 2;
+  }
+
+  if (fieldDigits.includes(queryDigits) || queryDigits.includes(fieldDigits)) {
+    return 8;
+  }
+
+  return 0;
 };
 
 const trimToUndefined = (value: unknown): string | undefined => {
@@ -171,6 +213,101 @@ const scoreFields = (
   };
 };
 
+const normalizeFilterValue = (value?: string | null): string => {
+  if (!value) {
+    return "";
+  }
+  return normalizeText(value);
+};
+
+const itemHasPa = (item: SearchResultItem): boolean => {
+  if (item.kind === "product") {
+    return Boolean(trimToUndefined(item.product?.tariffPosition));
+  }
+  if (trimToUndefined(item.product?.tariffPosition)) {
+    return true;
+  }
+  return item.companyProducts.some((product) => Boolean(trimToUndefined(product.tariffPosition)));
+};
+
+const buildFacetOptions = (
+  rows: SearchResultItem[],
+  pick: (row: SearchResultItem) => string | undefined,
+  limit = 20
+): SearchFacets["sectors"] => {
+  const map = new Map<string, { label: string; count: number }>();
+  rows.forEach((row) => {
+    const label = trimToUndefined(pick(row));
+    if (!label) {
+      return;
+    }
+    const key = normalizeFilterValue(label);
+    const existing = map.get(key);
+    if (existing) {
+      existing.count += 1;
+      return;
+    }
+    map.set(key, { label, count: 1 });
+  });
+
+  return [...map.entries()]
+    .map(([value, item]) => ({ value, label: item.label, count: item.count }))
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "es"))
+    .slice(0, limit);
+};
+
+const buildSearchFacets = (rows: SearchResultItem[]): SearchFacets => {
+  const companyCount = rows.filter((row) => row.kind === "company").length;
+  const productCount = rows.filter((row) => row.kind === "product").length;
+  const withPa = rows.filter((row) => itemHasPa(row)).length;
+  const withoutPa = rows.length - withPa;
+
+  return {
+    kinds: [
+      { value: "all", label: "Todos", count: rows.length },
+      { value: "company", label: "Empresas", count: companyCount },
+      { value: "product", label: "Productos", count: productCount }
+    ].filter((option) => option.value === "all" || option.count > 0),
+    sectors: buildFacetOptions(rows, (row) => row.sector),
+    cities: buildFacetOptions(rows, (row) => row.city),
+    hasPa: [
+      { value: "all", label: "Todas", count: rows.length },
+      { value: "yes", label: "Con P.A.", count: withPa },
+      { value: "no", label: "Sin P.A.", count: withoutPa }
+    ].filter((option) => option.value === "all" || option.count > 0)
+  };
+};
+
+const applySearchFilters = (
+  rows: SearchResultItem[],
+  filters: Required<SearchFilters>
+): SearchResultItem[] => {
+  const sectorKey = normalizeFilterValue(filters.sector);
+  const cityKey = normalizeFilterValue(filters.city);
+
+  return rows.filter((row) => {
+    if (filters.kind === "company" && row.kind !== "company") {
+      return false;
+    }
+    if (filters.kind === "product" && row.kind !== "product") {
+      return false;
+    }
+    if (sectorKey && normalizeFilterValue(row.sector) !== sectorKey) {
+      return false;
+    }
+    if (cityKey && normalizeFilterValue(row.city) !== cityKey) {
+      return false;
+    }
+    if (filters.hasPa === "yes" && !itemHasPa(row)) {
+      return false;
+    }
+    if (filters.hasPa === "no" && itemHasPa(row)) {
+      return false;
+    }
+    return true;
+  });
+};
+
 const toCompanyProductSummaries = (
   products: DbCompanyProduct[]
 ): SearchCompanyProductSummary[] => {
@@ -196,13 +333,28 @@ const toCompanyProductSummaries = (
 export const searchApprovedProfiles = async (
   query: string,
   limit = 24,
-  mode: SearchMode = "all"
+  mode: SearchMode = "all",
+  filtersInput: SearchFilters = {}
 ): Promise<SearchResponseData> => {
   const normalizedQuery = normalizeText(query);
   const hasQuery = normalizedQuery.length > 0;
   const tokens = tokenize(query);
   const includeCompanies = mode !== "product";
   const includeProducts = mode !== "company";
+  const kindFilter: SearchResultKindFilter =
+    mode === "company" || mode === "product"
+      ? mode
+      : filtersInput.kind === "company" || filtersInput.kind === "product"
+        ? filtersInput.kind
+        : "all";
+  const hasPaFilter: SearchHasPaFilter =
+    filtersInput.hasPa === "yes" || filtersInput.hasPa === "no" ? filtersInput.hasPa : "all";
+  const resolvedFilters: Required<SearchFilters> = {
+    sector: trimToUndefined(filtersInput.sector) ?? "",
+    city: trimToUndefined(filtersInput.city) ?? "",
+    kind: kindFilter,
+    hasPa: hasPaFilter
+  };
 
   const rows: ProfileWithRelations[] = await prisma.companyProfile.findMany({
     where: { isPublished: true },
@@ -233,7 +385,12 @@ export const searchApprovedProfiles = async (
       const contactName = getVisibleString(row, visibility, "contactName");
       const email = getVisibleString(row, visibility, "contactEmail");
       const taxId = getVisibleString(row, visibility, "taxId");
+      const profileTariffPosition = getVisibleString(row, visibility, "tariffPosition");
       const companyProducts = toCompanyProductSummaries(row.products);
+      const productTariffBlob = companyProducts
+        .map((item) => item.tariffPosition)
+        .filter((value): value is string => Boolean(value))
+        .join(" ");
 
       const companyFields: SearchableField[] = [
         { field: "companyName", value: companyName, weight: 7 },
@@ -244,14 +401,32 @@ export const searchApprovedProfiles = async (
         { field: "city", value: city ?? "", weight: 2 },
         { field: "contactName", value: contactName ?? "", weight: 1 },
         { field: "email", value: email ?? "", weight: 1 },
-        { field: "taxId", value: taxId ?? "", weight: 1 }
+        { field: "taxId", value: taxId ?? "", weight: 1 },
+        // PA a nivel ficha + PA de productos: clave para búsqueda tipo importador.
+        { field: "tariffPosition", value: profileTariffPosition ?? "", weight: 8 },
+        { field: "tariffPosition", value: productTariffBlob, weight: 9 }
       ];
 
-      const { score: companyScore, matchedFields: companyMatchedFields } = scoreFields(
+      const { score: companyScoreBase, matchedFields: companyMatchedFieldsBase } = scoreFields(
         normalizedQuery,
         tokens,
         companyFields
       );
+
+      let companyScore = companyScoreBase;
+      const companyMatchedFields = [...companyMatchedFieldsBase];
+
+      const companyTariffBonus = Math.max(
+        scoreTariffMatch(query, profileTariffPosition),
+        ...companyProducts.map((item) => scoreTariffMatch(query, item.tariffPosition)),
+        0
+      );
+      if (companyTariffBonus > 0) {
+        companyScore += companyTariffBonus;
+        if (!companyMatchedFields.includes("tariffPosition")) {
+          companyMatchedFields.push("tariffPosition");
+        }
+      }
 
       const shouldIncludeCompanyResult =
         includeCompanies &&
@@ -270,7 +445,7 @@ export const searchApprovedProfiles = async (
           email,
           sector,
           city,
-          companyProducts: companyProducts.slice(0, 8),
+          companyProducts: companyProducts,
           keywords,
           matchedFields: hasQuery ? companyMatchedFields : [],
           matchScore: hasQuery ? companyScore : 0
@@ -299,11 +474,21 @@ export const searchApprovedProfiles = async (
           { field: "city", value: city ?? "", weight: 1 }
         ];
 
-        const { score: productScore, matchedFields: productMatchedFields } = scoreFields(
+        const { score: productScoreBase, matchedFields: productMatchedFieldsBase } = scoreFields(
           normalizedQuery,
           tokens,
           productFields
         );
+
+        let productScore = productScoreBase;
+        const productMatchedFields = [...productMatchedFieldsBase];
+        const productTariffBonus = scoreTariffMatch(query, productTariffPosition);
+        if (productTariffBonus > 0) {
+          productScore += productTariffBonus;
+          if (!productMatchedFields.includes("tariffPosition")) {
+            productMatchedFields.push("tariffPosition");
+          }
+        }
 
         const shouldIncludeProductResult =
           (hasQuery && productScore > 0) || (!hasQuery && mode === "product");
@@ -334,7 +519,7 @@ export const searchApprovedProfiles = async (
             imageUrl: trimToUndefined(product.imageUrl),
             tariffPosition: productTariffPosition
           },
-          companyProducts: companyProducts.slice(0, 8),
+          companyProducts: companyProducts,
           keywords,
           matchedFields: hasQuery ? productMatchedFields : [],
           matchScore: hasQuery ? productScore : 0
@@ -362,13 +547,18 @@ export const searchApprovedProfiles = async (
       }
 
       return left.resultId.localeCompare(right.resultId, "es");
-    })
-    .slice(0, limit);
+    });
+
+  const facets = buildSearchFacets(scoredResults);
+  const filteredResults = applySearchFilters(scoredResults, resolvedFilters);
+  const pagedResults = filteredResults.slice(0, limit);
 
   return {
     query,
     mode,
-    total: scoredResults.length,
-    results: scoredResults
+    total: filteredResults.length,
+    filters: resolvedFilters,
+    facets,
+    results: pagedResults
   };
 };

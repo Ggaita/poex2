@@ -1,3 +1,23 @@
+/*
+ * =============================================================================
+ * InstitutionalPage.css — páginas institucionales
+ * Ruta: pages/public/Institutional/InstitutionalPage.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Shell
+ * 2. Hero/header
+ * 3. Contenido
+ * 4. Cards/bloques
+ * 5. Responsive
+ *
+ * NOTA: Quiénes somos, objetivos, organismos, contacto institucional.
+ *
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
+ */
+/* --- Página / shell --- */
 .institutional-page {
   width: 100%;
   padding: 1.7rem 1rem 3rem;
@@ -14,6 +34,7 @@
   width: min(1100px, 100%);
 }
 
+/* --- Header --- */
 .institutional-header {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-lg);
@@ -26,7 +47,7 @@
 .institutional-header p {
   margin: 0;
   color: var(--color-primary);
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 700;
@@ -46,6 +67,7 @@
   line-height: 1.45;
 }
 
+/* --- Tarjetas / cards --- */
 .institutional-card {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-lg);
@@ -74,6 +96,7 @@
   line-height: 1.65;
 }
 
+/* --- Listados / grillas --- */
 .institutional-list {
   margin: 0;
   padding: 0;
@@ -149,6 +172,7 @@
   color: var(--color-primary);
 }
 
+/* --- Formularios --- */
 .institutional-form {
   display: grid;
   gap: 0.75rem;
@@ -238,9 +262,11 @@
   line-height: 1.45;
 }
 
+/* --- Responsive --- */
 @media (max-width: 820px) {
   .institutional-contact-grid,
   .institutional-form-row {
     grid-template-columns: 1fr;
   }
 }
+

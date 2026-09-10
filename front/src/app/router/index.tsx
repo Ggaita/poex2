@@ -88,6 +88,7 @@ const OportunidadDetallePage = lazy(
   () => import("../../pages/public/CommercialOpportunities/OportunidadDetallePage")
 );
 const HelpPage = lazy(() => import("../../pages/public/Help/HelpPage"));
+const AdminAnalyticsPage = lazy(() => import("../../pages/admin/Analytics/AdminAnalyticsPage"));
 const AdminInvestmentOpportunitiesPage = lazy(
   () => import("../../pages/admin/InvestmentOpportunities/AdminInvestmentOpportunitiesPage")
 );
@@ -131,6 +132,10 @@ export default function AppRouter() {
           <Route
             path="/admin/special-requests"
             element={<AdminSpecialRequestsPage />}
+          />
+          <Route
+            path="/admin/analytics"
+            element={<AdminAnalyticsPage />}
           />
           <Route
             path="/admin/investment-opportunities"

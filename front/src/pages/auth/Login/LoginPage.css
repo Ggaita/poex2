@@ -1,3 +1,23 @@
+/*
+ * =============================================================================
+ * LoginPage.css — inicio de sesión
+ * Ruta: pages/auth/Login/LoginPage.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Página/shell
+ * 2. Card de login
+ * 3. Formulario
+ * 4. Feedback
+ * 5. Responsive
+ *
+ * NOTA: Login admin/empresa.
+ *
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
+ */
+/* --- Página / shell --- */
 .login-page {
   min-height: 100%;
   width: 100%;
@@ -6,6 +26,7 @@
   padding: 2rem 1rem 3rem;
 }
 
+/* --- Tarjetas / cards --- */
 .login-card {
   width: min(460px, 100%);
   background: var(--color-surface);
@@ -14,20 +35,28 @@
   border: 1px solid var(--color-border-subtle);
   box-shadow: var(--shadow-card);
 }
+
+/* --- Acciones / botones --- */
 .login-back-link {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  color: var(--color-primary);
+  color: var(--color-white);
   font-weight: 700;
   text-decoration: none;
-  margin-bottom: 0.9rem;
+  margin: 1rem 0;
+  background: var(--brand-magenta);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--brand-magenta);
 }
 
 .login-back-link:hover {
-  text-decoration: underline;
+  text-decoration: none;
+  background-color: var(--color-primary-strong);
 }
 
+/* --- Tarjetas / cards --- */
 .login-card header {
   display: flex;
   flex-direction: column;
@@ -76,6 +105,7 @@
   background: var(--color-primary-soft);
 }
 
+/* --- Formularios --- */
 .login-form {
   display: flex;
   flex-direction: column;
@@ -112,7 +142,7 @@
 .login-form button[type="submit"] {
   border: none;
   border-radius: var(--radius-md);
-  background: var(--color-primary);
+  background: var(--brand-magenta);
   color: var(--color-white);
   font-weight: 700;
   padding: 0.7rem 1rem;
@@ -124,6 +154,8 @@
 }
 
 .login-error,
+
+/* --- Feedback / mensajes --- */
 .login-success {
   border-radius: var(--radius-md);
   padding: 0.65rem 0.75rem;
@@ -143,6 +175,7 @@
   color: var(--color-success);
 }
 
+/* --- Tarjetas / cards --- */
 .login-card footer {
   margin-top: 1rem;
 }
@@ -157,11 +190,15 @@
   text-decoration: underline;
 }
 
+/* --- Responsive --- */
 @media (max-width: 1024px) {
+
+/* --- Página / shell --- */
   .login-page {
     padding: 1.6rem 1rem 2.4rem;
   }
 
+/* --- Tarjetas / cards --- */
   .login-card {
     width: min(520px, 100%);
     padding: 1.35rem;
@@ -169,11 +206,14 @@
 }
 
 @media (max-width: 768px) {
+
+/* --- Página / shell --- */
   .login-page {
     padding: 1.25rem 0.85rem 2rem;
     place-items: start center;
   }
 
+/* --- Tarjetas / cards --- */
   .login-card {
     border-radius: var(--radius-md);
     padding: 1.15rem;
@@ -190,19 +230,24 @@
 }
 
 @media (max-width: 480px) {
+
+/* --- Página / shell --- */
   .login-page {
     padding: 1rem 0.7rem 1.5rem;
   }
 
+/* --- Tarjetas / cards --- */
   .login-card {
     padding: 1rem 0.9rem;
   }
 
+/* --- Acciones / botones --- */
   .login-back-link {
     margin-bottom: 0.7rem;
     font-size: 0.92rem;
   }
 
+/* --- Tarjetas / cards --- */
   .login-card header h1 {
     font-size: 1.2rem;
   }
@@ -215,10 +260,12 @@
     align-items: flex-start;
   }
 
+/* --- Formularios --- */
   .login-form button[type="submit"] {
     width: 100%;
   }
 
+/* --- Tarjetas / cards --- */
   .login-card footer {
     margin-top: 0.8rem;
   }
@@ -228,3 +275,4 @@
     line-height: 1.35;
   }
 }
+

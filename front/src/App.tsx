@@ -1,7 +1,13 @@
 import AppRouter from "./app/router";
+import AnalyticsRouteListener from "./shared/analytics/AnalyticsRouteListener";
 
 function App() {
-  return <AppRouter />;
+  return (
+    <>
+      <AnalyticsRouteListener />
+      <AppRouter />
+    </>
+  );
 }
 
 export default App;

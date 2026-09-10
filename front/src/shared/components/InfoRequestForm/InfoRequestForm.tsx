@@ -1,5 +1,6 @@
 import { type FormEvent, useState } from "react";
 import type { ApiResponse } from "../../types/api.types";
+import { trackInquirySubmit } from "../../analytics/tracker";
 import "./InfoRequestForm.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
@@ -108,6 +109,11 @@ export default function InfoRequestForm({
         "Solicitud enviada. La administración la revisará y te contactará a la brevedad."
       );
       setForm(INITIAL_FORM);
+      trackInquirySubmit({
+        profileId,
+        companyName,
+        path: typeof window !== "undefined" ? window.location.pathname : undefined
+      });
     } catch {
       setErrorMessage("No se pudo conectar con el servidor para enviar la solicitud.");
     } finally {

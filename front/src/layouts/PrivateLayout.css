@@ -1,7 +1,66 @@
+/*
+ * =============================================================================
+ * PrivateLayout.css — layout admin/empresa (nav privada)
+ * Ruta: layouts/PrivateLayout.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Header privado
+ * 2. Nav + badges
+ * 3. Main content
+ * 4. Footer privado
+ * 5. Responsive
+ *
+ * NOTA: Usado por paneles admin/empresa y por login/registro (guestContext).
+ *
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
+ */
 .private-layout {
   background: var(--color-bg-app);
+  background-image: none;
 }
 
+/* --- Guest: login vs inscripción (sin sesión) --- */
+.private-layout.guest-login .private-header,
+.private-layout.guest-login .private-footer {
+  background: var(--brand-azul-noche);
+}
+
+.private-layout.guest-register .private-header,
+.private-layout.guest-register .private-footer {
+  background: var(--brand-azul-laguna);
+}
+
+.private-guest-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.private-guest-link {
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-sm);
+  padding: 0.38rem 0.62rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.private-guest-link:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.private-guest-link.active {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+/* --- Header --- */
 .private-header {
   margin-top: 0;
   min-height: auto;
@@ -61,6 +120,7 @@
   background: var(--color-danger-bg-hover);
 }
 
+/* --- Navegación --- */
 .private-nav {
   width: min(1200px, 100%);
   margin: 0.85rem auto 0;
@@ -114,6 +174,7 @@
   padding: 0;
 }
 
+/* --- Footer --- */
 .private-footer {
   width: 100%;
   background: var(--brand-rio-azulado);
@@ -127,12 +188,18 @@
   font-size: 0.85rem;
   font-weight: 600;
 }
+
+/* --- Responsive --- */
 @media (max-width: 1024px) {
+
+/* --- Header --- */
   .private-header {
     padding: 0.8rem 0.85rem 0.75rem;
   }
 
   .private-header-row,
+
+/* --- Navegación --- */
   .private-nav {
     width: 100%;
   }
@@ -148,6 +215,8 @@
 }
 
 @media (max-width: 768px) {
+
+/* --- Header --- */
   .private-header-row {
     flex-direction: column;
     align-items: flex-start;
@@ -167,10 +236,16 @@
     max-width: 65%;
   }
 
+  .private-guest-links {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
   .private-session button {
     white-space: nowrap;
   }
 
+/* --- Navegación --- */
   .private-nav {
     margin-top: 0.7rem;
     flex-direction: column;
@@ -184,6 +259,8 @@
 }
 
 @media (max-width: 480px) {
+
+/* --- Header --- */
   .private-header {
     padding: 0.72rem 0.7rem 0.65rem;
   }
@@ -210,6 +287,7 @@
     text-align: center;
   }
 
+/* --- Footer --- */
   .private-footer {
     padding: 0.58rem 0.7rem;
   }
@@ -219,3 +297,4 @@
     line-height: 1.35;
   }
 }
+

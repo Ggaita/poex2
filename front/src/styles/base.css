@@ -1,3 +1,22 @@
+/*
+ * =============================================================================
+ * base.css — reset y estilos globales del documento
+ * Ruta: styles/base.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Reset básico
+ * 2. Tipografía body/headings
+ * 3. Links
+ * 4. Watermark global del sitio
+ * 5. Utilidades globales
+ *
+ * NOTA: Afecta a todo el portal. Cuidado al tocar body::before (marca de agua).
+ *
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
+ */
 @import url("https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap");
 
 *,
@@ -9,15 +28,49 @@
 html,
 body,
 #root {
+  min-height: 100%;
+}
+
+html {
   height: 100%;
+  background-color: var(--color-bg-app);
 }
 
 body {
   margin: 0;
   padding: 0;
+  min-height: 100%;
   font-family: var(--font-body);
-  background-color: var(--color-bg-app);
   color: var(--color-text);
+  background-color: var(--color-bg-app);
+  /* El fondo visual va en ::before fixed: no se corta al scrollear */
+  position: relative;
+  isolation: isolate;
+}
+
+/*
+ * Capa de fondo a viewport completo (fixed).
+ * Así, aunque la página sea muy larga, la imagen no “se corta” a mitad de scroll.
+ */
+/* Solo la foto como marca de agua; el color base queda sólido en body/html */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url("../assets/Images/background-hero-cexp.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+  opacity: 0.06;
+  filter: saturate(0.4) brightness(1.2) contrast(0.85) grayscale(0.2);
+}
+
+#root {
+  position: relative;
+  z-index: 0;
+  min-height: 100%;
 }
 
 h1,
@@ -46,3 +99,4 @@ textarea,
 button {
   font: inherit;
 }
+

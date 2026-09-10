@@ -124,7 +124,7 @@ export default function LoginPage() {
   };
 
   return (
-    <PrivateLayout>
+    <PrivateLayout guestContext="login">
       <section className="login-page">
         <div className="login-card">
           <Link to="/" className="login-back-link">

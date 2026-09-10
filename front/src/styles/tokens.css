@@ -10,7 +10,7 @@
   --brand-azul-noche: #00203a;
   --brand-azul-laguna: #063565;
   --brand-rio-azulado: #5059bc;
-  --brand-magenta: #e6007e;
+  --brand-magenta: #e6007e; 
 
   /* Tipografías */
   --font-heading: "Kanit", "Segoe UI", sans-serif;
@@ -34,7 +34,7 @@
 
   /* Semánticos */
   --color-primary: var(--brand-rio-azulado);
-  --color-primary-strong: #3f48a9;
+  --color-primary-strong: #3e469e;
   --color-primary-soft: #eef0ff;
   --color-secondary: #e4e7ec;
   --color-success: #067647;
@@ -53,9 +53,9 @@
   --color-info-bg: rgba(6, 53, 101, 0.08);
 
   /* Layout helpers */
-  --radius-sm: 8px;
+  --radius-sm: 6px;
   --radius-md: 10px;
-  --radius-lg: 14px;
+  --radius-lg: 10px;
   --shadow-card: 0 20px 45px rgba(8, 15, 40, 0.1);
   --container-xl: min(1200px, 100%);
 

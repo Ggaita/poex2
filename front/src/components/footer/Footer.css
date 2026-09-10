@@ -1,3 +1,21 @@
+/*
+ * =============================================================================
+ * Footer.css — pie de página público
+ * Ruta: components/footer/Footer.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Contenedor footer
+ * 2. Columnas/links
+ * 3. Responsive
+ *
+ * NOTA: Pie del sitio público.
+ *
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
+ */
+/* --- Footer --- */
 .footer {
   width: 100%;
   background-color: var(--color-surface);
@@ -45,7 +63,7 @@
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.4rem;
   text-align: center;
   padding: 0;
 }
@@ -68,7 +86,6 @@
 .icon-footer:hover {
   fill: var(--color-primary);
 }
-
 
 .footer-links a:hover {
   color: var(--color-primary);
@@ -94,13 +111,13 @@
   color: var(--color-primary);
 }
 
-
 .footer-logo {
   width: 30px;
   height: auto;
   margin-left: 0.5rem;
 }
 
+/* --- Responsive --- */
 @media (max-width: 1024px) {
   .footer {
     padding: 1.5rem 0.9rem 1.1rem;
@@ -157,3 +174,4 @@
     font-size: 0.85rem;
   }
 }
+

@@ -1,2 +1,18 @@
+/*
+ * =============================================================================
+ * index.css — entry CSS de Vite
+ * Ruta: index.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Imports de tokens/base u hojas raíz
+ *
+ * NOTA: Archivo de entrada; casi no debe tener reglas visuales.
+ *
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
+ */
 @import "./styles/tokens.css";
 @import "./styles/base.css";
+

@@ -1,3 +1,22 @@
+/*
+ * =============================================================================
+ * IndustrialParkPage.css — parque industrial
+ * Ruta: pages/public/IndustrialPark/IndustrialParkPage.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Shell
+ * 2. Hero
+ * 3. Contenido/bloques
+ * 4. Responsive
+ *
+ * NOTA: Ruta /parque-industrial
+ *
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
+ */
+/* --- Página / shell --- */
 .industrial-park-page {
   width: 100%;
   padding: 1.7rem 1rem 3rem;
@@ -10,6 +29,7 @@
   gap: 0.95rem;
 }
 
+/* --- Header --- */
 .industrial-park-header {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-lg);
@@ -36,6 +56,7 @@
   color: var(--color-text-muted);
 }
 
+/* --- Feedback / mensajes --- */
 .industrial-feedback {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
@@ -50,6 +71,7 @@
   color: var(--color-danger);
 }
 
+/* --- Listados / grillas --- */
 .industrial-park-grid {
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
@@ -58,6 +80,8 @@
 }
 
 .industrial-map-card,
+
+/* --- Tarjetas / cards --- */
 .industrial-list-card {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
@@ -67,6 +91,7 @@
   gap: 0.65rem;
 }
 
+/* --- Mapa --- */
 .industrial-map-toolbar {
   display: flex;
   justify-content: space-between;
@@ -106,6 +131,7 @@
   line-height: 1.45;
 }
 
+/* --- Tarjetas / cards --- */
 .industrial-list-card > header {
   display: flex;
   justify-content: space-between;
@@ -123,10 +149,12 @@
   font-size: 0.78rem;
 }
 
+/* --- Feedback / mensajes --- */
 .industrial-empty {
   color: var(--color-text-soft);
 }
 
+/* --- Listados / grillas --- */
 .industrial-company-list {
   list-style: none;
   margin: 0;
@@ -176,6 +204,7 @@
   font-size: 0.76rem;
 }
 
+/* --- Acciones / botones --- */
 .industrial-company-actions {
   display: flex;
   gap: 0.45rem;
@@ -193,12 +222,17 @@
   padding: 0.35rem 0.62rem;
 }
 
+/* --- Responsive --- */
 @media (max-width: 1080px) {
+
+/* --- Listados / grillas --- */
   .industrial-park-grid {
     grid-template-columns: 1fr;
   }
 
   .industrial-map-canvas,
+
+/* --- Mapa --- */
   .industrial-map-canvas .leaflet-container {
     height: 380px;
     min-height: 380px;
@@ -206,16 +240,21 @@
 }
 
 @media (max-width: 760px) {
+
+/* --- Página / shell --- */
   .industrial-park-page {
     padding: 1.2rem 0.75rem 2rem;
   }
 
   .industrial-map-canvas,
+
+/* --- Mapa --- */
   .industrial-map-canvas .leaflet-container {
     height: 320px;
     min-height: 320px;
   }
 
+/* --- Acciones / botones --- */
   .industrial-company-actions {
     flex-direction: column;
   }
@@ -227,10 +266,13 @@
 }
 
 @media (max-width: 480px) {
+
+/* --- Página / shell --- */
   .industrial-park-page {
     padding: 1rem 0.6rem 1.45rem;
   }
 
+/* --- Mapa --- */
   .industrial-map-toolbar {
     flex-direction: column;
     align-items: flex-start;
@@ -242,3 +284,4 @@
     min-height: 280px;
   }
 }
+

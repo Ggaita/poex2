@@ -1,3 +1,23 @@
+/*
+ * =============================================================================
+ * AdminCommunicationsPage.css — comunicaciones/plantillas
+ * Ruta: pages/admin/Communications/AdminCommunicationsPage.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Página/shell
+ * 2. Editor de plantillas
+ * 3. Segmentación
+ * 4. Preview
+ * 5. Responsive
+ *
+ * NOTA: Mails y notificaciones internas.
+ *
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
+ */
+/* --- Página / shell --- */
 .admin-communications-page {
   width: 100%;
   padding: 2rem 1rem 3rem;
@@ -11,6 +31,7 @@
   gap: 0.95rem;
 }
 
+/* --- Header --- */
 .admin-communications-header {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-lg);
@@ -38,6 +59,7 @@
   color: var(--color-text-muted);
 }
 
+/* --- Feedback / mensajes --- */
 .communications-alert {
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
@@ -57,12 +79,14 @@
   color: var(--color-success);
 }
 
+/* --- Listados / grillas --- */
 .admin-communications-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.9rem;
 }
 
+/* --- Tarjetas / cards --- */
 .communications-card {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
@@ -83,6 +107,7 @@
   font-size: 0.9rem;
 }
 
+/* --- Listados / grillas --- */
 .template-list {
   list-style: none;
   margin: 0;
@@ -92,6 +117,7 @@
   gap: 0.55rem;
 }
 
+/* --- Acciones / botones --- */
 .template-button {
   width: 100%;
   border: 1px solid var(--color-border-soft);
@@ -119,6 +145,8 @@
 }
 
 .chip-enabled,
+
+/* --- Chips / badges --- */
 .chip-disabled {
   width: fit-content;
   margin-top: 0.2rem;
@@ -140,6 +168,7 @@
   border: 1px solid var(--color-border-soft);
 }
 
+/* --- Formularios --- */
 .template-editor-form {
   display: flex;
   flex-direction: column;
@@ -152,6 +181,8 @@
 }
 
 .template-editor-form label,
+
+/* --- Tarjetas / cards --- */
 .manual-card label {
   display: flex;
   flex-direction: column;
@@ -192,6 +223,7 @@
   font-size: 0.85rem;
 }
 
+/* --- Listados / grillas --- */
 .variables-list {
   display: flex;
   flex-wrap: wrap;
@@ -217,6 +249,7 @@
   width: auto;
 }
 
+/* --- Acciones / botones --- */
 .primary-button {
   width: fit-content;
   border: 1px solid var(--color-primary);
@@ -233,6 +266,7 @@
   opacity: 0.7;
 }
 
+/* --- Listados / grillas --- */
 .manual-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -240,6 +274,8 @@
 }
 
 .group-selector,
+
+/* --- Formularios --- */
 .recipient-selector {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-sm);
@@ -252,6 +288,8 @@
 
 .group-list,
 .recipient-list,
+
+/* --- Listados / grillas --- */
 .outbox-list {
   list-style: none;
   margin: 0;
@@ -276,6 +314,7 @@
   font-weight: 600;
 }
 
+/* --- KPIs / gráficos --- */
 .recipient-toolbar {
   display: flex;
   justify-content: space-between;
@@ -287,6 +326,7 @@
   color: var(--color-text-muted);
 }
 
+/* --- Listados / grillas --- */
 .recipient-list {
   display: flex;
   flex-direction: column;
@@ -318,6 +358,7 @@
   font-size: 0.8rem;
 }
 
+/* --- Header --- */
 .outbox-header {
   display: flex;
   justify-content: space-between;
@@ -335,6 +376,7 @@
   cursor: pointer;
 }
 
+/* --- Listados / grillas --- */
 .outbox-list {
   display: flex;
   flex-direction: column;
@@ -361,6 +403,7 @@
   font-size: 0.8rem;
 }
 
+/* --- Header --- */
 .outbox-item-header {
   display: flex;
   justify-content: space-between;
@@ -425,7 +468,10 @@
   font-size: 0.85rem;
 }
 
+/* --- Responsive --- */
 @media (max-width: 1024px) {
+
+/* --- Listados / grillas --- */
   .admin-communications-grid {
     grid-template-columns: 1fr;
   }
@@ -436,3 +482,4 @@
     grid-template-columns: 1fr;
   }
 }
+

@@ -1,4 +1,21 @@
-/* Botones */
+/*
+ * =============================================================================
+ * Button.css — botón UI reutilizable
+ * Ruta: components/ui/button/Button.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Base
+ * 2. Variantes
+ * 3. Estados hover/disabled
+ *
+ * NOTA: Componente compartido de botón.
+ *
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
+ */
+/* --- Acciones / botones --- */
 .btn {
   display: inline-flex;
   align-items: center;

@@ -12,6 +12,8 @@ import adminCommunicationsRoutes from "./modules/communications/routes/admin-com
 import publicSpecialRequestsRoutes from "./modules/special-requests/routes/public-special-requests.routes";
 import adminSpecialRequestsRoutes from "./modules/special-requests/routes/admin-special-requests.routes";
 import uploadsRoutes from "./modules/uploads/routes/uploads.routes";
+import publicAnalyticsRoutes from "./modules/analytics/routes/public-analytics.routes";
+import adminAnalyticsRoutes from "./modules/analytics/routes/admin-analytics.routes";
 import publicInvestmentOpportunitiesRoutes from "./modules/investment-opportunities/routes/public-investment-opportunities.routes";
 import adminInvestmentOpportunitiesRoutes from "./modules/investment-opportunities/routes/admin-investment-opportunities.routes";
 import { getUploadsRoot } from "./lib/uploads";
@@ -35,6 +37,8 @@ app.use("/api/public/special-requests", publicSpecialRequestsRoutes);
 app.use("/api/admin/special-requests", adminSpecialRequestsRoutes);
 app.use("/api/public/investment-opportunities", publicInvestmentOpportunitiesRoutes);
 app.use("/api/admin/investment-opportunities", adminInvestmentOpportunitiesRoutes);
+app.use("/api/public/analytics", publicAnalyticsRoutes);
+app.use("/api/admin/analytics", adminAnalyticsRoutes);
 app.use("/api/uploads", uploadsRoutes);
 
 export default app;

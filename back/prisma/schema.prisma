@@ -346,3 +346,42 @@ model CompanyProfileAuditLog {
   @@index([actorUserId])
   @@map("company_profile_audit_logs")
 }
+
+enum AnalyticsEventName {
+  page_view
+  search
+  company_view
+  product_view
+  cta_click
+  inquiry_submit
+}
+
+model AnalyticsEvent {
+  id           Int                 @id @default(autoincrement())
+  eventName    AnalyticsEventName
+  path         String?
+  pageTitle    String?
+  searchQuery  String?
+  searchMode   String?
+  profileId    Int?
+  productId    Int?
+  productName  String?
+  companyName  String?
+  ctaName      String?
+  referrer     String?
+  userAgent    String?
+  sessionKey   String
+  visitorKey   String
+  metadata     Json?
+  occurredAt   DateTime            @default(now())
+  createdAt    DateTime            @default(now())
+
+  @@index([eventName, occurredAt])
+  @@index([occurredAt])
+  @@index([sessionKey, occurredAt])
+  @@index([visitorKey, occurredAt])
+  @@index([profileId, occurredAt])
+  @@index([productId, occurredAt])
+  @@index([searchQuery])
+  @@map("analytics_events")
+}

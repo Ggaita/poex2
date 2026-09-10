@@ -12,10 +12,15 @@ const resolveBaseCsvPath = () => {
   const fromEnv = process.env.RELEVAMIENTO_CSV?.trim();
   const candidates = [
     fromEnv,
+    path.join(__dirname, "..", "data", "poex-empresas.csv"),
     path.join(__dirname, "..", "data", "base-completa.csv"),
+    path.join(process.cwd(), "data", "poex-empresas.csv"),
     path.join(process.cwd(), "data", "base-completa.csv"),
+    path.join(process.cwd(), "back", "data", "poex-empresas.csv"),
     path.join(process.cwd(), "back", "data", "base-completa.csv"),
+    "/app/data/poex-empresas.csv",
     "/app/data/base-completa.csv",
+    "/data/poex-empresas.csv",
     "/data/base-completa.csv"
   ].filter(Boolean);
 
@@ -400,6 +405,98 @@ const buildFallbackEmail = (slug, taxId) => {
   return `import+${slug}@poex.local`;
 };
 
+const isCleanPoexCsv = (rows) => {
+  if (!rows.length) return false;
+  const keys = Object.keys(rows[0]).map((k) => normalizeKey(k));
+  return keys.includes("company name") && keys.includes("product name");
+};
+
+const buildCompaniesFromCleanCsv = (rows) => {
+  const byKey = new Map();
+
+  for (const row of rows) {
+    const companyName = getField(row, "company_name") || "Empresa sin nombre";
+    const taxId = cleanTaxId(getField(row, "tax_id"));
+    const groupKey = taxId || `name:${normalizeKey(companyName)}`;
+
+    if (!byKey.has(groupKey)) {
+      const tradeName = getField(row, "trade_name");
+      const description = getField(row, "description");
+      const sector = getField(row, "sector");
+      const subSector = getField(row, "sub_sector");
+      const productName = getField(row, "product_name");
+      const keywords = [sector, tradeName].filter(Boolean).filter((t,i,a)=>a.findIndex(x=>x.toLowerCase()===t.toLowerCase())===i).join(", ").slice(0, 280);
+      const publishedRaw = getField(row, "is_published") || "true";
+      const isPublished = /^(true|1|si|sí|yes)$/i.test(publishedRaw);
+
+      byKey.set(groupKey, {
+        slug: taxId ? `${slugify(companyName)}-${taxId.slice(-4)}` : slugify(companyName),
+        companyName,
+        tradeNames: tradeName ? [tradeName] : [],
+        alternateLegalNames: [],
+        contactName: getField(row, "contact_name") || tradeName || companyName,
+        contactEmail:
+          cleanEmail(getField(row, "contact_email")) ||
+          buildFallbackEmail(slugify(companyName), taxId),
+        phone: getField(row, "phone"),
+        taxId,
+        description,
+        sector,
+        subSector,
+        product: productName || undefined,
+        keywords: keywords || undefined,
+        tariffPosition: getField(row, "tariff_position") || undefined,
+        exportDestinations: getField(row, "export_destinations") || undefined,
+        certifications: getField(row, "certifications") || undefined,
+        logoUrl: getField(row, "logo_url") || undefined,
+        website: getField(row, "website") || undefined,
+        facebook: getField(row, "facebook") || undefined,
+        instagram: getField(row, "instagram") || undefined,
+        linkedin: getField(row, "linkedin") || undefined,
+        address: getField(row, "address") || undefined,
+        city: getField(row, "city") || undefined,
+        isPublished,
+        products: [],
+        sourceCompanyKey: normalizeKey(companyName)
+      });
+    }
+
+    const company = byKey.get(groupKey);
+    const productName = getField(row, "product_name");
+    const productDescription = getField(row, "product_description") || productName;
+    const tariffPosition = getField(row, "tariff_position") || undefined;
+    if (productName) {
+      const key = `${normalizeKey(productName)}|${tariffPosition ?? ""}`;
+      if (!company.products.some((p) => `${normalizeKey(p.name)}|${p.tariffPosition ?? ""}` === key)) {
+        company.products.push({
+          name: productName.slice(0, 180),
+          description: productDescription,
+          tariffPosition,
+          isTariffPositionUnknown: !tariffPosition
+        });
+      }
+    }
+
+    // Keep product summary / first tariff in sync
+    if (company.products.length > 0) {
+      company.product = company.products.map((p) => p.name).join("; ").slice(0, 1000);
+      company.tariffPosition =
+        company.products.find((p) => p.tariffPosition)?.tariffPosition ?? company.tariffPosition;
+      const trade = company.tradeNames?.[0];
+      const productTags = company.products
+        .map((p) => p.name)
+        .filter((name) => name && name.length <= 36);
+      company.keywords = [company.sector, trade]
+        .filter(Boolean)
+        .filter((tag, index, arr) => arr.findIndex((t) => t.toLowerCase() === tag.toLowerCase()) === index)
+        .join(", ")
+        .slice(0, 120);
+    }
+  }
+
+  return [...byKey.values()];
+};
+
 const buildCompanyFromRow = (row) => {
   const legalNameRaw = getField(row, "Razón social", "Razon social");
   const tradeName = getField(row, "Nombre comercial / Marca");
@@ -544,15 +641,11 @@ const buildCompanyFromRow = (row) => {
 
   const productSummary = products.map((product) => product.name).join("; ");
   const firstTariff = products.find((product) => product.tariffPosition)?.tariffPosition;
-  const keywords = [
-    sector,
-    subSector,
-    ...tradeNames,
-    ...products.map((product) => product.name)
-  ]
+  const keywords = [sector, ...tradeNames]
     .filter(Boolean)
+    .filter((tag, index, arr) => arr.findIndex((t) => t.toLowerCase() === tag.toLowerCase()) === index)
     .join(", ")
-    .slice(0, 500);
+    .slice(0, 120);
 
   const fullAddress = [address, postalCode ? `CP ${postalCode}` : undefined, city, "Chaco"]
     .filter(Boolean)
@@ -821,7 +914,7 @@ const run = async () => {
   const resolved = resolveBaseCsvPath();
   if (resolved?.missing) {
     throw new Error(
-      "No se encontró base-completa.csv. Probé:\n- " +
+      "No se encontró poex-empresas.csv ni base-completa.csv. Probé:\n- " +
         resolved.tried.join("\n- ") +
         "\n\nSoluciones:\n" +
         "1) Asegurate de que back/data/base-completa.csv esté en el repo y rebuild/pull.\n" +
@@ -832,6 +925,38 @@ const run = async () => {
 
   const basePath = resolved;
   const rows = parseCsv(basePath);
+  if (isCleanPoexCsv(rows)) {
+    const companies = buildCompaniesFromCleanCsv(rows).filter(
+      (company) => company.companyName && company.companyName !== "Empresa sin nombre"
+    );
+    console.log("Formato limpio detectado (poex-empresas)");
+    console.log(`Filas producto: ${rows.length}`);
+    console.log(`Empresas finales: ${companies.length}`);
+    console.log(`Fuente: ${basePath}`);
+
+    let created = 0;
+    let updated = 0;
+    for (const company of companies) {
+      const result = await upsertCompany(company);
+      const brand =
+        company.tradeNames?.length > 0 ? ` · marca: ${company.tradeNames.join(" / ")}` : "";
+      if (result.created) {
+        created += 1;
+        console.log(
+          `Alta: ${result.profile.companyName} (#${result.profile.id})${brand} · ${company.products.length} producto(s)`
+        );
+      } else {
+        updated += 1;
+        console.log(
+          `Update: ${result.profile.companyName} (#${result.profile.id})${brand} · ${company.products.length} producto(s)`
+        );
+      }
+    }
+    console.log(
+      `\nListo. Creadas: ${created} · Actualizadas: ${updated} · Total perfiles: ${companies.length}`
+    );
+    return;
+  }
   const builtCompanies = rows
     .map((row) => buildCompanyFromRow(row))
     .filter((company) => company.companyName && company.companyName !== "Empresa sin nombre");
@@ -898,3 +1023,4 @@ run()
     await prisma.$disconnect();
     process.exitCode = 1;
   });
+

@@ -1,15 +1,29 @@
-/* =========================
-   HEADER
-   ========================= */
-
+/*
+ * =============================================================================
+ * Header.css — navbar pública
+ * Ruta: components/header/Header.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Barra superior
+ * 2. Logo/brand
+ * 3. Menú desktop
+ * 4. Menú mobile
+ * 5. Responsive
+ *
+ * NOTA: Navegación del sitio público.
+ *
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
+ */
 .header {
-  margin-top: 2px;
   min-height: 10vh;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
-  padding: 5px;
+  padding: 2px 5px;
   background-color: var(--color-surface);
   color: var(--color-text);
   border-bottom: 1px solid var(--color-border-soft);

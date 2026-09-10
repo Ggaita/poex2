@@ -1,3 +1,23 @@
+/*
+ * =============================================================================
+ * AdminSpecialRequestsPage.css — pedidos especiales / info requests
+ * Ruta: pages/admin/SpecialRequests/AdminSpecialRequestsPage.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Página/shell
+ * 2. Listado
+ * 3. Detalle/estado
+ * 4. Acciones
+ * 5. Responsive
+ *
+ * NOTA: Solicitudes públicas de info/productos.
+ *
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
+ */
+/* --- Página / shell --- */
 .admin-special-requests-page {
   width: 100%;
   padding: 2rem 1rem 3rem;
@@ -11,6 +31,7 @@
   gap: 1rem;
 }
 
+/* --- Header --- */
 .admin-special-requests-header {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-lg);
@@ -38,6 +59,7 @@
   color: var(--color-text-muted);
 }
 
+/* --- Feedback / mensajes --- */
 .admin-special-alert {
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
@@ -57,6 +79,7 @@
   color: var(--color-success);
 }
 
+/* --- Listados / grillas --- */
 .admin-special-requests-grid {
   display: grid;
   grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
@@ -64,6 +87,8 @@
 }
 
 .special-requests-list-card,
+
+/* --- Tarjetas / cards --- */
 .special-request-detail-card {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
@@ -77,6 +102,7 @@
   gap: 0.65rem;
 }
 
+/* --- Listados / grillas --- */
 .special-list-toolbar {
   display: flex;
   flex-direction: column;
@@ -110,11 +136,14 @@
 }
 
 .special-list-feedback,
+
+/* --- Feedback / mensajes --- */
 .special-detail-feedback {
   color: var(--color-text-muted);
   font-size: 0.9rem;
 }
 
+/* --- Listados / grillas --- */
 .special-requests-list {
   list-style: none;
   margin: 0;
@@ -161,6 +190,7 @@
   font-size: 0.78rem;
 }
 
+/* --- Chips / badges --- */
 .special-status-chip {
   border-radius: 999px;
   padding: 0.12rem 0.45rem;
@@ -198,6 +228,7 @@
   border-color: var(--color-danger-border);
 }
 
+/* --- Tarjetas / cards --- */
 .special-request-detail-card {
   min-height: 420px;
 }
@@ -208,6 +239,7 @@
   gap: 0.75rem;
 }
 
+/* --- Header --- */
 .special-detail-header {
   display: flex;
   justify-content: space-between;
@@ -220,6 +252,7 @@
   font-size: 1.1rem;
 }
 
+/* --- Listados / grillas --- */
 .special-detail-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -282,6 +315,7 @@
   resize: vertical;
 }
 
+/* --- Acciones / botones --- */
 .special-save-button {
   width: fit-content;
   border: 1px solid var(--color-primary);
@@ -298,7 +332,10 @@
   cursor: default;
 }
 
+/* --- Responsive --- */
 @media (max-width: 1024px) {
+
+/* --- Listados / grillas --- */
   .admin-special-requests-grid {
     grid-template-columns: 1fr;
   }
@@ -309,15 +346,19 @@
 }
 
 @media (max-width: 720px) {
+
+/* --- Página / shell --- */
   .admin-special-requests-page {
     padding: 1.35rem 0.8rem 2.1rem;
   }
 
+/* --- Listados / grillas --- */
   .special-detail-grid {
     grid-template-columns: 1fr;
   }
 }
 
+/* --- Acciones / botones --- */
 .special-contact-actions {
   display: flex;
   flex-wrap: wrap;
@@ -404,3 +445,4 @@
   color: var(--color-text);
   background: var(--color-surface);
 }
+

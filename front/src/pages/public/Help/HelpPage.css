@@ -1,9 +1,24 @@
-/* Página Ayuda: guía de uso POEX, FAQ y soporte.
- * Reutiliza InstitutionalShell + tokens de marca.
+/*
+ * =============================================================================
+ * HelpPage.css — guía / ayuda
+ * Ruta: pages/public/Help/HelpPage.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Shell
+ * 2. TOC
+ * 3. Secciones guía
+ * 4. FAQ
+ * 5. Placeholders imagen
+ * 6. CTA
+ * 7. Responsive
+ *
+ * NOTA: Ruta /ayuda
+ *
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
  */
-
-/* Ayuda: TOC, bloques de guía, pasos, FAQ y CTAs */
-
 .help-lead {
   margin: 0;
   color: var(--color-text-muted);
@@ -29,6 +44,7 @@
   padding: 1rem;
 }
 
+/* --- Listados / grillas --- */
 .help-toc-list {
   margin: 0;
   padding: 0;
@@ -92,6 +108,7 @@
   line-height: 1.6;
 }
 
+/* --- Acciones / botones --- */
 .help-actions {
   display: flex;
   flex-wrap: wrap;
@@ -104,7 +121,7 @@
   justify-content: center;
   border: 0;
   border-radius: var(--radius-sm);
-  background: var(--color-primary);
+  background: var(--brand-magenta);
   color: var(--color-text-inverse);
   text-decoration: none;
   font-size: 0.9rem;
@@ -137,10 +154,12 @@
   line-height: 1.55;
 }
 
+/* --- Listados / grillas --- */
 .help-bullet-list {
   margin-top: 0.15rem;
 }
 
+/* --- Chips / badges --- */
 .help-stage {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -232,7 +251,10 @@
   line-height: 1.55;
 }
 
+/* --- Responsive --- */
 @media (max-width: 640px) {
+
+/* --- Acciones / botones --- */
   .help-actions {
     flex-direction: column;
   }
@@ -241,3 +263,4 @@
     width: 100%;
   }
 }
+

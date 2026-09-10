@@ -1,3 +1,21 @@
+/*
+ * =============================================================================
+ * SpecialRequestForm.css — pedido especial sin resultados
+ * Ruta: shared/components/SpecialRequestForm/SpecialRequestForm.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Card
+ * 2. Form
+ * 3. Feedback
+ *
+ * NOTA: Cuando la búsqueda no encuentra matches.
+ *
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
+ */
+/* --- Tarjetas / cards --- */
 .special-request-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border-soft);
@@ -23,12 +41,14 @@
   color: var(--color-text-muted);
 }
 
+/* --- Listados / grillas --- */
 .special-request-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem 0.65rem;
 }
 
+/* --- Tarjetas / cards --- */
 .special-request-card label {
   display: grid;
   gap: 0.26rem;
@@ -56,6 +76,7 @@
   resize: vertical;
 }
 
+/* --- Acciones / botones --- */
 .special-request-button {
   justify-self: start;
   border: 1px solid var(--color-primary);
@@ -72,6 +93,7 @@
   cursor: default;
 }
 
+/* --- Feedback / mensajes --- */
 .special-request-feedback {
   margin: 0;
   border-radius: var(--radius-sm);
@@ -91,8 +113,12 @@
   color: var(--color-success);
 }
 
+/* --- Responsive --- */
 @media (max-width: 768px) {
+
+/* --- Listados / grillas --- */
   .special-request-grid {
     grid-template-columns: 1fr;
   }
 }
+

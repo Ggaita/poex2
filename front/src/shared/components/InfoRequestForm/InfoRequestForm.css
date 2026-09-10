@@ -1,3 +1,22 @@
+/*
+ * =============================================================================
+ * InfoRequestForm.css — solicitar información a admin
+ * Ruta: shared/components/InfoRequestForm/InfoRequestForm.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Card
+ * 2. Form grid
+ * 3. Feedback
+ * 4. Compact mode
+ *
+ * NOTA: En búsqueda y ficha empresa.
+ *
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
+ */
+/* --- Tarjetas / cards --- */
 .info-request-card {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-lg);
@@ -29,17 +48,20 @@
   line-height: 1.45;
 }
 
+/* --- Formularios --- */
 .info-request-form {
   display: grid;
   gap: 0.7rem;
 }
 
+/* --- Listados / grillas --- */
 .info-request-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.55rem 0.7rem;
 }
 
+/* --- Formularios --- */
 .info-request-form label {
   display: grid;
   gap: 0.28rem;
@@ -78,6 +100,7 @@
   cursor: not-allowed;
 }
 
+/* --- Feedback / mensajes --- */
 .info-request-feedback {
   margin: 0;
   border-radius: var(--radius-sm);
@@ -97,8 +120,12 @@
   color: var(--color-success);
 }
 
+/* --- Responsive --- */
 @media (max-width: 720px) {
+
+/* --- Listados / grillas --- */
   .info-request-grid {
     grid-template-columns: 1fr;
   }
 }
+

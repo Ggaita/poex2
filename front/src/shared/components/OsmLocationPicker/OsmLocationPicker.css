@@ -1,3 +1,20 @@
+/*
+ * =============================================================================
+ * OsmLocationPicker.css — mapa Leaflet/OSM
+ * Ruta: shared/components/OsmLocationPicker/OsmLocationPicker.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Contenedor mapa
+ * 2. Altura mínima
+ *
+ * NOTA: Picker y vista de coordenadas.
+ *
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
+ */
+/* --- Mapa --- */
 .osm-location-picker {
   width: 100%;
   min-height: 280px;
@@ -20,3 +37,4 @@
 .osm-location-picker .leaflet-control-attribution {
   font-size: 0.62rem;
 }
+

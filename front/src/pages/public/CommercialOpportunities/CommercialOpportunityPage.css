@@ -1,3 +1,22 @@
+/*
+ * =============================================================================
+ * CommercialOpportunityPage.css — catálogo / formularios comerciales
+ * Ruta: pages/public/CommercialOpportunities/CommercialOpportunityPage.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Shell
+ * 2. Header
+ * 3. Contenido
+ * 4. Responsive
+ *
+ * NOTA: Páginas cortas de oportunidades comerciales genéricas.
+ *
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
+ */
+/* --- Página / shell --- */
 .commercial-page {
   width: 100%;
   padding: 1.7rem 1rem 3rem;
@@ -14,6 +33,7 @@
   width: min(1100px, 100%);
 }
 
+/* --- Header --- */
 .commercial-header {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-lg);
@@ -46,6 +66,7 @@
   line-height: 1.45;
 }
 
+/* --- Tarjetas / cards --- */
 .commercial-card {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-lg);
@@ -67,6 +88,7 @@
   line-height: 1.65;
 }
 
+/* --- Acciones / botones --- */
 .commercial-actions {
   display: flex;
   flex-wrap: wrap;
@@ -87,3 +109,4 @@
 .commercial-actions a:hover {
   border-color: var(--color-primary);
 }
+

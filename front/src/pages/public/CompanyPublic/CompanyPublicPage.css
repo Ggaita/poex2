@@ -1,3 +1,23 @@
+/*
+ * =============================================================================
+ * CompanyPublicPage.css — ficha pública empresa
+ * Ruta: pages/public/CompanyPublic/CompanyPublicPage.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Shell
+ * 2. Feedback
+ * 3. Tarjeta ficha
+ * 4. Mapa
+ * 5. P.A./multilinea
+ * 6. Responsive
+ *
+ * NOTA: Ruta /empresas/:id
+ *
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
+ */
 .company-public-page {
   width: 100%;
   padding: 1.6rem 1rem 3rem;
@@ -16,6 +36,10 @@
   text-decoration: none;
 }
 
+/* =============================================================================
+ * 2. FEEDBACK
+ * ============================================================================= */
+
 .company-public-feedback {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
@@ -29,6 +53,11 @@
   background: var(--color-danger-bg);
   color: var(--color-danger);
 }
+
+/* =============================================================================
+ * 3. TARJETA PRINCIPAL DE FICHA
+ *    Acá se edita el "look" de la página de empresa pública.
+ * ============================================================================= */
 
 .company-public-card {
   border: 1px solid var(--color-border-soft);
@@ -81,6 +110,11 @@
 .company-public-grid a {
   color: var(--brand-azul-laguna);
 }
+
+/* =============================================================================
+ * 4. MAPA (OpenStreetMap / Leaflet)
+ * ============================================================================= */
+
 .company-map-card {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
@@ -143,6 +177,37 @@
   color: var(--color-text-soft);
   font-size: 0.9rem;
 }
+
+/* =============================================================================
+ * 5. TEXTO MULTILÍNEA + BADGE P.A.
+ * ============================================================================= */
+
+.company-public-description,
+.company-public-multiline {
+  white-space: pre-line;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.company-public-pa-badge {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--brand-magenta) 35%, var(--color-border-soft));
+  background: color-mix(in srgb, var(--brand-magenta) 10%, var(--color-surface));
+  color: var(--brand-magenta);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  padding: 0.28rem 0.7rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* =============================================================================
+ * 6. RESPONSIVE
+ * ============================================================================= */
+
 @media (max-width: 1024px) {
   .company-public-page {
     padding: 1.35rem 0.9rem 2.4rem;
@@ -166,6 +231,7 @@
     gap: 0.7rem;
     padding: 0.85rem;
   }
+
   .company-public-grid {
     grid-template-columns: 1fr;
   }
@@ -207,3 +273,4 @@
     min-height: 220px;
   }
 }
+

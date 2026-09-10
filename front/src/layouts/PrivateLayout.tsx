@@ -7,8 +7,29 @@ import {
   type AuthRole
 } from "../shared/auth/session";
 import type { ApiResponse } from "../shared/types/api.types";
-import type { LayoutProps, NavItem } from "./layout.types";
+import type { NavItem, PrivateGuestContext, PrivateLayoutProps } from "./layout.types";
 import "./PrivateLayout.css";
+
+const guestChrome: Record<
+  PrivateGuestContext,
+  { brandLabel: string; footer: string; className: string }
+> = {
+  login: {
+    brandLabel: "Ingreso al sistema",
+    footer: "Acceso privado · Administradores y empresas habilitadas",
+    className: "guest-login"
+  },
+  register: {
+    brandLabel: "Inscripción de empresas",
+    footer: "Portal público · Solicitud de alta para revisión administrativa",
+    className: "guest-register"
+  },
+  generic: {
+    brandLabel: "Área de acceso",
+    footer: "POEX · Acceso e inscripción",
+    className: "guest-generic"
+  }
+};
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
 const BADGE_POLL_MS = 45_000;
@@ -16,6 +37,7 @@ const BADGE_POLL_MS = 45_000;
 const navByRole: Record<AuthRole, NavItem[]> = {
   admin: [
     { to: "/admin/dashboard", label: "Panel admin" },
+    { to: "/admin/analytics", label: "Analítica" },
     { to: "/admin/applications", label: "Solicitudes", badgeKey: "applications" },
     { to: "/admin/profiles", label: "Perfiles" },
     { to: "/admin/communications", label: "Comunicaciones" },
@@ -46,7 +68,10 @@ const formatBadgeCount = (count: number): string => {
   return String(count);
 };
 
-export default function PrivateLayout({ children }: LayoutProps) {
+export default function PrivateLayout({
+  children,
+  guestContext = "generic"
+}: PrivateLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const session = getAuthSession();
@@ -54,6 +79,7 @@ export default function PrivateLayout({ children }: LayoutProps) {
   const role: AuthRole | null = session?.token ? session.role : null;
   const links = role ? navByRole[role] : [];
   const displayName = session?.displayName ?? "";
+  const guest = guestChrome[guestContext];
   const [pendingCounts, setPendingCounts] = useState<PendingBadgeCounts>({
     applications: 0,
     specialRequests: 0,
@@ -135,19 +161,31 @@ export default function PrivateLayout({ children }: LayoutProps) {
     };
   }, [loadPendingCounts, location.pathname, role]);
 
+  const brandLabel = isAuthenticated
+    ? role === "admin"
+      ? "Área Administrativa"
+      : role === "empresa"
+        ? "Área Empresa"
+        : guest.brandLabel
+    : guest.brandLabel;
+
+  const footerText = isAuthenticated
+    ? role === "admin"
+      ? "Área interna de administración · Gestión y moderación"
+      : role === "empresa"
+        ? "Área interna de empresa · Gestión de cuenta y solicitudes"
+        : guest.footer
+    : guest.footer;
+
   return (
-    <div className="layout private-layout">
+    <div
+      className={`layout private-layout${isAuthenticated ? "" : ` ${guest.className}`}`}
+    >
       <header className="private-header">
         <div className="private-header-row">
           <div className="private-brand">
             <strong>POEX</strong>
-            <span>
-              {role === "admin"
-                ? "Área Administrativa"
-                : role === "empresa"
-                  ? "Área Empresa"
-                  : "Acceso público"}
-            </span>
+            <span>{brandLabel}</span>
           </div>
           {isAuthenticated ? (
             <div className="private-session">
@@ -156,7 +194,33 @@ export default function PrivateLayout({ children }: LayoutProps) {
                 Cerrar sesión
               </button>
             </div>
-          ) : null}
+          ) : (
+            <div className="private-guest-links" aria-label="Accesos relacionados">
+              <NavLink to="/" className="private-guest-link">
+                Inicio público
+              </NavLink>
+              {guestContext === "login" ? (
+                <NavLink to="/register" className="private-guest-link">
+                  Inscribir empresa
+                </NavLink>
+              ) : null}
+              {guestContext === "register" ? (
+                <NavLink to="/login" className="private-guest-link">
+                  Ya tengo acceso
+                </NavLink>
+              ) : null}
+              {guestContext === "generic" ? (
+                <>
+                  <NavLink to="/login" className="private-guest-link">
+                    Ingresar
+                  </NavLink>
+                  <NavLink to="/register" className="private-guest-link">
+                    Inscribir empresa
+                  </NavLink>
+                </>
+              ) : null}
+            </div>
+          )}
         </div>
 
         {isAuthenticated && role ? (
@@ -188,13 +252,7 @@ export default function PrivateLayout({ children }: LayoutProps) {
       <main className="main-content private-main-content">{children}</main>
 
       <footer className="private-footer">
-        <p>
-          {role === "admin"
-            ? "Área interna de administración · Gestión y moderación"
-            : role === "empresa"
-              ? "Área interna de empresa · Gestión de cuenta y solicitudes"
-              : "Portal público · Acceso e inscripción de empresas"}
-        </p>
+        <p>{footerText}</p>
       </footer>
     </div>
   );
