@@ -616,8 +616,8 @@ export default function SearchPage() {
                         </div>
                       )}
                       <div className="search-card-identity-text">
-                        <h2>{item.title}</h2>
-                        <small>{item.companyName}</small>
+                        <h2 className="search-card-title">{item.title}</h2>
+                        <small className="search-card-company">{item.companyName}</small>
                       </div>
                     </div>
                   </header>
@@ -648,47 +648,60 @@ export default function SearchPage() {
                     <p className="search-pa-match-hint">Coincide por posición arancelaria (P.A.)</p>
                   ) : null}
 
-                  <dl>
-                    {item.contactName ? (
-                      <div>
-                        <dt>Contacto</dt>
-                        <dd>{item.contactName}</dd>
-                      </div>
+                  <div className="search-card-meta" aria-label="Datos de la ficha">
+                    {(item.contactName || item.email) ? (
+                      <section className="search-meta-group search-meta-group-contact">
+                        <p className="search-meta-group-label">Contacto</p>
+                        <dl className="search-meta-fields">
+                          {item.contactName ? (
+                            <div className="search-meta-field">
+                              <dt>Nombre</dt>
+                              <dd>{item.contactName}</dd>
+                            </div>
+                          ) : null}
+                          {item.email ? (
+                            <div className="search-meta-field">
+                              <dt>Email</dt>
+                              <dd>{item.email}</dd>
+                            </div>
+                          ) : null}
+                        </dl>
+                      </section>
                     ) : null}
-                    {item.email ? (
-                      <div>
-                        <dt>Email</dt>
-                        <dd>{item.email}</dd>
-                      </div>
-                    ) : null}
-                    <div>
-                      <dt>Sector</dt>
-                      <dd>{item.sector ?? "-"}</dd>
-                    </div>
-                    {item.city ? (
-                      <div>
-                        <dt>Ciudad</dt>
-                        <dd>{item.city}</dd>
-                      </div>
-                    ) : null}
-                    {item.kind === "product" ? (
-                      <div className="search-pa-field">
-                        <dt>P.A. / NCM</dt>
-                        <dd>
-                          {item.product?.tariffPosition ? (
-                            <span
-                              className="search-pa-badge"
-                              title="Posición arancelaria / NCM"
-                            >
-                              P.A. {item.product.tariffPosition}
-                            </span>
-                          ) : (
-                            <span className="search-pa-missing">Sin P.A. informada</span>
-                          )}
-                        </dd>
-                      </div>
-                    ) : null}
-                  </dl>
+
+                    <section className="search-meta-group search-meta-group-profile">
+                      <p className="search-meta-group-label">Perfil</p>
+                      <dl className="search-meta-fields">
+                        <div className="search-meta-field">
+                          <dt>Sector</dt>
+                          <dd>{item.sector ?? "-"}</dd>
+                        </div>
+                        {item.city ? (
+                          <div className="search-meta-field">
+                            <dt>Ciudad</dt>
+                            <dd>{item.city}</dd>
+                          </div>
+                        ) : null}
+                        {item.kind === "product" ? (
+                          <div className="search-meta-field search-pa-field">
+                            <dt>P.A. / NCM</dt>
+                            <dd>
+                              {item.product?.tariffPosition ? (
+                                <span
+                                  className="search-pa-badge"
+                                  title="Posición arancelaria / NCM"
+                                >
+                                  P.A. {item.product.tariffPosition}
+                                </span>
+                              ) : (
+                                <span className="search-pa-missing">Sin P.A. informada</span>
+                              )}
+                            </dd>
+                          </div>
+                        ) : null}
+                      </dl>
+                    </section>
+                  </div>
 
                   {item.kind === "company" ? (
                     <section className="search-company-products">

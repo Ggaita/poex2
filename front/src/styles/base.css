@@ -63,8 +63,8 @@ body::before {
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center center;
-  opacity: 0.06;
-  filter: saturate(0.4) brightness(1.2) contrast(0.85) grayscale(0.2);
+  opacity: 0.18;
+  filter: saturate(0.4) brightness(1.2) contrast(0.55) grayscale(0.1);
 }
 
 #root {

@@ -390,25 +390,32 @@
   flex: 1;
 }
 
-.search-result-card h2 {
+/* Título principal: medium-bold, sin “gritar” tanto como un H2 pesado */
+.search-result-card h2,
+.search-card-title {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: 0.98rem;
-  font-weight: 700;
-  line-height: 1.25;
+  font-size: 1.02rem;
+  font-weight: 600; /* ← semi-bold / medium-bold (antes 700) */
+  letter-spacing: -0.01em;
+  line-height: 1.28;
   color: var(--color-text);
   overflow-wrap: break-word;
   word-break: normal;
   display: -webkit-box;
-  -webkit-line-clamp: 3; /* ← líneas máx. del título */
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.search-card-identity-text small {
-  color: var(--color-text-soft);
-  font-size: 0.78rem;
-  line-height: 1.3;
+/* Empresa secundaria: más chica, uppercase suave = categoría distinta al título */
+.search-card-identity-text small,
+.search-card-company {
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
   overflow-wrap: break-word;
   word-break: normal;
   display: -webkit-box;
@@ -480,9 +487,88 @@
   word-break: normal;
 }
 
-/* --- 6e. Datos (sector, ciudad, contacto, email, P.A.) --- */
+/* --- 6e. Datos categorizados (Contacto / Perfil) ---
+ * label de grupo = categoría
+ * dt = variable de información (Nombre, Email, Sector…)
+ * dd = valor
+ */
 
-.search-result-card dl {
+.search-card-meta {
+  display: grid;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.search-meta-group {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-soft);
+  padding: 0.45rem 0.5rem 0.5rem;
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+/* Categoría del bloque (Contacto / Perfil) */
+.search-meta-group-label {
+  margin: 0;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-primary-strong);
+}
+
+.search-meta-group-contact {
+  border-left: 3px solid color-mix(in srgb, var(--brand-magenta) 55%, transparent);
+}
+
+.search-meta-group-profile {
+  border-left: 3px solid color-mix(in srgb, var(--color-primary) 55%, transparent);
+}
+
+.search-meta-fields {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem 0.55rem;
+  min-width: 0;
+}
+
+.search-meta-field {
+  min-width: 0;
+  padding: 0.28rem 0.35rem;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  border: 1px solid var(--color-border-subtle);
+}
+
+/* Variable de información */
+.search-meta-field dt,
+.search-result-card dt {
+  margin: 0;
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-soft);
+}
+
+/* Valor */
+.search-meta-field dd,
+.search-result-card dd {
+  margin: 0.14rem 0 0;
+  color: var(--color-text);
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.3;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+/* Compat: si queda algún dl plano viejo */
+.search-result-card > dl {
   margin: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -491,31 +577,10 @@
   border-radius: var(--radius-sm);
   background: var(--color-surface-soft);
   border: 1px solid var(--color-border-subtle);
-  flex: 0 0 auto;
+}
+
+.search-result-card > dl > div {
   min-width: 0;
-  overflow: hidden;
-}
-
-.search-result-card dl > div {
-  min-width: 0;
-}
-
-.search-result-card dt {
-  margin: 0;
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--color-text-soft);
-}
-
-.search-result-card dd {
-  margin: 0.08rem 0 0;
-  color: var(--color-text);
-  font-size: 0.8rem;
-  line-height: 1.3;
-  overflow-wrap: break-word;
-  word-break: normal;
 }
 
 /* --- 6f. Tags / keywords --- */
@@ -800,6 +865,7 @@
     padding: 0.8rem;
   }
 
+  .search-meta-fields,
   .search-result-card dl {
     grid-template-columns: 1fr;
   }
@@ -829,8 +895,9 @@
     gap: 0.75rem;
   }
 
-  .search-result-card h2 {
-    font-size: 0.95rem;
+  .search-result-card h2,
+  .search-card-title {
+    font-size: 0.96rem;
   }
 
   .search-card-link {
