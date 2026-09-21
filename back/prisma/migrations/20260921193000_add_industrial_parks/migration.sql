@@ -1,4 +1,4 @@
-﻿-- CreateTable
+-- CreateTable
 CREATE TABLE "industrial_parks" (
     "id" SERIAL NOT NULL,
     "slug" TEXT NOT NULL,
