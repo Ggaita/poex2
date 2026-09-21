@@ -50,6 +50,10 @@ const navByRole: Record<AuthRole, NavItem[]> = {
       to: "/admin/investment-opportunities",
       label: "Oportunidades",
       badgeKey: "investmentInquiries"
+    },
+    {
+      to: "/admin/industrial-parks",
+      label: "Parques"
     }
   ],
   empresa: [{ to: "/empresa/panel", label: "Panel empresa" }]

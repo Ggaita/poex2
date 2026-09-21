@@ -1,4 +1,4 @@
-import express from "express";
+﻿import express from "express";
 import cors from "cors";
 import companiesRoutes from "./modules/companies/routes/companies.routes";
 import publicApplicationsRoutes from "./modules/applications/routes/public-applications.routes";
@@ -16,6 +16,8 @@ import publicAnalyticsRoutes from "./modules/analytics/routes/public-analytics.r
 import adminAnalyticsRoutes from "./modules/analytics/routes/admin-analytics.routes";
 import publicInvestmentOpportunitiesRoutes from "./modules/investment-opportunities/routes/public-investment-opportunities.routes";
 import adminInvestmentOpportunitiesRoutes from "./modules/investment-opportunities/routes/admin-investment-opportunities.routes";
+import publicIndustrialParksRoutes from "./modules/industrial-parks/routes/public-industrial-parks.routes";
+import adminIndustrialParksRoutes from "./modules/industrial-parks/routes/admin-industrial-parks.routes";
 import { getUploadsRoot } from "./lib/uploads";
 
 const app = express();
@@ -37,9 +39,12 @@ app.use("/api/public/special-requests", publicSpecialRequestsRoutes);
 app.use("/api/admin/special-requests", adminSpecialRequestsRoutes);
 app.use("/api/public/investment-opportunities", publicInvestmentOpportunitiesRoutes);
 app.use("/api/admin/investment-opportunities", adminInvestmentOpportunitiesRoutes);
+app.use("/api/public/industrial-parks", publicIndustrialParksRoutes);
+app.use("/api/admin/industrial-parks", adminIndustrialParksRoutes);
 app.use("/api/public/analytics", publicAnalyticsRoutes);
 app.use("/api/admin/analytics", adminAnalyticsRoutes);
 app.use("/api/uploads", uploadsRoutes);
 
 export default app;
+
 

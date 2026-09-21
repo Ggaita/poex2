@@ -385,3 +385,29 @@ model AnalyticsEvent {
   @@index([searchQuery])
   @@map("analytics_events")
 }
+
+model IndustrialPark {
+  id                 Int      @id @default(autoincrement())
+  slug               String   @unique
+  name               String
+  administration     String?
+  progressStatus     String
+  locality           String
+  department         String?
+  yearCreated        Int?
+  surfaceHa          Float?
+  measuredPlots      Int?
+  settledCompanies   String?
+  infrastructure     String?
+  renpiStatus        String?
+  observations       String?
+  sortOrder          Int      @default(0)
+  isPublished        Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([isPublished, sortOrder])
+  @@index([progressStatus])
+  @@index([locality])
+  @@map("industrial_parks")
+}

@@ -172,44 +172,56 @@ export default function OportunidadesDeInversionPage() {
               </p>
             ) : (
               <div className="investment-opportunities-card-grid">
-                {items.map((item) => (
-                  <article key={item.id} className="investment-opportunity-card">
-                    <div className="investment-opportunity-card-media">
-                      {item.mainImageUrl ? (
-                        <img src={toDisplaySrc(item.mainImageUrl)} alt={item.title} />
-                      ) : (
-                        <div className="investment-opportunity-card-media-fallback">Sin imagen</div>
-                      )}
-                      {item.isFeatured ? <span className="investment-opportunity-badge investment-opportunity-badge-featured">Destacada</span> : null}
-                    </div>
-                    <div className="investment-opportunity-card-body">
-                      <div className="investment-opportunity-card-tags">
-                        <span className="investment-opportunity-badge">{opportunityTypeLabel[item.type]}</span>
-                        <span className="investment-opportunity-badge investment-opportunity-badge-soft">
-                          {opportunityStatusLabel[item.status]}
-                        </span>
-                      </div>
-                      <h3>{item.title}</h3>
-                      <p>{item.shortDescription || "Oportunidad de inversión en la Provincia del Chaco."}</p>
-                      <ul className="investment-opportunity-card-meta">
-                        <li>
-                          <strong>Localidad:</strong> {item.locality}
-                        </li>
-                        {item.estimatedInvestment ? (
-                          <li>
-                            <strong>Inversión estimada:</strong> {item.estimatedInvestment}
-                          </li>
-                        ) : null}
-                      </ul>
+                {items.map((item) => {
+                  const detailHref = `/oportunidades-de-inversion/${item.slug}`;
+                  return (
+                    <article key={item.id} className="investment-opportunity-card investment-opportunity-card-compact">
                       <Link
-                        to={`/oportunidades-de-inversion/${item.slug}`}
-                        className="investment-opportunity-card-link"
+                        to={detailHref}
+                        className="investment-opportunity-card-media-link"
+                        aria-label={`Ver ficha de ${item.title}`}
                       >
-                        Ver ficha
+                        <div className="investment-opportunity-card-media">
+                          {item.mainImageUrl ? (
+                            <img src={toDisplaySrc(item.mainImageUrl)} alt="" />
+                          ) : (
+                            <div className="investment-opportunity-card-media-fallback">
+                              {opportunityTypeLabel[item.type]}
+                            </div>
+                          )}
+                          {item.isFeatured ? (
+                            <span className="investment-opportunity-badge investment-opportunity-badge-featured">
+                              Destacada
+                            </span>
+                          ) : null}
+                        </div>
                       </Link>
-                    </div>
-                  </article>
-                ))}
+
+                      <div className="investment-opportunity-card-body">
+                        <span className="investment-opportunity-type-chip">
+                          {opportunityTypeLabel[item.type]}
+                        </span>
+
+                        <h3 className="investment-opportunity-card-title">
+                          <Link to={detailHref}>{item.title}</Link>
+                        </h3>
+
+                        <div className="investment-opportunity-card-compact-meta">
+                          {item.locality ? <span>{item.locality}</span> : null}
+                          <span className="investment-opportunity-status-pill">
+                            {opportunityStatusLabel[item.status]}
+                          </span>
+                        </div>
+
+                        <div className="investment-opportunity-card-actions">
+                          <Link to={detailHref} className="investment-opportunity-card-link">
+                            Ver ficha
+                          </Link>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             )}
           </section>

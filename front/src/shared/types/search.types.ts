@@ -39,6 +39,8 @@ export interface SearchResultItem {
   companyName: string;
   companyLogoUrl?: string;
   summary: string;
+  /** Etiqueta corta de experiencia exportadora (ej. Exportador frecuente). */
+  exportExperience?: string;
   contactName?: string;
   email?: string;
   sector?: string;

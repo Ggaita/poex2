@@ -124,6 +124,19 @@ const trimToUndefined = (value: unknown): string | undefined => {
   return cleaned.length > 0 ? cleaned : undefined;
 };
 
+/** Extrae "Experiencia exportadora: …" embebida en description del seed. */
+const extractExportExperience = (description?: string): string | undefined => {
+  if (!description) {
+    return undefined;
+  }
+  const match = description.match(/Experiencia exportadora:\s*([^.;\n]+)/i);
+  const value = match?.[1]?.trim();
+  if (!value) {
+    return undefined;
+  }
+  return value.replace(/\s+/g, " ").slice(0, 48);
+};
+
 const toKeywordList = (raw?: string): string[] => {
   if (!raw) {
     return [];
@@ -379,6 +392,7 @@ export const searchApprovedProfiles = async (
       const profileProduct = getVisibleString(row, visibility, "product");
       const keywords = toKeywordList(getVisibleString(row, visibility, "keywords"));
       const description = getVisibleString(row, visibility, "description");
+      const exportExperience = extractExportExperience(description);
       const sector = getVisibleString(row, visibility, "sector");
       const city = getVisibleString(row, visibility, "city");
       const companyLogoUrl = getVisibleString(row, visibility, "logoUrl");
@@ -441,6 +455,7 @@ export const searchApprovedProfiles = async (
           companyName,
           companyLogoUrl,
           summary: description ?? "Empresa exportadora registrada.",
+          exportExperience,
           contactName,
           email,
           sector,
@@ -508,6 +523,7 @@ export const searchApprovedProfiles = async (
             productDescription ??
             description ??
             "Producto exportable disponible en empresa registrada.",
+          exportExperience,
           contactName,
           email,
           sector,

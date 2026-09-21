@@ -39,6 +39,13 @@ const modules = [
     cta: "Gestionar oportunidades"
   },
   {
+    title: "Parques industriales",
+    description:
+      "Altas, edición, publicación y orden del catálogo de parques y áreas industriales.",
+    to: "/admin/industrial-parks",
+    cta: "Gestionar parques"
+  },
+  {
     title: "Analítica del sitio",
     description:
       "Visitas, búsquedas, empresas y productos más vistos del portal público por mes.",

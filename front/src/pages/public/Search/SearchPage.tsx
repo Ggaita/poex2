@@ -3,7 +3,6 @@ import { Link, useSearchParams } from "react-router-dom";
 import MainLayout from "../../../layouts/MainLayouts";
 import { HeroSearchForm } from "../Home/components/Hero/Components/HeroSearchForm";
 import SpecialRequestForm from "../../../shared/components/SpecialRequestForm/SpecialRequestForm";
-import InfoRequestForm from "../../../shared/components/InfoRequestForm/InfoRequestForm";
 import { toDisplaySrc } from "../../../shared/components/ImageField/ImageField";
 import type { ApiResponse } from "../../../shared/types/api.types";
 import type {
@@ -88,41 +87,6 @@ const modeUi: Record<SearchMode, SearchModeUi> = {
     placeholder: "Producto, NCM o P.A. (ej. 1201.90)",
     showAllLabel: "Mostrar todos los productos"
   }
-};
-
-const kindLabel: Record<SearchResultItem["kind"], string> = {
-  company: "Empresa",
-  product: "Producto"
-};
-
-const toKeywordTags = (keywords: string[], extras: string[] = []): string[] => {
-  const isMostlyEnglish = (value: string): boolean => {
-    const letters = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, "");
-    if (!letters) return false;
-    const ascii = letters.replace(/[^a-zA-Z]/g, "").length;
-    return ascii / letters.length > 0.85 && /[a-zA-Z]{4,}/.test(value) && !/[áéíóúñÁÉÍÓÚÑ]/.test(value);
-  };
-
-  const raw = [...keywords, ...extras]
-    .flatMap((item) => String(item ?? "").split(/[,;|]/))
-    .map((item) => item.trim())
-    .filter((item) => item.length >= 2 && item.length <= 42);
-
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const tag of raw) {
-    const key = tag
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
-    if (seen.has(key)) continue;
-    // Evitar tags EN duplicados tipo Chemicals si ya hay Químicos, y frases muy largas de producto
-    if (isMostlyEnglish(tag) && out.some((t) => !isMostlyEnglish(t))) continue;
-    seen.add(key);
-    out.push(tag);
-    if (out.length >= 10) break;
-  }
-  return out;
 };
 
 const toCompanyInitials = (companyName: string): string => {
@@ -599,162 +563,76 @@ export default function SearchPage() {
 
           {!isLoading && visibleResults.length > 0 ? (
             <div className="search-results-grid">
-              {visibleResults.map((item) => (
-                <article key={item.resultId} className="search-result-card">
-                  <header>
-                    <span className="search-kind-chip">{kindLabel[item.kind]}</span>
-                    <div className="search-card-identity">
-{item.companyLogoUrl ? (
-                        <img
-                          className="search-company-logo"
-                          src={toDisplaySrc(item.companyLogoUrl)}
-                          alt={`Logo de ${item.companyName}`}
-                        />
-                      ) : (
-                        <div className="search-company-logo search-company-logo-fallback">
-                          {toCompanyInitials(item.companyName)}
-                        </div>
-                      )}
-                      <div className="search-card-identity-text">
-                        <h2 className="search-card-title">{item.title}</h2>
-                        <small className="search-card-company">{item.companyName}</small>
+              {visibleResults.map((item) => {
+                const detailHref = `/empresas/${item.profileId}`;
+                const mediaSrc = item.product?.imageUrl || item.companyLogoUrl;
+                const showCompanyLine =
+                  item.kind === "product" &&
+                  item.companyName.trim().toLowerCase() !== item.title.trim().toLowerCase();
+
+                return (
+                  <article
+                    key={item.resultId}
+                    className={`search-result-card search-result-card-compact search-result-card-${item.kind}`}
+                  >
+                    <Link to={detailHref} className="search-card-media-link" aria-label={`Ver ficha de ${item.title}`}>
+                      <div className="search-card-media">
+                        {mediaSrc ? (
+                          <img
+                            className={`search-product-image${item.product?.imageUrl ? "" : " search-product-image-logo"}`}
+                            src={toDisplaySrc(mediaSrc)}
+                            alt=""
+                          />
+                        ) : (
+                          <div className="search-product-image search-product-image-empty">
+                            {toCompanyInitials(item.companyName || item.title)}
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+
+                    <div className="search-card-compact-body">
+                      {item.exportExperience ? (
+                        <span
+                          className="search-export-chip"
+                          title="Experiencia exportadora"
+                        >
+                          {item.exportExperience}
+                        </span>
+                      ) : null}
+
+                      <h2 className="search-card-title">
+                        <Link to={detailHref}>{item.title}</Link>
+                      </h2>
+
+                      {showCompanyLine ? (
+                        <p className="search-card-company">{item.companyName}</p>
+                      ) : null}
+
+                      <div className="search-card-compact-meta">
+                        {item.city ? <span>{item.city}</span> : null}
+                        {item.kind === "product" && item.product?.tariffPosition ? (
+                          <span
+                            className="search-pa-badge search-pa-badge-compact"
+                            title="Posición arancelaria / NCM"
+                          >
+                            P.A. {item.product.tariffPosition}
+                          </span>
+                        ) : null}
+                        {item.matchedFields?.includes("tariffPosition") ? (
+                          <span className="search-pa-match-pill">Match P.A.</span>
+                        ) : null}
+                      </div>
+
+                      <div className="search-card-actions search-card-actions-compact">
+                        <Link className="search-card-link" to={detailHref}>
+                          Ver ficha
+                        </Link>
                       </div>
                     </div>
-                  </header>
-
-<div className="search-card-media" aria-hidden={item.kind === "company" && !item.product?.imageUrl}>
-                    {item.product?.imageUrl ? (
-                      <img
-                        className="search-product-image"
-                        src={toDisplaySrc(item.product.imageUrl)}
-                        alt={item.product.name}
-                      />
-                    ) : item.companyLogoUrl ? (
-                      <img
-                        className="search-product-image search-product-image-logo"
-                        src={toDisplaySrc(item.companyLogoUrl)}
-                        alt=""
-                      />
-                    ) : (
-                      <div className="search-product-image search-product-image-empty">
-                        {item.kind === "product" ? "Producto" : "Empresa"}
-                      </div>
-                    )}
-                  </div>
-
-                  <p className="search-result-summary">{item.summary}</p>
-
-                  {item.matchedFields?.includes("tariffPosition") ? (
-                    <p className="search-pa-match-hint">Coincide por posición arancelaria (P.A.)</p>
-                  ) : null}
-
-                  <div className="search-card-meta" aria-label="Datos de la ficha">
-                    {(item.contactName || item.email) ? (
-                      <section className="search-meta-group search-meta-group-contact">
-                        <p className="search-meta-group-label">Contacto</p>
-                        <dl className="search-meta-fields">
-                          {item.contactName ? (
-                            <div className="search-meta-field">
-                              <dt>Nombre</dt>
-                              <dd>{item.contactName}</dd>
-                            </div>
-                          ) : null}
-                          {item.email ? (
-                            <div className="search-meta-field">
-                              <dt>Email</dt>
-                              <dd>{item.email}</dd>
-                            </div>
-                          ) : null}
-                        </dl>
-                      </section>
-                    ) : null}
-
-                    <section className="search-meta-group search-meta-group-profile">
-                      <p className="search-meta-group-label">Perfil</p>
-                      <dl className="search-meta-fields">
-                        <div className="search-meta-field">
-                          <dt>Sector</dt>
-                          <dd>{item.sector ?? "-"}</dd>
-                        </div>
-                        {item.city ? (
-                          <div className="search-meta-field">
-                            <dt>Ciudad</dt>
-                            <dd>{item.city}</dd>
-                          </div>
-                        ) : null}
-                        {item.kind === "product" ? (
-                          <div className="search-meta-field search-pa-field">
-                            <dt>P.A. / NCM</dt>
-                            <dd>
-                              {item.product?.tariffPosition ? (
-                                <span
-                                  className="search-pa-badge"
-                                  title="Posición arancelaria / NCM"
-                                >
-                                  P.A. {item.product.tariffPosition}
-                                </span>
-                              ) : (
-                                <span className="search-pa-missing">Sin P.A. informada</span>
-                              )}
-                            </dd>
-                          </div>
-                        ) : null}
-                      </dl>
-                    </section>
-                  </div>
-
-                  {item.kind === "company" ? (
-                    <section className="search-company-products">
-                      <h3>Productos de la empresa</h3>
-                      {item.companyProducts.length > 0 ? (
-                        <ul>
-                          {item.companyProducts.map((product) => (
-                            <li key={product.id}>
-                              <span>{product.name}</span>
-                              {product.tariffPosition ? <span className="search-pa-badge search-pa-badge-inline" title="Posición arancelaria">P.A. {product.tariffPosition}</span> : <span className="search-pa-missing">Sin P.A.</span>}
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p>Sin productos publicados todavía.</p>
-                      )}
-                    </section>
-                  ) : null}
-
-                  {(() => {
-                    const tags = toKeywordTags(item.keywords, [
-                      item.sector ?? "",
-                      item.kind === "product" ? item.title : ""
-                    ]);
-                    return tags.length > 0 ? (
-                      <ul className="search-keywords">
-                        {tags.map((keyword) => (
-                          <li key={keyword}>{keyword}</li>
-                        ))}
-                      </ul>
-                    ) : null;
-                  })()}
-
-<div className="search-card-body-spacer" aria-hidden="true" />
-                  <div className="search-card-actions">
-                    <Link className="search-card-link" to={`/empresas/${item.profileId}`}>
-                      Ver ficha empresa
-                    </Link>
-                    <details className="search-info-request">
-                      <summary>Solicitar información</summary>
-                      <InfoRequestForm
-                        compact
-                        profileId={item.profileId}
-                        companyName={item.companyName}
-                        productName={item.kind === "product" ? item.title : undefined}
-                        sourceQuery={query || undefined}
-                        title="Solicitar información"
-                        description="La administración revisará tu pedido y te contactará con la información habilitada."
-                      />
-                    </details>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           ) : null}
 

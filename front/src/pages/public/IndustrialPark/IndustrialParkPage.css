@@ -1,22 +1,8 @@
-/*
- * =============================================================================
- * IndustrialParkPage.css — parque industrial
- * Ruta: pages/public/IndustrialPark/IndustrialParkPage.css
- * Tokens: styles/tokens.css
- * =============================================================================
- *
- * MAPA RÁPIDO PARA EDITAR A OJO
- * -----------------------------
- * 1. Shell
- * 2. Hero
- * 3. Contenido/bloques
- * 4. Responsive
- *
- * NOTA: Ruta /parque-industrial
- *
- * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
+﻿/*
+ * IndustrialParkPage.css
+ * Layout: mapa completo arriba + cards limpias (parques y empresas) abajo
  */
-/* --- Página / shell --- */
+
 .industrial-park-page {
   width: 100%;
   padding: 1.7rem 1rem 3rem;
@@ -26,20 +12,20 @@
   width: min(1220px, 100%);
   margin: 0 auto;
   display: grid;
-  gap: 0.95rem;
+  gap: 1.1rem;
 }
 
-/* --- Header --- */
 .industrial-park-header {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
-  padding: 1rem;
+  padding: 1rem 1.1rem;
   display: grid;
   gap: 0.3rem;
 }
 
 .industrial-park-header p {
+  margin: 0;
   color: var(--color-primary);
   font-size: 0.8rem;
   text-transform: uppercase;
@@ -48,6 +34,7 @@
 }
 
 .industrial-park-header h1 {
+  margin: 0;
   color: var(--color-text);
   font-size: clamp(1.3rem, 2.2vw, 1.9rem);
 }
@@ -56,13 +43,13 @@
   color: var(--color-text-muted);
 }
 
-/* --- Feedback / mensajes --- */
 .industrial-feedback {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
   background: var(--color-surface);
   color: var(--color-text-muted);
   padding: 0.75rem 0.88rem;
+  margin: 0;
 }
 
 .industrial-feedback-error {
@@ -71,27 +58,23 @@
   color: var(--color-danger);
 }
 
-/* --- Listados / grillas --- */
-.industrial-park-grid {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 0.85rem;
-  align-items: start;
+.industrial-empty {
+  margin: 0;
+  color: var(--color-text-soft);
+  padding: 0.4rem 0;
 }
 
+/* --- Mapa full width --- */
 .industrial-map-card,
-
-/* --- Tarjetas / cards --- */
-.industrial-list-card {
+.industrial-map-card-full {
   border: 1px solid var(--color-border-soft);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--color-surface);
-  padding: 0.85rem;
+  padding: 0.9rem;
   display: grid;
   gap: 0.65rem;
 }
 
-/* --- Mapa --- */
 .industrial-map-toolbar {
   display: flex;
   justify-content: space-between;
@@ -109,19 +92,21 @@
   font-size: 0.78rem;
 }
 
-.industrial-map-canvas {
-  height: 480px;
-  min-height: 480px;
+.industrial-map-canvas,
+.industrial-map-canvas-full {
+  height: min(62vh, 560px);
+  min-height: 420px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--color-surface-soft);
 }
 
-.industrial-map-canvas .leaflet-container {
+.industrial-map-canvas .leaflet-container,
+.industrial-map-canvas-full .leaflet-container {
   height: 100%;
   width: 100%;
-  min-height: 480px;
+  min-height: 420px;
 }
 
 .industrial-map-hint {
@@ -131,157 +116,239 @@
   line-height: 1.45;
 }
 
-/* --- Tarjetas / cards --- */
-.industrial-list-card > header {
+/* --- Secciones debajo del mapa --- */
+.industrial-section {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.industrial-section-head {
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: end;
   justify-content: space-between;
-  align-items: baseline;
+}
+
+.industrial-section-head h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--color-text);
+}
+
+.industrial-section-head small {
+  color: var(--color-text-soft);
+}
+
+.industrial-section-filters {
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
 }
 
-.industrial-list-card h2 {
-  color: var(--color-text);
-  font-size: 1rem;
+.industrial-section-filters input,
+.industrial-section-filters select {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.65rem;
+  font: inherit;
+  background: var(--color-surface);
+  min-width: 11rem;
 }
 
-.industrial-list-card > header small {
-  color: var(--color-text-soft);
-  font-size: 0.78rem;
-}
-
-/* --- Feedback / mensajes --- */
-.industrial-empty {
-  color: var(--color-text-soft);
-}
-
-/* --- Listados / grillas --- */
-.industrial-company-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+/* --- Cards limpias (mismo lenguaje visual que buscador) --- */
+.industrial-cards-grid {
   display: grid;
-  gap: 0.62rem;
-  align-content: start;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 0.9rem;
 }
 
-.industrial-company-item {
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-md);
-  padding: 0.68rem;
-  display: grid;
-  gap: 0.35rem;
-}
-
-.industrial-company-item-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.55rem;
-}
-
-.industrial-company-item-top h3 {
-  color: var(--color-text);
-  font-size: 0.94rem;
-}
-
-.industrial-company-item-top span {
+.industrial-clean-card {
   border: 1px solid var(--color-border-soft);
-  border-radius: 999px;
-  padding: 0.17rem 0.52rem;
-  color: var(--color-text-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.industrial-clean-card:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border-soft));
+  box-shadow: 0 8px 22px rgba(16, 24, 40, 0.08);
+  transform: translateY(-1px);
+}
+
+.industrial-clean-media-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.industrial-clean-card-media {
+  height: 132px;
   background: var(--color-surface-soft);
+  border-bottom: 1px solid var(--color-border-subtle);
+  overflow: hidden;
+}
+
+.industrial-clean-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  background: #fff;
+  padding: 0.75rem;
+}
+
+.industrial-clean-card-media-park {
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 18%, transparent), var(--color-surface-soft));
+}
+
+.industrial-clean-card-media-park span {
+  border-radius: 999px;
+  padding: 0.28rem 0.7rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-soft);
+  color: var(--color-primary-strong);
   font-size: 0.72rem;
-  font-weight: 700;
+  font-weight: 800;
+  max-width: 90%;
+  text-align: center;
 }
 
-.industrial-company-item p {
-  color: var(--color-text-muted);
-  font-size: 0.82rem;
+.industrial-clean-card-fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--color-primary-strong);
+  background: var(--color-primary-soft);
 }
 
-.industrial-company-item small {
-  color: var(--color-text-soft);
-  font-size: 0.76rem;
+.industrial-clean-card-body {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.75rem 0.8rem 0.85rem;
+  min-width: 0;
 }
 
-/* --- Acciones / botones --- */
-.industrial-company-actions {
+.industrial-clean-chip {
+  justify-self: start;
+  border-radius: 999px;
+  padding: 0.16rem 0.5rem;
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 28%, var(--color-border-soft));
+  color: var(--color-primary-strong);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.industrial-clean-title {
+  margin: 0;
+  font-size: 0.96rem;
+  font-weight: 600;
+  line-height: 1.28;
+  color: var(--color-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.industrial-clean-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.industrial-clean-title a:hover {
+  color: var(--color-primary-strong);
+}
+
+.industrial-clean-meta {
   display: flex;
-  gap: 0.45rem;
   flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  min-height: 1.2rem;
 }
 
-.industrial-company-actions a {
+.industrial-clean-meta > span {
+  color: var(--color-text-muted);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.industrial-clean-status {
+  border-radius: 999px !important;
+  padding: 0.1rem 0.42rem !important;
+  font-size: 0.64rem !important;
+  font-weight: 800 !important;
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success-border);
+  color: var(--color-success) !important;
+}
+
+.industrial-clean-actions {
+  margin-top: 0.1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.industrial-clean-link,
+.industrial-clean-cta {
+  display: block;
+  width: 100%;
+  text-align: center;
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-sm);
   background: var(--color-primary-soft);
   color: var(--color-primary-strong);
-  font-size: 0.76rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-decoration: none;
-  padding: 0.35rem 0.62rem;
+  padding: 0.48rem 0.65rem;
 }
 
-/* --- Responsive --- */
-@media (max-width: 1080px) {
-
-/* --- Listados / grillas --- */
-  .industrial-park-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .industrial-map-canvas,
-
-/* --- Mapa --- */
-  .industrial-map-canvas .leaflet-container {
-    height: 380px;
-    min-height: 380px;
-  }
+.industrial-clean-cta {
+  background: var(--color-surface-soft);
+  color: var(--color-text-muted);
+  border-color: var(--color-border-subtle);
 }
 
 @media (max-width: 760px) {
-
-/* --- Página / shell --- */
   .industrial-park-page {
     padding: 1.2rem 0.75rem 2rem;
   }
 
   .industrial-map-canvas,
-
-/* --- Mapa --- */
-  .industrial-map-canvas .leaflet-container {
-    height: 320px;
-    min-height: 320px;
+  .industrial-map-canvas-full,
+  .industrial-map-canvas .leaflet-container,
+  .industrial-map-canvas-full .leaflet-container {
+    height: 360px;
+    min-height: 360px;
   }
 
-/* --- Acciones / botones --- */
-  .industrial-company-actions {
-    flex-direction: column;
-  }
-
-  .industrial-company-actions a {
+  .industrial-section-filters {
     width: 100%;
-    text-align: center;
+  }
+
+  .industrial-section-filters input,
+  .industrial-section-filters select {
+    flex: 1;
+    min-width: 0;
   }
 }
-
-@media (max-width: 480px) {
-
-/* --- Página / shell --- */
-  .industrial-park-page {
-    padding: 1rem 0.6rem 1.45rem;
-  }
-
-/* --- Mapa --- */
-  .industrial-map-toolbar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .industrial-map-canvas,
-  .industrial-map-canvas .leaflet-container {
-    height: 280px;
-    min-height: 280px;
-  }
-}
-

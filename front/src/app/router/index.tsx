@@ -92,6 +92,9 @@ const AdminAnalyticsPage = lazy(() => import("../../pages/admin/Analytics/AdminA
 const AdminInvestmentOpportunitiesPage = lazy(
   () => import("../../pages/admin/InvestmentOpportunities/AdminInvestmentOpportunitiesPage")
 );
+const AdminIndustrialParksPage = lazy(
+  () => import("../../pages/admin/IndustrialParks/AdminIndustrialParksPage")
+);
 
 export default function AppRouter() {
   return (
@@ -140,6 +143,10 @@ export default function AppRouter() {
           <Route
             path="/admin/investment-opportunities"
             element={<AdminInvestmentOpportunitiesPage />}
+          />
+          <Route
+            path="/admin/industrial-parks"
+            element={<AdminIndustrialParksPage />}
           />
         </Route>
         <Route element={<RequireRoleRoute allowedRoles={["empresa"]} />}>
