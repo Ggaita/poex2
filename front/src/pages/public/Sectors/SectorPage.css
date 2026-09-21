@@ -84,3 +84,34 @@
   line-height: 1.65;
 }
 
+/* =============================================================================
+ * 4. RESPONSIVE
+ * ============================================================================= */
+
+@media (max-width: 1024px) {
+  .sector-page {
+    padding: 1.45rem 0.9rem 2.4rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .sector-page {
+    padding: 1.2rem 0.75rem 2rem;
+  }
+
+  .sector-header,
+  .sector-card {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sector-page {
+    padding: 1rem 0.65rem 1.75rem;
+  }
+
+  .sector-header h1 {
+    font-size: clamp(1.25rem, 6.5vw, 1.65rem);
+  }
+}
+

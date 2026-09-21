@@ -277,7 +277,7 @@ function annotateBody(css) {
     return "";
   };
 
-  for (let i = 0; i < lines.length; i++) {
+for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const t = line.trim();
 
@@ -291,8 +291,19 @@ function annotateBody(css) {
       continue;
     }
 
+    // Never insert section comments inside a multi-line selector list
+    // (previous non-empty code line ends with a comma).
+    let prevCode = "";
+    for (let p = i - 1; p >= 0; p--) {
+      const pt = lines[p].trim();
+      if (!pt || pt.startsWith("/*") || pt.startsWith("*")) continue;
+      prevCode = pt;
+      break;
+    }
+    const insideSelectorList = /,$/.test(prevCode);
+
     const m = t.match(/^\.([a-zA-Z0-9_-]+)/);
-    if (m && t.includes("{")) {
+    if (m && t.includes("{") && !insideSelectorList) {
       const bucket = bucketOf(m[1]);
       if (bucket && bucket !== lastBucket) {
         out.push("");

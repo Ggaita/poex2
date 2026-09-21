@@ -1,7 +1,19 @@
 /*
- * tokens.css — variables de marca y UI.
- * Usar estas variables en CSS de páginas/componentes en lugar de hex sueltos.
- * Cambios globales de color/tipografía: empezar acá.
+ * =============================================================================
+ * tokens.css — variables de marca y UI
+ * Ruta: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Paleta de marca (--brand-*)
+ * 2. Tipografías
+ * 3. Neutros (fondos, bordes, textos)
+ * 4. Semánticos (primary, success, danger, info)
+ * 5. Layout helpers (radius, shadow, container)
+ *
+ * NOTA: Cambios globales de color/tipografía empiezan acá.
+ * Convención: preferir var(--...) en páginas; no hardcodear marca.
  */
 :root {
   /* Manual de marca - paleta principal */

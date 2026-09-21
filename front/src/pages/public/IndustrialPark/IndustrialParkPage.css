@@ -1,7 +1,26 @@
-﻿/*
- * IndustrialParkPage.css
- * Layout: mapa completo arriba + cards limpias (parques y empresas) abajo
+/*
+ * =============================================================================
+ * IndustrialParkPage.css — parques industriales (público)
+ * Ruta: pages/public/IndustrialPark/IndustrialParkPage.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ *
+ * MAPA RÁPIDO PARA EDITAR A OJO
+ * -----------------------------
+ * 1. Shell / header
+ * 2. Feedback
+ * 3. Mapa full-width
+ * 4. Secciones + filtros
+ * 5. Cards limpias (parques / empresas)
+ * 6. Responsive (1024 / 768 / 480)
+ *
+ * NOTA: Mapa completo arriba + cards debajo (/parque-industrial)
+ * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
  */
+
+/* =============================================================================
+ * 1. SHELL / HEADER
+ * ============================================================================= */
 
 .industrial-park-page {
   width: 100%;
@@ -43,6 +62,10 @@
   color: var(--color-text-muted);
 }
 
+/* =============================================================================
+ * 2. FEEDBACK
+ * ============================================================================= */
+
 .industrial-feedback {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
@@ -64,7 +87,10 @@
   padding: 0.4rem 0;
 }
 
-/* --- Mapa full width --- */
+/* =============================================================================
+ * 3. MAPA FULL-WIDTH
+ * ============================================================================= */
+
 .industrial-map-card,
 .industrial-map-card-full {
   border: 1px solid var(--color-border-soft);
@@ -116,7 +142,10 @@
   line-height: 1.45;
 }
 
-/* --- Secciones debajo del mapa --- */
+/* =============================================================================
+ * 4. SECCIONES + FILTROS
+ * ============================================================================= */
+
 .industrial-section {
   display: grid;
   gap: 0.85rem;
@@ -156,7 +185,10 @@
   min-width: 11rem;
 }
 
-/* --- Cards limpias (mismo lenguaje visual que buscador) --- */
+/* =============================================================================
+ * 5. CARDS LIMPIAS (parques / empresas)
+ * ============================================================================= */
+
 .industrial-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
@@ -329,9 +361,51 @@
   border-color: var(--color-border-subtle);
 }
 
-@media (max-width: 760px) {
+/* =============================================================================
+ * 6. RESPONSIVE
+ * ============================================================================= */
+
+@media (max-width: 1024px) {
+  .industrial-park-page {
+    padding: 1.45rem 0.9rem 2.4rem;
+  }
+
+  .industrial-map-canvas,
+  .industrial-map-canvas-full,
+  .industrial-map-canvas .leaflet-container,
+  .industrial-map-canvas-full .leaflet-container {
+    height: min(52vh, 480px);
+    min-height: 380px;
+  }
+
+  .industrial-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  }
+
+  .industrial-section-head {
+    align-items: stretch;
+  }
+
+  .industrial-section-filters {
+    width: 100%;
+  }
+
+  .industrial-section-filters input,
+  .industrial-section-filters select {
+    flex: 1 1 10rem;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 768px) {
   .industrial-park-page {
     padding: 1.2rem 0.75rem 2rem;
+  }
+
+  .industrial-park-header,
+  .industrial-map-card,
+  .industrial-map-card-full {
+    padding: 0.85rem;
   }
 
   .industrial-map-canvas,
@@ -342,13 +416,45 @@
     min-height: 360px;
   }
 
+  .industrial-map-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .industrial-section-filters {
     width: 100%;
+    flex-direction: column;
   }
 
   .industrial-section-filters input,
   .industrial-section-filters select {
-    flex: 1;
+    width: 100%;
     min-width: 0;
+  }
+
+  .industrial-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .industrial-park-page {
+    padding: 1rem 0.65rem 1.75rem;
+  }
+
+  .industrial-park-header h1 {
+    font-size: clamp(1.2rem, 6.5vw, 1.55rem);
+  }
+
+  .industrial-map-canvas,
+  .industrial-map-canvas-full,
+  .industrial-map-canvas .leaflet-container,
+  .industrial-map-canvas-full .leaflet-container {
+    height: 300px;
+    min-height: 300px;
+  }
+
+  .industrial-clean-card-media {
+    height: 118px;
   }
 }

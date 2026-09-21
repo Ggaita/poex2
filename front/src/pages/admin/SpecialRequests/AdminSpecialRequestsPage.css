@@ -88,7 +88,6 @@
 
 .special-requests-list-card,
 
-/* --- Tarjetas / cards --- */
 .special-request-detail-card {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
@@ -137,7 +136,6 @@
 
 .special-list-feedback,
 
-/* --- Feedback / mensajes --- */
 .special-detail-feedback {
   color: var(--color-text-muted);
   font-size: 0.9rem;

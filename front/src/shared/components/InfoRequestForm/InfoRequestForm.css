@@ -120,12 +120,17 @@
   color: var(--color-success);
 }
 
-/* --- Responsive --- */
-@media (max-width: 720px) {
+/* =============================================================================
+ * 5. RESPONSIVE
+ * ============================================================================= */
 
-/* --- Listados / grillas --- */
+@media (max-width: 768px) {
   .info-request-grid {
     grid-template-columns: 1fr;
+  }
+
+  .info-request-form button {
+    width: 100%;
   }
 }
 

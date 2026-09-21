@@ -226,7 +226,6 @@
 .form-grid label span,
 .dynamic-block > span,
 
-/* --- Feedback / mensajes --- */
 .terms-error {
   font-size: 0.82rem;
   color: var(--color-danger);
@@ -329,7 +328,6 @@
 
 .register-btn-ghost,
 
-/* --- Acciones / botones --- */
 .register-btn-primary {
   border: none;
   border-radius: var(--radius-md);
@@ -443,7 +441,6 @@
 
   .register-shell,
 
-/* --- Formularios --- */
   .register-form {
     padding: 0.85rem;
   }
@@ -466,7 +463,6 @@
   .dynamic-header button,
   .register-btn-ghost,
 
-/* --- Acciones / botones --- */
   .register-btn-primary {
     width: 100%;
     text-align: center;

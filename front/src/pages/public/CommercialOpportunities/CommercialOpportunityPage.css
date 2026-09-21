@@ -110,3 +110,43 @@
   border-color: var(--color-primary);
 }
 
+/* =============================================================================
+ * 4. RESPONSIVE
+ * ============================================================================= */
+
+@media (max-width: 1024px) {
+  .commercial-page {
+    padding: 1.45rem 0.9rem 2.4rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .commercial-page {
+    padding: 1.2rem 0.75rem 2rem;
+  }
+
+  .commercial-header,
+  .commercial-card {
+    padding: 1rem;
+  }
+
+  .commercial-actions {
+    flex-direction: column;
+  }
+
+  .commercial-actions a {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .commercial-page {
+    padding: 1rem 0.65rem 1.75rem;
+  }
+
+  .commercial-header h1 {
+    font-size: clamp(1.25rem, 6.5vw, 1.65rem);
+  }
+}
+

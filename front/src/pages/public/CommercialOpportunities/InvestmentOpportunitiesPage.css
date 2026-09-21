@@ -7,17 +7,24 @@
  *
  * MAPA RÁPIDO PARA EDITAR A OJO
  * -----------------------------
- * 1. Listado
- * 2. Cards de oportunidad
- * 3. Detalle
- * 4. Formulario consulta
- * 5. Responsive
+ * 1. Shell / página
+ * 2. Hero listado
+ * 3. Botones
+ * 4. Catálogo + filtros
+ * 5. Cards compactas
+ * 6. Feedback
+ * 7. Detalle (ficha)
+ * 8. Consulta lateral
+ * 9. Responsive (1024 / 768 / 480)
  *
  * NOTA: Listado + detalle público de inversión.
- *
  * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
  */
-/* --- Página / shell --- */
+
+/* =============================================================================
+ * 1. SHELL / PÁGINA
+ * ============================================================================= */
+
 .investment-opportunities-page {
   width: 100%;
   padding: 1.7rem 1rem 3rem;
@@ -32,9 +39,10 @@
   gap: 1.1rem;
 }
 
-/* Hero institucional + CTA a catálogo */
+/* =============================================================================
+ * 2. HERO LISTADO
+ * ============================================================================= */
 
-/* --- Hero --- */
 .investment-opportunities-hero {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-lg);
@@ -72,8 +80,6 @@
 .investment-opportunity-detail-lead,
 .investment-opportunity-detail-prose p,
 .investment-opportunities-empty,
-
-/* --- Tarjetas / cards --- */
 .investment-opportunity-inquiry-card > p {
   margin: 0;
   color: var(--color-text-muted);
@@ -86,6 +92,10 @@
   flex-wrap: wrap;
   gap: 0.55rem;
 }
+
+/* =============================================================================
+ * 3. BOTONES
+ * ============================================================================= */
 
 .investment-opportunities-btn-primary,
 .investment-opportunities-btn-secondary,
@@ -102,7 +112,6 @@
   cursor: pointer;
 }
 
-/* --- Acciones / botones --- */
 .investment-opportunities-btn-primary {
   background: var(--color-primary);
   color: var(--color-text-inverse);
@@ -118,8 +127,6 @@
 }
 
 .investment-opportunities-btn-secondary,
-
-/* --- Tarjetas / cards --- */
 .investment-opportunity-card-link {
   background: var(--color-surface);
   color: var(--color-primary);
@@ -132,7 +139,10 @@
   background: var(--color-primary-soft);
 }
 
-/* Catálogo + filtros */
+/* =============================================================================
+ * 4. CATÁLOGO + FILTROS
+ * ============================================================================= */
+
 .investment-opportunities-catalog {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-lg);
@@ -152,12 +162,10 @@
   font-size: 1.2rem;
 }
 
-/* --- Header --- */
 .investment-opportunities-catalog-header small {
   color: var(--color-text-soft);
 }
 
-/* --- Buscador / filtros --- */
 .investment-opportunities-filters {
   display: grid;
   grid-template-columns: 1.4fr 1fr 1fr;
@@ -165,8 +173,6 @@
 }
 
 .investment-opportunities-filters label,
-
-/* --- Formularios --- */
 .investment-opportunity-inquiry-form label {
   display: grid;
   gap: 0.35rem;
@@ -193,10 +199,10 @@
   resize: vertical;
 }
 
-/* --- Tarjetas del catálogo (estilo compacto, como buscador) ---
- * Imagen + chip tipo + título + localidad/estado + Ver ficha
- * Sin descripción larga: el detalle está en la ficha.
- */
+/* =============================================================================
+ * 5. CARDS COMPACTAS (estilo buscador)
+ * ============================================================================= */
+
 .investment-opportunities-card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -295,7 +301,6 @@
   min-width: 0;
 }
 
-/* Chip de tipo (equivalente a experiencia exportadora del buscador) */
 .investment-opportunity-type-chip {
   justify-self: start;
   border-radius: 999px;
@@ -373,7 +378,6 @@
   font-size: 0.82rem;
 }
 
-/* Compat legacy (por si se reutiliza meta lista) */
 .investment-opportunity-card-meta {
   margin: 0;
   padding: 0;
@@ -391,9 +395,10 @@
   line-height: 1.5;
 }
 
-/* Feedbacks */
+/* =============================================================================
+ * 6. FEEDBACK
+ * ============================================================================= */
 
-/* --- Feedback / mensajes --- */
 .investment-opportunities-feedback {
   margin: 0;
   border-radius: var(--radius-sm);
@@ -413,7 +418,10 @@
   color: var(--color-success);
 }
 
-/* Ficha detalle */
+/* =============================================================================
+ * 7. DETALLE (FICHA)
+ * ============================================================================= */
+
 .investment-opportunity-detail-top {
   display: flex;
 }
@@ -424,7 +432,6 @@
   font-weight: 700;
 }
 
-/* --- Listados / grillas --- */
 .investment-opportunity-detail-grid {
   display: grid;
   grid-template-columns: 1.55fr 0.85fr;
@@ -440,7 +447,6 @@
   overflow: hidden;
 }
 
-/* --- Hero --- */
 .investment-opportunity-detail-hero-media {
   height: 280px;
   background: var(--color-surface-accent);
@@ -492,7 +498,6 @@
   gap: 0.65rem;
 }
 
-/* --- Listados / grillas --- */
 .investment-opportunity-gallery-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -521,9 +526,10 @@
   text-decoration: none;
 }
 
-/* Consulta lateral en ficha */
+/* =============================================================================
+ * 8. CONSULTA LATERAL
+ * ============================================================================= */
 
-/* --- Tarjetas / cards --- */
 .investment-opportunity-inquiry-card {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-lg);
@@ -535,26 +541,117 @@
   top: 1rem;
 }
 
-/* --- Formularios --- */
 .investment-opportunity-inquiry-form {
   display: grid;
   gap: 0.7rem;
 }
 
-/* --- Responsive --- */
-@media (max-width: 980px) {
-  .investment-opportunities-card-grid,
-  .investment-opportunities-filters,
-  .investment-opportunity-detail-grid,
-  .investment-opportunity-detail-meta,
+/* =============================================================================
+ * 9. RESPONSIVE
+ * ============================================================================= */
 
-/* --- Listados / grillas --- */
+@media (max-width: 1024px) {
+  .investment-opportunities-page {
+    padding: 1.45rem 0.9rem 2.5rem;
+  }
+
+  .investment-opportunities-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .investment-opportunities-filters label:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .investment-opportunities-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+
+  .investment-opportunity-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .investment-opportunity-inquiry-card {
+    position: static;
+  }
+
+  .investment-opportunity-detail-hero-media {
+    height: 240px;
+  }
+
+  .investment-opportunity-detail-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .investment-opportunity-gallery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .investment-opportunities-page {
+    padding: 1.2rem 0.75rem 2rem;
+  }
+
+  .investment-opportunities-hero,
+  .investment-opportunities-catalog,
+  .investment-opportunity-inquiry-card {
+    padding: 1rem;
+  }
+
+  .investment-opportunities-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .investment-opportunities-filters label:first-child {
+    grid-column: auto;
+  }
+
+  .investment-opportunities-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .investment-opportunities-hero-actions {
+    flex-direction: column;
+  }
+
+  .investment-opportunities-btn-primary,
+  .investment-opportunities-btn-secondary {
+    width: 100%;
+  }
+
+  .investment-opportunity-detail-meta {
+    grid-template-columns: 1fr;
+  }
+
   .investment-opportunity-gallery-grid {
     grid-template-columns: 1fr;
   }
 
-/* --- Tarjetas / cards --- */
-  .investment-opportunity-inquiry-card {
-    position: static;
+  .investment-opportunity-gallery-grid a {
+    height: 160px;
+  }
+
+  .investment-opportunity-detail-hero-media {
+    height: 200px;
+  }
+
+  .investment-opportunity-detail-body {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .investment-opportunities-page {
+    padding: 1rem 0.65rem 1.75rem;
+  }
+
+  .investment-opportunity-card-media {
+    height: 132px;
+  }
+
+  .investment-opportunities-hero h1,
+  .investment-opportunity-detail-body h1 {
+    font-size: clamp(1.35rem, 7vw, 1.75rem);
   }
 }

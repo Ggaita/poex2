@@ -146,7 +146,6 @@
 
 .chip-enabled,
 
-/* --- Chips / badges --- */
 .chip-disabled {
   width: fit-content;
   margin-top: 0.2rem;
@@ -182,7 +181,6 @@
 
 .template-editor-form label,
 
-/* --- Tarjetas / cards --- */
 .manual-card label {
   display: flex;
   flex-direction: column;
@@ -275,7 +273,6 @@
 
 .group-selector,
 
-/* --- Formularios --- */
 .recipient-selector {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-sm);
@@ -289,7 +286,6 @@
 .group-list,
 .recipient-list,
 
-/* --- Listados / grillas --- */
 .outbox-list {
   list-style: none;
   margin: 0;

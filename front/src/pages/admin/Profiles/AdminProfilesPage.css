@@ -89,7 +89,6 @@
 
 .profiles-list-card,
 
-/* --- Tarjetas / cards --- */
 .profile-detail-card {
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
@@ -288,7 +287,6 @@
 
 .list-feedback,
 
-/* --- Feedback / mensajes --- */
 .detail-feedback {
   color: var(--color-text-soft);
   font-size: 0.9rem;
@@ -578,7 +576,6 @@
 .products-management-card .products-form-actions button,
 .products-management-card .product-actions button,
 
-/* --- Tarjetas / cards --- */
 .products-management-card .product-review-actions button {
   width: fit-content;
   border: none;
@@ -936,7 +933,6 @@
 
 .audit-field-chip,
 
-/* --- Chips / badges --- */
 .audit-actor-chip {
   border: 1px solid var(--color-border-soft);
   border-radius: 999px;

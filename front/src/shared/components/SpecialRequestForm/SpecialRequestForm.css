@@ -113,12 +113,17 @@
   color: var(--color-success);
 }
 
-/* --- Responsive --- */
-@media (max-width: 768px) {
+/* =============================================================================
+ * RESPONSIVE
+ * ============================================================================= */
 
-/* --- Listados / grillas --- */
+@media (max-width: 768px) {
   .special-request-grid {
     grid-template-columns: 1fr;
+  }
+
+  .special-request-form button {
+    width: 100%;
   }
 }
 

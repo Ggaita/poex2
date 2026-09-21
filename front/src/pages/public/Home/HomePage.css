@@ -183,24 +183,11 @@
   transform: translateY(0px);
 }
 
-/* --- 4. Responsive --- */
+/* =============================================================================
+ * 4. RESPONSIVE
+ * ============================================================================= */
 
-/* --- Responsive --- */
-@media (max-width: 640px) {
-
-/* --- Buscador / filtros --- */
-  .search-box {
-    flex-direction: column;
-  }
-
-/* --- Acciones / botones --- */
-  .search-button {
-    width: 100%;
-  }
-}
 @media (max-width: 1024px) {
-
-/* --- Hero --- */
   .home-hero {
     min-height: 59.5vh;
     padding-bottom: 4.5rem;
@@ -234,28 +221,23 @@
     line-height: 1.5;
   }
 
-/* --- Buscador / filtros --- */
-  .search-form {
+  .home-hero .search-form {
     margin-top: 0.75rem;
   }
 
-  .search-box {
+  .home-hero .search-box {
     flex-direction: column;
     gap: 0.42rem;
     border-radius: 12px;
   }
 
-  .search-input,
-
-/* --- Acciones / botones --- */
-  .search-button {
+  .home-hero .search-input,
+  .home-hero .search-button {
     width: 100%;
   }
 }
 
 @media (max-width: 480px) {
-
-/* --- Hero --- */
   .home-hero {
     min-height: 59.5vh;
     padding-bottom: 4.5rem;
@@ -274,14 +256,12 @@
     font-size: 0.9rem;
   }
 
-/* --- Buscador / filtros --- */
-  .search-input {
+  .home-hero .search-input {
     padding: 0.78rem 0.85rem;
     font-size: 0.92rem;
   }
 
-/* --- Acciones / botones --- */
-  .search-button {
+  .home-hero .search-button {
     padding: 0.78rem 0.95rem;
     font-size: 0.9rem;
   }

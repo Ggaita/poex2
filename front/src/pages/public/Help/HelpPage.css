@@ -251,16 +251,47 @@
   line-height: 1.55;
 }
 
-/* --- Responsive --- */
-@media (max-width: 640px) {
+/* =============================================================================
+ * 7. RESPONSIVE
+ * ============================================================================= */
 
-/* --- Acciones / botones --- */
+@media (max-width: 1024px) {
+  .help-image-slot {
+    min-height: 160px;
+  }
+}
+
+@media (max-width: 768px) {
+  .help-toc-list {
+    flex-direction: column;
+  }
+
+  .help-toc-list a {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .help-stage {
+    grid-template-columns: 1fr;
+  }
+
   .help-actions {
     flex-direction: column;
   }
 
   .help-action {
     width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .help-image-slot {
+    min-height: 140px;
+    font-size: 0.88rem;
+  }
+
+  .help-block h3 {
+    font-size: 1rem;
   }
 }
 

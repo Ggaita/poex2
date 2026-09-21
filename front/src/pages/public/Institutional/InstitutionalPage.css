@@ -262,11 +262,45 @@
   line-height: 1.45;
 }
 
-/* --- Responsive --- */
+/* =============================================================================
+ * 5. RESPONSIVE
+ * ============================================================================= */
+
+@media (max-width: 1024px) {
+  .institutional-page {
+    padding: 1.45rem 0.9rem 2.4rem;
+  }
+}
+
 @media (max-width: 820px) {
   .institutional-contact-grid,
   .institutional-form-row {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .institutional-page {
+    padding: 1.2rem 0.75rem 2rem;
+  }
+
+  .institutional-header,
+  .institutional-card {
+    padding: 1rem;
+  }
+
+  .institutional-form button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .institutional-page {
+    padding: 1rem 0.65rem 1.75rem;
+  }
+
+  .institutional-header h1 {
+    font-size: clamp(1.25rem, 6.5vw, 1.65rem);
   }
 }
 
