@@ -48,9 +48,6 @@ export default function NavMenu() {
           ]}
         />
         <li><a href="/parque-industrial">PARQUE INDUSTRIAL</a></li>
-
-        <li><a href="/ayuda">AYUDA</a></li>
-
       </ul>
     </nav>
   );

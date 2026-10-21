@@ -90,6 +90,22 @@ const tokenize = (value: string): string[] => {
   return [...new Set(tokens)];
 };
 
+/** Match de token con borde de palabra (evita "deco" ⊆ "decoracion"). */
+const fieldContainsToken = (normalizedField: string, token: string): boolean => {
+  if (!normalizedField || !token) {
+    return false;
+  }
+
+  // Códigos PA / numéricos: substring de dígitos.
+  if (/^\d+$/.test(token)) {
+    const fieldDigits = normalizedField.replace(/\D+/g, "");
+    return fieldDigits.includes(token) || normalizedField.includes(token);
+  }
+
+  const padded = ` ${normalizedField} `;
+  return padded.includes(` ${token} `);
+};
+
 const scoreTariffMatch = (query: string, tariffValue: string | undefined): number => {
   if (!tariffValue) {
     return 0;
@@ -203,13 +219,19 @@ const scoreFields = (
 
     let matched = false;
 
-    if (normalizedQuery && normalizedFieldValue.includes(normalizedQuery)) {
-      score += field.weight * 3;
-      matched = true;
+    // Frase completa / query exacta en el campo (mayor peso).
+    if (normalizedQuery) {
+      if (/\s/.test(normalizedQuery) && normalizedFieldValue.includes(normalizedQuery)) {
+        score += field.weight * 3;
+        matched = true;
+      } else if (fieldContainsToken(normalizedFieldValue, normalizedQuery)) {
+        score += field.weight * 3;
+        matched = true;
+      }
     }
 
     tokens.forEach((token) => {
-      if (normalizedFieldValue.includes(token)) {
+      if (fieldContainsToken(normalizedFieldValue, token)) {
         score += field.weight;
         matched = true;
       }
@@ -224,6 +246,17 @@ const scoreFields = (
     score,
     matchedFields: [...matchedFieldsSet]
   };
+};
+
+const PRODUCT_DIRECT_FIELDS: SearchFieldName[] = [
+  "product",
+  "description",
+  "tariffPosition",
+  "keywords"
+];
+
+const hasDirectProductMatch = (matchedFields: SearchFieldName[]): boolean => {
+  return matchedFields.some((field) => PRODUCT_DIRECT_FIELDS.includes(field));
 };
 
 const normalizeFilterValue = (value?: string | null): string => {
@@ -246,9 +279,11 @@ const itemHasPa = (item: SearchResultItem): boolean => {
 const buildFacetOptions = (
   rows: SearchResultItem[],
   pick: (row: SearchResultItem) => string | undefined,
-  limit = 20
+  limit = 40
 ): SearchFacets["sectors"] => {
-  const map = new Map<string, { label: string; count: number }>();
+  // Conteo por perfil único cuando se pueda (evita 1 empresa + 3 productos = ciudad x4).
+  const map = new Map<string, { label: string; profiles: Set<number>; loose: number }>();
+
   rows.forEach((row) => {
     const label = trimToUndefined(pick(row));
     if (!label) {
@@ -257,52 +292,44 @@ const buildFacetOptions = (
     const key = normalizeFilterValue(label);
     const existing = map.get(key);
     if (existing) {
-      existing.count += 1;
+      existing.profiles.add(row.profileId);
+      existing.loose += 1;
       return;
     }
-    map.set(key, { label, count: 1 });
+    map.set(key, {
+      label,
+      profiles: new Set([row.profileId]),
+      loose: 1
+    });
   });
 
   return [...map.entries()]
-    .map(([value, item]) => ({ value, label: item.label, count: item.count }))
+    .map(([value, item]) => ({
+      value,
+      label: item.label,
+      // Preferimos perfiles únicos: sincroniza mejor con "N empresas".
+      count: item.profiles.size
+    }))
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "es"))
     .slice(0, limit);
 };
 
-const buildSearchFacets = (rows: SearchResultItem[]): SearchFacets => {
-  const companyCount = rows.filter((row) => row.kind === "company").length;
-  const productCount = rows.filter((row) => row.kind === "product").length;
-  const withPa = rows.filter((row) => itemHasPa(row)).length;
-  const withoutPa = rows.length - withPa;
-
-  return {
-    kinds: [
-      { value: "all", label: "Todos", count: rows.length },
-      { value: "company", label: "Empresas", count: companyCount },
-      { value: "product", label: "Productos", count: productCount }
-    ].filter((option) => option.value === "all" || option.count > 0),
-    sectors: buildFacetOptions(rows, (row) => row.sector),
-    cities: buildFacetOptions(rows, (row) => row.city),
-    hasPa: [
-      { value: "all", label: "Todas", count: rows.length },
-      { value: "yes", label: "Con P.A.", count: withPa },
-      { value: "no", label: "Sin P.A.", count: withoutPa }
-    ].filter((option) => option.value === "all" || option.count > 0)
-  };
-};
-
 const applySearchFilters = (
   rows: SearchResultItem[],
-  filters: Required<SearchFilters>
+  filters: Required<SearchFilters>,
+  /** Dimensiones a ignorar al armar facetas disyuntivas (estilo Amazon). */
+  ignore: Partial<Record<"kind" | "sector" | "city" | "hasPa", boolean>> = {}
 ): SearchResultItem[] => {
-  const sectorKey = normalizeFilterValue(filters.sector);
-  const cityKey = normalizeFilterValue(filters.city);
+  const sectorKey = ignore.sector ? "" : normalizeFilterValue(filters.sector);
+  const cityKey = ignore.city ? "" : normalizeFilterValue(filters.city);
+  const kind = ignore.kind ? "all" : filters.kind;
+  const hasPa = ignore.hasPa ? "all" : filters.hasPa;
 
   return rows.filter((row) => {
-    if (filters.kind === "company" && row.kind !== "company") {
+    if (kind === "company" && row.kind !== "company") {
       return false;
     }
-    if (filters.kind === "product" && row.kind !== "product") {
+    if (kind === "product" && row.kind !== "product") {
       return false;
     }
     if (sectorKey && normalizeFilterValue(row.sector) !== sectorKey) {
@@ -311,14 +338,76 @@ const applySearchFilters = (
     if (cityKey && normalizeFilterValue(row.city) !== cityKey) {
       return false;
     }
-    if (filters.hasPa === "yes" && !itemHasPa(row)) {
+    if (hasPa === "yes" && !itemHasPa(row)) {
       return false;
     }
-    if (filters.hasPa === "no" && itemHasPa(row)) {
+    if (hasPa === "no" && itemHasPa(row)) {
       return false;
     }
     return true;
   });
+};
+
+const buildSearchFacets = (
+  scoredResults: SearchResultItem[],
+  filters: Required<SearchFilters>
+): SearchFacets => {
+  // Cada faceta se calcula con el resto de filtros activos, NO con el propio.
+  // Así Ciudad/Sector/P.A. siguen en sincronía y se pueden cambiar sin “limpiar todo”.
+  const forKinds = applySearchFilters(scoredResults, filters, { kind: true });
+  const forSectors = applySearchFilters(scoredResults, filters, { sector: true });
+  const forCities = applySearchFilters(scoredResults, filters, { city: true });
+  const forHasPa = applySearchFilters(scoredResults, filters, { hasPa: true });
+
+  const companyCount = forKinds.filter((row) => row.kind === "company").length;
+  const productCount = forKinds.filter((row) => row.kind === "product").length;
+  const withPa = forHasPa.filter((row) => itemHasPa(row)).length;
+  const withoutPa = forHasPa.length - withPa;
+
+  const ensureSelected = (
+    options: SearchFacets["sectors"],
+    selectedRaw: string,
+    selectedLabelFallback: string
+  ): SearchFacets["sectors"] => {
+    const selected = normalizeFilterValue(selectedRaw);
+    if (!selected) {
+      return options;
+    }
+    if (options.some((option) => option.value === selected)) {
+      return options;
+    }
+    return [
+      { value: selected, label: selectedLabelFallback || selectedRaw, count: 0 },
+      ...options
+    ];
+  };
+
+  const kindsBase = [
+    { value: "all" as const, label: "Todos", count: forKinds.length },
+    { value: "company" as const, label: "Empresas", count: companyCount },
+    { value: "product" as const, label: "Productos", count: productCount }
+  ].filter((option) => option.value === "all" || option.count > 0 || filters.kind === option.value);
+
+  const hasPaBase = [
+    { value: "all" as const, label: "Todas", count: forHasPa.length },
+    { value: "yes" as const, label: "Con P.A.", count: withPa },
+    { value: "no" as const, label: "Sin P.A.", count: withoutPa }
+  ].filter((option) => option.value === "all" || option.count > 0 || filters.hasPa === option.value);
+
+  return {
+    kinds: kindsBase,
+    sectors: ensureSelected(
+      buildFacetOptions(forSectors, (row) => row.sector),
+      filters.sector,
+      filters.sector
+    ),
+    cities: ensureSelected(
+      buildFacetOptions(forCities, (row) => row.city),
+      filters.city,
+      filters.city
+    ),
+    hasPa: hasPaBase
+  };
 };
 
 const toCompanyProductSummaries = (
@@ -400,6 +489,17 @@ export const searchApprovedProfiles = async (
       const email = getVisibleString(row, visibility, "contactEmail");
       const taxId = getVisibleString(row, visibility, "taxId");
       const profileTariffPosition = getVisibleString(row, visibility, "tariffPosition");
+      // Match-only (no se exponen si la visibilidad los oculta): email/redes/marca en ficha.
+      const emailForMatch =
+        trimToUndefined(row.contactEmail) ?? email;
+      const websiteForMatch = trimToUndefined(row.website);
+      const socialForMatch = [
+        trimToUndefined(row.instagram),
+        trimToUndefined(row.facebook),
+        trimToUndefined(row.linkedin)
+      ]
+        .filter(Boolean)
+        .join(" ");
       const companyProducts = toCompanyProductSummaries(row.products);
       const productTariffBlob = companyProducts
         .map((item) => item.tariffPosition)
@@ -407,14 +507,18 @@ export const searchApprovedProfiles = async (
         .join(" ");
 
       const companyFields: SearchableField[] = [
-        { field: "companyName", value: companyName, weight: 7 },
+        // Nombre y marca (keywords suele incluir nombre comercial) pesan más que sector.
+        { field: "companyName", value: companyName, weight: 10 },
+        { field: "keywords", value: keywords.join(" "), weight: 7 },
         { field: "product", value: profileProduct ?? "", weight: 5 },
-        { field: "keywords", value: keywords.join(" "), weight: 4 },
         { field: "description", value: description ?? "", weight: 3 },
         { field: "sector", value: sector ?? "", weight: 2 },
         { field: "city", value: city ?? "", weight: 2 },
         { field: "contactName", value: contactName ?? "", weight: 1 },
-        { field: "email", value: email ?? "", weight: 1 },
+        // Email/redes: útiles para marcas tipo "albertina.deco" aunque no se muestren.
+        { field: "email", value: emailForMatch ?? "", weight: 4 },
+        { field: "keywords", value: websiteForMatch ?? "", weight: 3 },
+        { field: "keywords", value: socialForMatch, weight: 3 },
         { field: "taxId", value: taxId ?? "", weight: 1 },
         // PA a nivel ficha + PA de productos: clave para búsqueda tipo importador.
         { field: "tariffPosition", value: profileTariffPosition ?? "", weight: 8 },
@@ -479,20 +583,20 @@ export const searchApprovedProfiles = async (
 
         const productDescription = trimToUndefined(product.description);
         const productTariffPosition = trimToUndefined(product.tariffPosition);
-        const productFields: SearchableField[] = [
+
+        // Campos "directos" del producto: sin heredar solo el nombre de la empresa.
+        // Así "DECO" no multiplica 1 empresa + N productos irrelevantes.
+        const productDirectFields: SearchableField[] = [
           { field: "product", value: productName, weight: 8 },
           { field: "description", value: productDescription ?? "", weight: 4 },
-          { field: "tariffPosition", value: productTariffPosition ?? "", weight: 5 },
-          { field: "companyName", value: companyName, weight: 3 },
-          { field: "keywords", value: keywords.join(" "), weight: 2 },
-          { field: "sector", value: sector ?? "", weight: 1 },
-          { field: "city", value: city ?? "", weight: 1 }
+          { field: "tariffPosition", value: productTariffPosition ?? "", weight: 6 },
+          { field: "keywords", value: keywords.join(" "), weight: 2 }
         ];
 
         const { score: productScoreBase, matchedFields: productMatchedFieldsBase } = scoreFields(
           normalizedQuery,
           tokens,
-          productFields
+          productDirectFields
         );
 
         let productScore = productScoreBase;
@@ -505,8 +609,10 @@ export const searchApprovedProfiles = async (
           }
         }
 
+        const directHit = !hasQuery || hasDirectProductMatch(productMatchedFields);
         const shouldIncludeProductResult =
-          (hasQuery && productScore > 0) || (!hasQuery && mode === "product");
+          (!hasQuery && mode === "product") ||
+          (hasQuery && productScore > 0 && directHit);
 
         if (!shouldIncludeProductResult) {
           return;
@@ -549,6 +655,10 @@ export const searchApprovedProfiles = async (
         if (right.matchScore !== left.matchScore) {
           return right.matchScore - left.matchScore;
         }
+        // Empresas antes que productos a igual score (más legible para el comprador).
+        if (left.kind !== right.kind) {
+          return left.kind === "company" ? -1 : 1;
+        }
         return left.resultId.localeCompare(right.resultId, "es");
       }
 
@@ -565,14 +675,21 @@ export const searchApprovedProfiles = async (
       return left.resultId.localeCompare(right.resultId, "es");
     });
 
-  const facets = buildSearchFacets(scoredResults);
   const filteredResults = applySearchFilters(scoredResults, resolvedFilters);
+  // Facetas disyuntivas: cada eje ignora su propio filtro para no desincronizar combos.
+  const facets = buildSearchFacets(scoredResults, resolvedFilters);
   const pagedResults = filteredResults.slice(0, limit);
+  const totalCompanies = new Set(
+    filteredResults.filter((item) => item.kind === "company").map((item) => item.profileId)
+  ).size;
+  const totalProducts = filteredResults.filter((item) => item.kind === "product").length;
 
   return {
     query,
     mode,
     total: filteredResults.length,
+    totalCompanies,
+    totalProducts,
     filters: resolvedFilters,
     facets,
     results: pagedResults

@@ -76,6 +76,10 @@ export interface SearchResponseData {
   query: string;
   mode: SearchMode;
   total: number;
+  /** Perfiles empresa únicos en el resultado. */
+  totalCompanies: number;
+  /** Tarjetas producto en el resultado. */
+  totalProducts: number;
   filters: Required<SearchFilters>;
   facets: SearchFacets;
   results: SearchResultItem[];

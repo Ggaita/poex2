@@ -80,6 +80,8 @@ export interface SearchResponseData {
   query: string;
   mode: SearchMode;
   total: number;
+  totalCompanies?: number;
+  totalProducts?: number;
   filters: SearchFilters;
   facets: SearchFacets;
   results: SearchResultItem[];

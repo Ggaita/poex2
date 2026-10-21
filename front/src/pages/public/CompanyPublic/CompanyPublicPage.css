@@ -79,9 +79,37 @@
   border: 1px solid var(--color-border-soft);
 }
 
+.company-public-logo-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  color: var(--color-text-soft);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--color-surface-soft) 88%, var(--color-border-soft)),
+      color-mix(in srgb, var(--color-surface-soft) 88%, var(--color-border-soft)) 10px,
+      var(--color-surface-soft) 10px,
+      var(--color-surface-soft) 20px
+    );
+}
+
+.company-public-no-image-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+  opacity: 0.75;
+}
+
 .company-public-card h1 {
   color: var(--color-text);
   font-size: clamp(1.35rem, 2.1vw, 1.9rem);
+  font-weight: 800;
 }
 
 .company-public-card p {
@@ -96,14 +124,16 @@
 }
 
 .company-public-grid dt {
-  color: var(--color-text-soft);
+  color: var(--color-text);
   font-size: 0.78rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
 
 .company-public-grid dd {
-  color: var(--color-text);
+  color: var(--color-text-muted);
+  font-weight: 400;
   margin-top: 0.15rem;
 }
 
@@ -132,6 +162,7 @@
 .company-map-head h2 {
   color: var(--color-text);
   font-size: 1rem;
+  font-weight: 700;
 }
 
 .company-map-head small {
@@ -176,6 +207,14 @@
 .company-map-empty {
   color: var(--color-text-soft);
   font-size: 0.9rem;
+}
+
+/* Formulario de solicitud: hermano de la ficha, mismo ancho del shell */
+.company-public-shell > .info-request-card {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 /* =============================================================================

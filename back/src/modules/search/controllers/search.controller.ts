@@ -17,15 +17,16 @@ const getQueryString = (value: unknown): string => {
 
 const parseLimit = (value: unknown): number => {
   if (typeof value !== "string") {
-    return 24;
+    return 60;
   }
 
   const parsed = Number.parseInt(value, 10);
   if (Number.isNaN(parsed) || parsed <= 0) {
-    return 24;
+    return 60;
   }
 
-  return Math.min(parsed, 100);
+  // Más holgado: el total de facetas y el listado no deben pelearse tan fácil.
+  return Math.min(parsed, 200);
 };
 
 const parseMode = (value: unknown): SearchMode => {
@@ -75,6 +76,8 @@ const emptySearchPayload = (mode: SearchMode, filters: SearchFilters) => ({
   query: "",
   mode,
   total: 0,
+  totalCompanies: 0,
+  totalProducts: 0,
   filters: {
     sector: filters.sector ?? "",
     city: filters.city ?? "",

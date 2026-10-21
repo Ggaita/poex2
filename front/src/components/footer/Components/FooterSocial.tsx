@@ -1,9 +1,4 @@
-import {
-  FaInstagram,
-  FaLinkedin,
-  FaGithub,
-  FaWhatsapp,
-} from "react-icons/fa";
+import { FaFacebook, FaGlobe, FaInstagram, FaWhatsapp } from "react-icons/fa";
 
 const FooterSocial = () => {
   return (
@@ -13,45 +8,45 @@ const FooterSocial = () => {
       <ul className="footer-social">
         <li className="footer-social-item">
           <a
-            href="https://instagram.com"
+            href="https://www.instagram.com/gobiernodelchaco/"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Instagram"
+            aria-label="Instagram del Gobierno del Chaco"
           >
-            <FaInstagram className="icon-footer"/> Instagram
+            <FaInstagram className="icon-footer" /> Instagram
           </a>
         </li>
 
         <li className="footer-social-item">
           <a
-            href="https://linkedin.com"
+            href="https://www.facebook.com/GobiernodelChaco/"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="LinkedIn"
+            aria-label="Facebook del Gobierno del Chaco"
           >
-            <FaLinkedin className="icon-footer" /> LinkedIn
+            <FaFacebook className="icon-footer" /> Facebook
           </a>
         </li>
 
         <li className="footer-social-item">
           <a
-            href="https://github.com"
+            href="https://www.chaco.gob.ar/"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="GitHub"
+            aria-label="Sitio web del Gobierno del Chaco"
           >
-            <FaGithub className="icon-footer" /> Github
+            <FaGlobe className="icon-footer" /> Web del Gobierno
           </a>
         </li>
 
         <li className="footer-social-item">
           <a
-            href="https://wa.me/549XXXXXXXXXX"
+            href="https://wa.me/5493624000000"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="WhatsApp"
           >
-            <FaWhatsapp className="icon-footer" /> Whatsapp
+            <FaWhatsapp className="icon-footer" /> WhatsApp
           </a>
         </li>
       </ul>

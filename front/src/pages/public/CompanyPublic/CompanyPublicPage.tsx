@@ -114,13 +114,24 @@ export default function CompanyPublicPage() {
 
           {!shouldShowLoading && profile ? (
             <article className="company-public-card">
-{profile.logoUrl ? (
+              {profile.logoUrl ? (
                 <img
                   className="company-public-logo"
                   src={toDisplaySrc(profile.logoUrl)}
                   alt={`Logo de ${profile.companyName ?? "empresa"}`}
                 />
-              ) : null}
+              ) : (
+                <div
+                  className="company-public-logo company-public-logo-empty"
+                  role="img"
+                  aria-label="Sin imagen"
+                >
+                  <span className="company-public-no-image-icon" aria-hidden="true">
+                    ⌁
+                  </span>
+                  <span>Sin imagen</span>
+                </div>
+              )}
               {profile.companyName ? <h1>{profile.companyName}</h1> : null}
               {profile.description ? <p className="company-public-description">{profile.description}</p> : null}
 
@@ -238,21 +249,23 @@ export default function CompanyPublicPage() {
                       </p>
                     ) : null}
                   </div>
-) : (
+                ) : (
                   <p className="company-map-empty">
                     Esta empresa no tiene coordenadas visibles para mostrar en mapa.
                   </p>
                 )}
               </section>
-
-              <InfoRequestForm
-                profileId={profile.id}
-                companyName={profile.companyName}
-                sourceQuery={`empresa:${profile.id}`}
-                title="Contactar a la administración"
-                description="Si necesitás más datos de esta empresa, dejá tu solicitud. El equipo de la Agencia revisará qué información puede compartir y te responderá por email o WhatsApp."
-              />
             </article>
+          ) : null}
+
+          {!shouldShowLoading && profile ? (
+            <InfoRequestForm
+              profileId={profile.id}
+              companyName={profile.companyName}
+              sourceQuery={`empresa:${profile.id}`}
+              title="Contactar a la administración"
+              description="Si necesitás más datos de esta empresa, dejá tu solicitud. El equipo de la Agencia revisará qué información puede compartir y te responderá por email o WhatsApp."
+            />
           ) : null}
         </div>
       </section>

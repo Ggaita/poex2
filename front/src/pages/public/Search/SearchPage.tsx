@@ -89,16 +89,6 @@ const modeUi: Record<SearchMode, SearchModeUi> = {
   }
 };
 
-const toCompanyInitials = (companyName: string): string => {
-  return companyName
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((chunk) => chunk[0]?.toUpperCase() ?? "")
-    .join("");
-};
-
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q")?.trim() ?? "";
@@ -112,6 +102,8 @@ export default function SearchPage() {
 
   const [results, setResults] = useState<SearchResultItem[]>([]);
   const [total, setTotal] = useState(0);
+  const [totalCompanies, setTotalCompanies] = useState(0);
+  const [totalProducts, setTotalProducts] = useState(0);
   const [facets, setFacets] = useState<SearchFacets>(EMPTY_FACETS);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -120,6 +112,8 @@ export default function SearchPage() {
     if (!shouldRunSearch) {
       setResults([]);
       setTotal(0);
+      setTotalCompanies(0);
+      setTotalProducts(0);
       setFacets(EMPTY_FACETS);
       return;
     }
@@ -161,14 +155,26 @@ export default function SearchPage() {
         if (!response.ok || !payload.success) {
           setResults([]);
           setTotal(0);
+          setTotalCompanies(0);
+          setTotalProducts(0);
           setFacets(EMPTY_FACETS);
           setErrorMessage(payload.error ?? "No se pudo ejecutar la búsqueda.");
           return;
         }
 
         const nextResults = payload.data?.results ?? [];
+        const nextTotal = payload.data?.total ?? nextResults.length;
         setResults(nextResults);
-        setTotal(payload.data?.total ?? nextResults.length);
+        setTotal(nextTotal);
+        setTotalCompanies(
+          payload.data?.totalCompanies ??
+            new Set(nextResults.filter((item) => item.kind === "company").map((item) => item.profileId))
+              .size
+        );
+        setTotalProducts(
+          payload.data?.totalProducts ??
+            nextResults.filter((item) => item.kind === "product").length
+        );
         setFacets(payload.data?.facets ?? EMPTY_FACETS);
 
         if (query) {
@@ -199,6 +205,8 @@ export default function SearchPage() {
         }
         setResults([]);
         setTotal(0);
+        setTotalCompanies(0);
+        setTotalProducts(0);
         setFacets(EMPTY_FACETS);
         setErrorMessage("No se pudo conectar con el backend de búsqueda.");
       } finally {
@@ -353,7 +361,11 @@ export default function SearchPage() {
     visibleResults.length === 0 &&
     !hasActiveFilters;
 
-  const showFiltersBar = shouldRunSearch && !visibleErrorMessage;
+  // Sin coincidencias: no mostrar Tipo/Sector/Ciudad/P.A. (no hay nada que filtrar).
+  const showFiltersBar =
+    shouldRunSearch &&
+    !visibleErrorMessage &&
+    (isLoading || visibleResults.length > 0 || total > 0);
 
   return (
     <MainLayout>
@@ -522,9 +534,35 @@ export default function SearchPage() {
                 <p className="search-results-count">
                   {isLoading
                     ? "Filtrando resultados..."
-                    : total === 1
-                      ? "1 resultado"
-                      : `${total} resultados`}
+                    : (() => {
+                        const parts: string[] = [];
+                        if (totalCompanies > 0) {
+                          parts.push(
+                            totalCompanies === 1
+                              ? "1 empresa"
+                              : `${totalCompanies} empresas`
+                          );
+                        }
+                        if (totalProducts > 0) {
+                          parts.push(
+                            totalProducts === 1
+                              ? "1 producto"
+                              : `${totalProducts} productos`
+                          );
+                        }
+                        const base =
+                          parts.length > 0
+                            ? parts.join(" · ")
+                            : total === 1
+                              ? "1 resultado"
+                              : `${total} resultados`;
+                        const shown = visibleResults.length;
+                        const truncated =
+                          !isLoading && total > shown && shown > 0
+                            ? ` · mostrando ${shown}`
+                            : "";
+                        return `${base}${truncated}`;
+                      })()}
                   {hasActiveFilters ? " · con filtros aplicados" : ""}
                 </p>
                 {activeFilterChips.length > 0 ? (
@@ -554,21 +592,44 @@ export default function SearchPage() {
           !visibleErrorMessage &&
           shouldRunSearch &&
           visibleResults.length === 0 ? (
-            <p className="search-feedback">
-              {hasActiveFilters
-                ? "No hay resultados con esos filtros. Probá limpiarlos o ampliar la búsqueda."
-                : currentModeUi.noResultsLabel}
-            </p>
+            <div className="search-feedback search-feedback-empty">
+              <p>
+                {hasActiveFilters
+                  ? "No hay resultados con esos filtros. Probá limpiarlos o ampliar la búsqueda."
+                  : currentModeUi.noResultsLabel}
+              </p>
+              {hasActiveFilters ? (
+                <button
+                  type="button"
+                  className="search-filters-clear"
+                  onClick={() => writeSearchParams({ clearFilters: true })}
+                >
+                  Limpiar filtros
+                </button>
+              ) : null}
+            </div>
           ) : null}
 
           {!isLoading && visibleResults.length > 0 ? (
             <div className="search-results-grid">
               {visibleResults.map((item) => {
                 const detailHref = `/empresas/${item.profileId}`;
+                // Comprador: imagen de producto si hay; si no, logo de empresa.
                 const mediaSrc = item.product?.imageUrl || item.companyLogoUrl;
+                const isLogoOnly = Boolean(item.companyLogoUrl) && !item.product?.imageUrl;
                 const showCompanyLine =
                   item.kind === "product" &&
                   item.companyName.trim().toLowerCase() !== item.title.trim().toLowerCase();
+                // Monograma del nombre (no "Empresa"/categoría interna).
+                const monogramSource = item.companyName || item.title;
+                const monogram = monogramSource
+                  .replace(/[^\p{L}\p{N}\s]/gu, " ")
+                  .trim()
+                  .split(/\s+/)
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .map((part) => part[0]?.toUpperCase() ?? "")
+                  .join("") || "·";
 
                 return (
                   <article
@@ -579,28 +640,24 @@ export default function SearchPage() {
                       <div className="search-card-media">
                         {mediaSrc ? (
                           <img
-                            className={`search-product-image${item.product?.imageUrl ? "" : " search-product-image-logo"}`}
+                            className={`search-product-image${isLogoOnly ? " search-product-image-logo" : ""}`}
                             src={toDisplaySrc(mediaSrc)}
                             alt=""
                           />
                         ) : (
-                          <div className="search-product-image search-product-image-empty">
-                            {toCompanyInitials(item.companyName || item.title)}
+                          <div
+                            className="search-product-image search-product-image-monogram"
+                            role="img"
+                            aria-label={`Logo de ${monogramSource}`}
+                          >
+                            <span aria-hidden="true">{monogram}</span>
                           </div>
                         )}
                       </div>
                     </Link>
 
                     <div className="search-card-compact-body">
-                      {item.exportExperience ? (
-                        <span
-                          className="search-export-chip"
-                          title="Experiencia exportadora"
-                        >
-                          {item.exportExperience}
-                        </span>
-                      ) : null}
-
+                      {/* Sin chips de tipo/categoría internos (Empresa, sector, etc.). */}
                       <h2 className="search-card-title">
                         <Link to={detailHref}>{item.title}</Link>
                       </h2>
@@ -618,9 +675,6 @@ export default function SearchPage() {
                           >
                             P.A. {item.product.tariffPosition}
                           </span>
-                        ) : null}
-                        {item.matchedFields?.includes("tariffPosition") ? (
-                          <span className="search-pa-match-pill">Match P.A.</span>
                         ) : null}
                       </div>
 

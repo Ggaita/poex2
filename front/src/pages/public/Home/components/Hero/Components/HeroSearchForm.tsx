@@ -11,7 +11,7 @@ type HeroSearchFormProps = {
 export const HeroSearchForm = ({
   initialQuery = "",
   mode = "all",
-  placeholder = "Vinos, cacao, agrotech..."
+  placeholder = "Algodón, miel, tanino..."
 }: HeroSearchFormProps) => {
   const [query, setQuery] = useState<string>(initialQuery);
 

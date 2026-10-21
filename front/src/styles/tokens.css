@@ -68,7 +68,10 @@
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 10px;
-  --shadow-card: 0 20px 45px rgba(8, 15, 40, 0.1);
+  /* Elevación de bloques públicos (institucional, sectores, servicios, etc.) */
+  --shadow-soft: 0 4px 14px rgba(16, 24, 40, 0.05);
+  --shadow-card: 0 10px 28px rgba(16, 24, 40, 0.08);
+  --shadow-card-hover: 0 16px 36px rgba(16, 24, 40, 0.12);
   --container-xl: min(1200px, 100%);
 
   /* Compatibilidad con variables viejas */

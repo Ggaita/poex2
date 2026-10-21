@@ -56,6 +56,7 @@
   padding: 1.2rem 1.25rem;
   display: grid;
   gap: 0.75rem;
+  box-shadow: var(--shadow-soft);
 }
 
 .investment-opportunities-hero > p:first-child {
@@ -151,6 +152,7 @@
   display: grid;
   gap: 1rem;
   scroll-margin-top: 1rem;
+  box-shadow: var(--shadow-card);
 }
 
 .investment-opportunities-catalog-header h2,
@@ -217,7 +219,7 @@
   display: grid;
   grid-template-rows: auto 1fr;
   min-width: 0;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  box-shadow: var(--shadow-card);
 }
 
 .investment-opportunity-card-compact {
@@ -226,8 +228,8 @@
 
 .investment-opportunity-card-compact:hover {
   border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border-soft));
-  box-shadow: 0 8px 22px rgba(16, 24, 40, 0.08);
-  transform: translateY(-1px);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
 }
 
 .investment-opportunity-card-media-link {

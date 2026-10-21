@@ -288,6 +288,17 @@
   padding: 0.8rem 1rem;
 }
 
+.search-feedback-empty {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+}
+
+.search-feedback-empty p {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
 .search-feedback-error {
   border-color: var(--color-danger-border);
   background: var(--color-danger-bg);
@@ -580,13 +591,51 @@
 
 .search-product-image-empty {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 0.2rem;
   color: var(--color-text-soft);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--color-surface-soft) 88%, var(--color-border-soft)),
+      color-mix(in srgb, var(--color-surface-soft) 88%, var(--color-border-soft)) 8px,
+      var(--color-surface-soft) 8px,
+      var(--color-surface-soft) 16px
+    );
+}
+
+/* Placeholder de logo: monograma del nombre (no etiqueta "Empresa") */
+.search-product-image-monogram {
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--color-primary) 14%, var(--color-surface)),
+      var(--color-surface-soft)
+    );
+  color: var(--color-primary-strong);
+}
+
+.search-product-image-monogram span {
+  font-family: var(--font-heading);
+  font-size: clamp(1.6rem, 4vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  user-select: none;
+}
+
+.search-no-image-icon {
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0.75;
 }
 
 /* --- 6d. Resumen / descripción --- */
