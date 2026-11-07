@@ -7,13 +7,16 @@
  * - pages/company/* panel empresa
  */
 import { lazy, Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Navigate, Routes, Route } from "react-router-dom";
 import RequireRoleRoute from "./RequireRoleRoute";
 
 const HomePage = lazy(() => import("../../pages/public/Home/HomePage"));
 const SearchPage = lazy(() => import("../../pages/public/Search/SearchPage"));
 const CompanyPublicPage = lazy(
   () => import("../../pages/public/CompanyPublic/CompanyPublicPage")
+);
+const ProductPublicPage = lazy(
+  () => import("../../pages/public/ProductPublic/ProductPublicPage")
 );
 const IndustrialParkPage = lazy(
   () => import("../../pages/public/IndustrialPark/IndustrialParkPage")
@@ -38,42 +41,12 @@ const AdminSpecialRequestsPage = lazy(
 const CompanyPanelPage = lazy(
   () => import("../../pages/company/Panel/CompanyPanelPage")
 );
-const QuienesSomosPage = lazy(
-  () => import("../../pages/public/Institutional/QuienesSomosPage")
+const InstitutionalPage = lazy(
+  () => import("../../pages/public/Institutional/InstitutionalPage")
 );
-const ObjetivosPage = lazy(
-  () => import("../../pages/public/Institutional/ObjetivosPage")
-);
-const OrganismosVinculadosPage = lazy(
-  () => import("../../pages/public/Institutional/OrganismosVinculadosPage")
-);
-const ContactoInstitucionalPage = lazy(
-  () => import("../../pages/public/Institutional/ContactoInstitucionalPage")
-);
-const AgroYAlimentosPage = lazy(
-  () => import("../../pages/public/Sectors/AgroYAlimentosPage")
-);
-const IndustriaPage = lazy(() => import("../../pages/public/Sectors/IndustriaPage"));
-const IndustriasCreativasPage = lazy(
-  () => import("../../pages/public/Sectors/IndustriasCreativasPage")
-);
-const ServiciosTecnologicosPage = lazy(
-  () => import("../../pages/public/Sectors/ServiciosTecnologicosPage")
-);
-const AsistenciaExportadoraPage = lazy(
-  () => import("../../pages/public/TradeServices/AsistenciaExportadoraPage")
-);
-const CertificacionesPage = lazy(
-  () => import("../../pages/public/TradeServices/CertificacionesPage")
-);
-const NormativasPage = lazy(
-  () => import("../../pages/public/TradeServices/NormativasPage")
-);
-const LogisticaYAduanaPage = lazy(
-  () => import("../../pages/public/TradeServices/LogisticaYAduanaPage")
-);
-const CapacitacionPage = lazy(
-  () => import("../../pages/public/TradeServices/CapacitacionPage")
+const SectorsPage = lazy(() => import("../../pages/public/Sectors/SectorsPage"));
+const TradeServicesPage = lazy(
+  () => import("../../pages/public/TradeServices/TradeServicesPage")
 );
 const CatalogoExportablePage = lazy(
   () => import("../../pages/public/CommercialOpportunities/CatalogoExportablePage")
@@ -104,19 +77,51 @@ export default function AppRouter() {
         <Route path="/search" element={<SearchPage />} />
         <Route path="/parque-industrial" element={<IndustrialParkPage />} />
         <Route path="/empresas/:id" element={<CompanyPublicPage />} />
-        <Route path="/quienes-somos" element={<QuienesSomosPage />} />
-        <Route path="/objetivos" element={<ObjetivosPage />} />
-        <Route path="/organismos-vinculados" element={<OrganismosVinculadosPage />} />
-        <Route path="/contacto-institucional" element={<ContactoInstitucionalPage />} />
-        <Route path="/agro-y-alimentos" element={<AgroYAlimentosPage />} />
-        <Route path="/industria" element={<IndustriaPage />} />
-        <Route path="/industrias-creativas" element={<IndustriasCreativasPage />} />
-        <Route path="/servicios-tecnologicos" element={<ServiciosTecnologicosPage />} />
-        <Route path="/asistencia-exportadora" element={<AsistenciaExportadoraPage />} />
-        <Route path="/certificaciones" element={<CertificacionesPage />} />
-        <Route path="/normativas" element={<NormativasPage />} />
-        <Route path="/logistica-y-aduana" element={<LogisticaYAduanaPage />} />
-        <Route path="/capacitacion" element={<CapacitacionPage />} />
+        <Route path="/productos/:id" element={<ProductPublicPage />} />
+        <Route path="/institucional" element={<InstitutionalPage />} />
+        <Route path="/sectores" element={<SectorsPage />} />
+        <Route path="/servicios-comercio-exterior" element={<TradeServicesPage />} />
+        {/* Redirects legacy multipágina → hub + hash */}
+        <Route path="/quienes-somos" element={<Navigate to="/institucional#quienes-somos" replace />} />
+        <Route path="/objetivos" element={<Navigate to="/institucional#objetivos" replace />} />
+        <Route
+          path="/organismos-vinculados"
+          element={<Navigate to="/institucional#organismos-vinculados" replace />}
+        />
+        <Route
+          path="/contacto-institucional"
+          element={<Navigate to="/institucional#contacto" replace />}
+        />
+        <Route path="/agro-y-alimentos" element={<Navigate to="/sectores#agro-y-alimentos" replace />} />
+        <Route path="/industria" element={<Navigate to="/sectores#industria" replace />} />
+        <Route
+          path="/industrias-creativas"
+          element={<Navigate to="/sectores#industrias-creativas" replace />}
+        />
+        <Route
+          path="/servicios-tecnologicos"
+          element={<Navigate to="/sectores#servicios-tecnologicos" replace />}
+        />
+        <Route
+          path="/asistencia-exportadora"
+          element={<Navigate to="/servicios-comercio-exterior#asistencia-exportadora" replace />}
+        />
+        <Route
+          path="/certificaciones"
+          element={<Navigate to="/servicios-comercio-exterior#certificaciones" replace />}
+        />
+        <Route
+          path="/normativas"
+          element={<Navigate to="/servicios-comercio-exterior#normativas" replace />}
+        />
+        <Route
+          path="/logistica-y-aduana"
+          element={<Navigate to="/servicios-comercio-exterior#logistica-y-aduana" replace />}
+        />
+        <Route
+          path="/capacitacion"
+          element={<Navigate to="/servicios-comercio-exterior#capacitacion" replace />}
+        />
         <Route path="/catalogo-exportable" element={<CatalogoExportablePage />} />
         <Route path="/formularios-de-consulta" element={<FormulariosDeConsultaPage />} />
         <Route path="/oportunidades-de-inversion" element={<OportunidadesDeInversionPage />} />

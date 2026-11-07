@@ -1,58 +1,118 @@
 /*
  * =============================================================================
- * Button.css — botón UI reutilizable
+ * Button.css — sistema de botones del sitio
  * Ruta: components/ui/button/Button.css
  * Tokens: styles/tokens.css
  * =============================================================================
  *
- * MAPA RÁPIDO PARA EDITAR A OJO
- * -----------------------------
- * 1. Base
- * 2. Variantes
- * 3. Estados hover/disabled
+ * MAPA
+ * 1. Base .btn
+ * 2. Variantes: primary (CTA magenta), secondary, outline, danger, ghost
+ * 3. Tamaños
+ * 4. Alias: selectores de páginas que deben verse igual (sin reescribir cada TSX)
  *
- * NOTA: Componente compartido de botón.
- *
- * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
+ * ROLES
+ * - primary  = CTA de marca (Magenta)
+ * - outline  = acción de estructura (Río/Laguna)
+ * - secondary = neutro
+ * - danger   = destructivo
+ * - ghost    = texto/borde suave
  */
-/* --- Acciones / botones --- */
+
+/* --- 1. Base --- */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 16px;
+  gap: 0.35rem;
+  padding: 0.55rem 1rem;
   border-radius: var(--radius-sm);
-  font-weight: 600;
+  border: 1px solid transparent;
+  font-weight: 700;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.2;
   text-decoration: none;
   text-align: center;
   cursor: pointer;
-  transition: background 0.2s ease;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-sm {
+  padding: 0.4rem 0.7rem;
+  font-size: 0.82rem;
+}
+
+/* --- 2. Variantes --- */
 .btn-primary {
-  background-color: var(--brand-magenta);
+  background-color: var(--color-cta);
   color: var(--color-white);
+  border-color: var(--color-cta);
 }
 
-.btn-primary:hover {
-  background-color: var(--color-primary-strong);
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--color-cta-hover);
+  border-color: var(--color-cta-hover);
 }
 
 .btn-secondary {
   background-color: var(--color-secondary);
   color: var(--color-text);
+  border-color: var(--color-border);
 }
 
-.btn-secondary:hover {
-  background-color: var(--color-border);
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--color-border-subtle);
 }
 
-/* Icon buttons */
+.btn-outline {
+  background: var(--color-surface);
+  color: var(--color-primary-strong);
+  border-color: var(--color-border-soft);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+}
+
+.btn-danger {
+  background: var(--color-danger);
+  color: var(--color-white);
+  border-color: var(--color-danger);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--color-danger-strong);
+  border-color: var(--color-danger-strong);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-primary-strong);
+  border-color: transparent;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--color-primary-soft);
+}
+
 .icon-btn {
   width: 40px;
   height: 40px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   border: none;
@@ -64,4 +124,208 @@
 
 .icon-btn:hover {
   background-color: var(--color-surface-accent);
+}
+
+.icon-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* --- 3. Alias de páginas: misma receta visual ---
+ * No reemplaza markup aún; unifica look de botones nativos existentes.
+ * Estructura (guardar/buscar en paneles) = outline/primary azul, no CTA magenta.
+ */
+
+/* CTA magenta (público / auth / marketing) */
+.login-form button[type="submit"],
+.register-btn-primary,
+.help-action:not(.help-action-soft),
+.investment-opportunities-btn-primary,
+.institutional-form button[type="submit"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-cta);
+  background: var(--color-cta);
+  color: var(--color-white);
+  font-weight: 700;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.2;
+  padding: 0.55rem 1rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+/* Buscar: alto completo de la barra (sin inset) */
+.home-hero .search-button,
+.search-page-header .search-button,
+.search-box .search-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  border-radius: 0;
+  border: none;
+  background: var(--color-cta);
+  color: var(--color-white);
+  font-weight: 700;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1;
+  padding: 0 1.5rem;
+  min-height: 3.35rem;
+  height: 100%;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease;
+  box-sizing: border-box;
+}
+
+.login-form button[type="submit"]:hover,
+.register-btn-primary:hover,
+.help-action:not(.help-action-soft):hover,
+.investment-opportunities-btn-primary:hover,
+.institutional-form button[type="submit"]:hover:not(:disabled) {
+  background: var(--color-cta-hover);
+  border-color: var(--color-cta-hover);
+  color: var(--color-white);
+}
+
+.home-hero .search-button:hover,
+.search-page-header .search-button:hover,
+.search-box .search-button:hover {
+  background: var(--color-cta-hover);
+  border-color: var(--color-cta-hover);
+  color: var(--color-white);
+  transform: none;
+}
+
+/* Acción de estructura (admin / empresa: guardar, buscar, módulos, confirmar) */
+.admin-module-link:not(.disabled),
+.profiles-list-toolbar button,
+.settings-card button:not(.secondary),
+.create-company-card button[type="submit"],
+.create-company-actions .primary,
+.section-actions button:not(.secondary),
+.company-form-actions button:not(.secondary):not(.danger),
+.company-products-form-actions button:not(.secondary):not(.danger),
+.company-product-actions button:not(.secondary):not(.danger),
+.admin-parks-btn:not(.danger),
+.admin-investment-btn:not(.danger):not(.admin-investment-btn-ghost),
+.admin-investment-actions button:not(.admin-investment-btn-ghost):not(.admin-investment-btn-danger),
+.applications-toolbar button,
+.list-toolbar button,
+.special-list-toolbar button,
+.special-save-button,
+.special-email-button,
+.primary-button,
+.admin-analytics-export-btn,
+.decision-actions button.approve,
+.special-request-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-weight: 700;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  line-height: 1.2;
+  padding: 0.5rem 0.85rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.admin-module-link:not(.disabled):hover,
+.profiles-list-toolbar button:hover:not(:disabled),
+.settings-card button:not(.secondary):hover:not(:disabled),
+.create-company-card button[type="submit"]:hover:not(:disabled),
+.company-form-actions button:not(.secondary):not(.danger):hover:not(:disabled),
+.company-products-form-actions button:not(.secondary):not(.danger):hover:not(:disabled),
+.admin-parks-btn:not(.danger):hover:not(:disabled),
+.admin-investment-btn:not(.danger):not(.admin-investment-btn-ghost):hover:not(:disabled),
+.list-toolbar button:hover:not(:disabled),
+.special-list-toolbar button:hover:not(:disabled),
+.special-save-button:hover:not(:disabled),
+.primary-button:hover:not(:disabled),
+.admin-analytics-export-btn:hover:not(:disabled) {
+  background: var(--color-primary-strong);
+  border-color: var(--color-primary-strong);
+  color: var(--color-white);
+}
+
+/* Secundario / cancelar */
+.create-company-card button[type="button"].secondary,
+.settings-card button.secondary,
+.section-actions button.secondary,
+.company-products-form-actions button.secondary,
+.company-product-actions button.secondary,
+.admin-investment-btn-ghost,
+.register-btn-ghost,
+.help-action-soft,
+.investment-opportunities-btn-secondary,
+.create-company-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-soft);
+  background: var(--color-surface-soft);
+  color: var(--color-text-muted);
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 0.5rem 0.85rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.create-company-toggle:hover,
+.company-product-actions button.secondary:hover,
+.settings-card button.secondary:hover {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-strong);
+  border-color: var(--color-border-soft);
+}
+
+/* Peligro */
+.company-product-actions button.danger,
+.admin-parks-btn.danger,
+.decision-actions button.reject,
+.btn-reject {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-danger);
+  background: var(--color-danger);
+  color: var(--color-white);
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 0.5rem 0.85rem;
+  cursor: pointer;
+}
+
+.company-product-actions button.danger:hover,
+.admin-parks-btn.danger:hover {
+  background: var(--color-danger-strong);
+  border-color: var(--color-danger-strong);
+}
+
+/* Disabled común */
+.profiles-list-toolbar button:disabled,
+.settings-card button:disabled,
+.create-company-card button:disabled,
+.company-form-actions button:disabled,
+.company-products-form-actions button:disabled,
+.admin-parks-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }

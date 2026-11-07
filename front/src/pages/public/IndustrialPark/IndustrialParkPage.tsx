@@ -40,7 +40,7 @@ const LOCALITY_COORDS: Record<string, [number, number]> = {
 };
 
 const parkMarkerStyle: L.CircleMarkerOptions = {
-  color: "#0f172a",
+  color: "#00203a",
   fillColor: "#e6007e",
   fillOpacity: 0.9,
   radius: 9,
@@ -48,8 +48,8 @@ const parkMarkerStyle: L.CircleMarkerOptions = {
 };
 
 const companyMarkerStyle: L.CircleMarkerOptions = {
-  color: "#0f172a",
-  fillColor: "#0ea5e9",
+  color: "#00203a",
+  fillColor: "#5059bc",
   fillOpacity: 0.85,
   radius: 6,
   weight: 2
@@ -554,13 +554,7 @@ export default function IndustrialParkPage() {
                     })}
                   </div>
                 </section>
-              ) : (
-                <p className="industrial-feedback">
-                  El mapa de <strong>parques</strong> ya está listo. Las empresas del directorio
-                  exportable aparecerán en el mapa cuando carguen latitud/longitud en su ficha
-                  (admin o panel empresa).
-                </p>
-              )}
+              ) : null}
             </>
           ) : null}
         </div>

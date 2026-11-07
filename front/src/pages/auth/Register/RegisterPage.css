@@ -29,41 +29,43 @@
   background: var(--color-surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
-  padding: 1.6rem;
+  padding: 1.25rem 1.35rem 1.45rem;
 }
 
 /* --- Acciones / botones --- */
 .register-back-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  color: var(--color-white);
+  gap: 0.3rem;
+  color: var(--color-primary-strong);
   font-weight: 700;
+  font-size: 0.9rem;
   text-decoration: none;
-  margin: 1rem 0;
-  background: var(--brand-magenta);
+  margin: 0 0 0.85rem;
+  background: transparent;
   border-radius: var(--radius-sm);
-  padding: 0.45rem 0.65rem;
-  border: 1px solid var(--brand-magenta);
+  /* sin padding horizontal: alinea con título del shell */
+  padding: 0.2rem 0;
+  border: none;
+  width: fit-content;
 }
 
 .register-back-link:hover {
   text-decoration: none;
-  background: var(--brand-rio-azulado);
-  color: var(--color-white);
+  color: var(--color-cta);
 }
 
 /* --- Header --- */
 .register-header {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  margin-bottom: 1.5rem;
+  gap: 0.45rem;
+  margin-bottom: 1.15rem;
 }
 
 .register-header h1 {
   font-size: clamp(1.4rem, 2.2vw, 2rem);
-  color: var(--color-text);
+  color: var(--color-primary-strong);
 }
 
 .register-header p {
@@ -71,79 +73,119 @@
   line-height: 1.5;
 }
 
-.register-eyebrow {
+/* Más específico que .register-header p para no heredar muted */
+.register-header .register-eyebrow {
+  margin: 0;
   font-weight: 700;
-  color: var(--color-primary);
+  color: var(--color-primary-strong); /* Azul Laguna — igual que login */
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-size: 0.78rem;
+  line-height: 1.3;
 }
 
 .register-steps {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 0.7rem;
+  gap: 0.55rem;
   list-style: none;
-  margin-bottom: 1.4rem;
+  margin-bottom: 1.1rem;
+  padding: 0;
+  background: transparent;
 }
 
 .step-item button {
   border: 1px solid var(--color-border);
-  background: var(--color-surface-soft);
+  background: var(--color-surface);
   width: 100%;
   border-radius: var(--radius-md);
-  padding: 0.7rem 0.8rem;
+  padding: 0.55rem 0.65rem;
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.55rem;
   cursor: pointer;
   text-align: left;
+  box-shadow: var(--shadow-soft);
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .step-item button:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: 0.72;
+  box-shadow: none;
+  background: var(--color-surface-soft);
 }
 
 .step-item button span {
   width: 28px;
   height: 28px;
+  flex-shrink: 0;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-secondary);
-  color: var(--color-text-muted);
+  background: color-mix(in srgb, var(--brand-azul-noche) 12%, #ffffff);
+  color: var(--brand-azul-noche);
   font-weight: 700;
+  font-size: 0.82rem;
 }
 
 .step-item button small {
-  color: var(--color-text);
+  color: var(--color-text-muted);
   font-weight: 600;
   line-height: 1.2;
+  font-size: 0.8rem;
 }
 
+/* Paso actual: Azul Noche (mismo del header de acceso) */
 .step-item.active button {
-  border-color: var(--color-primary);
-  background: var(--color-primary-soft);
+  border-color: var(--brand-azul-noche);
+  background: var(--brand-azul-noche);
+  box-shadow: var(--shadow-card);
 }
 
 .step-item.active button span {
-  background: var(--color-primary);
+  background: var(--brand-magenta);
   color: var(--color-white);
+}
+
+.step-item.active button small {
+  color: var(--color-text-inverse);
+  font-weight: 700;
+}
+
+/* Completados: Laguna + Naturaleza */
+.step-item.done button {
+  border-color: color-mix(in srgb, var(--brand-azul-laguna) 35%, #ffffff);
+  background: color-mix(in srgb, var(--brand-azul-laguna) 8%, #ffffff);
+}
+
+.step-item.done button span {
+  background: var(--brand-verde-naturaleza);
+  color: var(--color-white);
+}
+
+.step-item.done button small {
+  color: var(--brand-azul-laguna);
+  font-weight: 700;
+}
+
+.step-item:not(.active):not(.done) button:not(:disabled):hover {
+  border-color: color-mix(in srgb, var(--brand-azul-noche) 28%, #ffffff);
+  background: color-mix(in srgb, var(--brand-azul-noche) 4%, #ffffff);
 }
 
 /* --- Formularios --- */
 .register-form {
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-lg);
-  padding: 1rem;
+  padding: 0.85rem;
 }
 
 .form-step {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.8rem;
 }
 
 .form-step h2 {
@@ -155,16 +197,16 @@
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.9rem;
+  gap: 0.7rem;
 }
 
 .form-grid label {
   display: flex;
   flex-direction: column;
-  gap: 0.38rem;
+  gap: 0.3rem;
   font-weight: 600;
   color: var(--color-text-muted);
-  font-size: 0.94rem;
+  font-size: 0.88rem;
 }
 
 .form-grid label.full-width {
@@ -179,11 +221,84 @@
 .form-grid textarea,
 .form-grid select {
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: 0.65rem 0.7rem;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.6rem;
   font: inherit;
+  font-size: 0.92rem;
   color: var(--color-text);
   background: var(--color-surface);
+}
+
+.logo-field {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.logo-field > label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+}
+
+.logo-field > span {
+  font-size: 0.82rem;
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.logo-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+  padding: 0.55rem 0.65rem;
+}
+
+.logo-preview img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.logo-preview-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.logo-preview-meta strong {
+  font-size: 0.88rem;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logo-preview-meta small {
+  color: var(--color-text-soft);
+  font-size: 0.78rem;
+}
+
+.logo-clear {
+  margin-top: 0.25rem;
+  width: fit-content;
+  padding: 0.28rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+.file-name {
+  color: var(--color-text-soft);
+  font-size: 0.78rem;
+  font-weight: 500;
 }
 
 .form-grid textarea {
@@ -273,11 +388,15 @@
 .dynamic-row {
   display: grid;
   grid-template-columns: 1fr 1fr auto;
-  gap: 0.7rem;
+  gap: 0.55rem;
   align-items: end;
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-md);
-  padding: 0.65rem;
+  padding: 0.55rem;
+}
+
+.dynamic-row-single {
+  grid-template-columns: 1fr auto;
 }
 
 .dynamic-row label {
@@ -323,17 +442,21 @@
   display: flex;
   justify-content: space-between;
   gap: 0.7rem;
-  margin-top: 1.2rem;
+  margin-top: 1rem;
 }
 
 .register-btn-ghost,
-
 .register-btn-primary {
   border: none;
-  border-radius: var(--radius-md);
-  padding: 0.7rem 1rem;
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.9rem;
   font-weight: 700;
   cursor: pointer;
+}
+
+.register-btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .register-btn-ghost {
@@ -347,12 +470,12 @@
 }
 
 .register-btn-primary {
-  background: var(--brand-magenta);
+  background: var(--color-cta);
   color: var(--color-white);
 }
 
 .register-btn-primary:hover {
-  background: var(--brand-rio-azulado);
+  background: var(--color-cta-hover);
 }
 
 /* --- Formularios --- */
@@ -364,6 +487,12 @@
   padding: 0.75rem 0.85rem;
   margin-bottom: 1rem;
   font-weight: 600;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.form-success p {
+  margin: 0;
 }
 
 .form-error {
@@ -376,10 +505,8 @@
   font-weight: 600;
 }
 
-/* --- Responsive --- */
+/* Responsive: escritorio >1024 | tablet ≤1024 | tablet sm ≤768 | cel ≤480 */
 @media (max-width: 1024px) {
-
-/* --- Página / shell --- */
   .register-page {
     padding: 1.55rem 0.9rem 2.25rem;
   }
@@ -388,6 +515,8 @@
     padding: 1.25rem;
     border-radius: var(--radius-md);
   }
+
+  /* 4 pasos → 2 columnas en tablet */
   .register-steps {
     grid-template-columns: 1fr 1fr;
   }
@@ -407,8 +536,9 @@
     padding: 1rem;
   }
 
+  /* Mantener 2 cols en tablet portrait */
   .register-steps {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 0.55rem;
   }
 
@@ -416,42 +546,40 @@
     padding: 0.62rem 0.68rem;
   }
 
-/* --- Listados / grillas --- */
   .form-grid {
     grid-template-columns: 1fr;
   }
 
-/* --- Header --- */
   .dynamic-header {
     flex-direction: column;
     align-items: flex-start;
   }
 
-/* --- Formularios --- */
   .form-actions {
     flex-direction: column-reverse;
   }
 }
-@media (max-width: 480px) {
 
-/* --- Página / shell --- */
+@media (max-width: 480px) {
   .register-page {
-    padding: 0.95rem 0.6rem 1.45rem;
+    padding: 0.95rem 0.65rem 1.45rem;
   }
 
   .register-shell,
-
   .register-form {
     padding: 0.85rem;
   }
 
-/* --- Acciones / botones --- */
+  /* 2 → 1 columna en celular */
+  .register-steps {
+    grid-template-columns: 1fr;
+  }
+
   .register-back-link {
     margin-bottom: 0.7rem;
     font-size: 0.92rem;
   }
 
-/* --- Header --- */
   .register-header {
     margin-bottom: 1.1rem;
   }
@@ -462,13 +590,11 @@
 
   .dynamic-header button,
   .register-btn-ghost,
-
   .register-btn-primary {
     width: 100%;
     text-align: center;
   }
 
-/* --- Formularios --- */
   .form-actions {
     margin-top: 0.95rem;
   }

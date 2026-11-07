@@ -1,0 +1,305 @@
+/*
+ * =============================================================================
+ * ProductPublicPage.css — ficha pública producto
+ * Ruta: pages/public/ProductPublic/ProductPublicPage.css
+ * Tokens: styles/tokens.css
+ * =============================================================================
+ * Misma familia visual que CompanyPublicPage.
+ */
+.product-public-page {
+  width: 100%;
+  padding: 1.6rem 1rem 3rem;
+}
+
+.product-public-shell {
+  width: min(980px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 1rem;
+}
+
+.product-public-back {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  color: var(--color-primary-strong);
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.35rem;
+  background: transparent;
+  border: none;
+}
+
+.product-public-back:hover {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-strong);
+  text-decoration: none;
+}
+
+.product-public-feedback {
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+  color: var(--color-text-muted);
+  padding: 0.75rem 0.9rem;
+}
+
+.product-public-feedback.error {
+  border-color: var(--color-danger-border);
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  box-shadow: none;
+}
+
+.product-public-card {
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  padding: 1.15rem 1.2rem 1.25rem;
+  display: grid;
+  gap: 1.1rem;
+}
+
+.product-public-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1rem 1.15rem;
+  align-items: center;
+}
+
+.product-public-media {
+  width: 160px;
+  height: 160px;
+  object-fit: cover;
+  object-position: center;
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-soft);
+  box-shadow: var(--shadow-soft);
+}
+
+.product-public-media-logo {
+  object-fit: contain;
+  padding: 0.55rem;
+  box-sizing: border-box;
+}
+
+.product-public-media-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  color: var(--color-text-soft);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--color-surface-soft) 88%, var(--color-border-soft)),
+      color-mix(in srgb, var(--color-surface-soft) 88%, var(--color-border-soft)) 10px,
+      var(--color-surface-soft) 10px,
+      var(--color-surface-soft) 20px
+    );
+}
+
+.product-public-no-image-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+  opacity: 0.75;
+}
+
+.product-public-hero-copy {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 160px;
+}
+
+.product-public-hero-copy h1 {
+  margin: 0;
+  color: var(--color-primary-strong);
+  font-size: clamp(1.35rem, 2.1vw, 1.9rem);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.product-public-section {
+  border-top: 1px solid var(--color-border-subtle);
+  padding-top: 0.95rem;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.product-public-section h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.98rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.product-public-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem 0.85rem;
+  margin: 0;
+}
+
+.product-public-field {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-soft);
+  padding: 0.55rem 0.65rem;
+  min-width: 0;
+}
+
+.product-public-field.full {
+  grid-column: 1 / -1;
+}
+
+.product-public-field dt {
+  color: var(--color-text-soft);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.product-public-field dd {
+  margin: 0.28rem 0 0;
+  color: var(--color-text);
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.product-public-field a,
+.product-public-company-link {
+  color: var(--brand-azul-laguna);
+  font-weight: 700;
+  text-decoration: none;
+  word-break: break-word;
+}
+
+.product-public-field a:hover,
+.product-public-company-link:hover {
+  text-decoration: underline;
+}
+
+.product-public-multiline {
+  white-space: pre-line;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  font-weight: 600;
+}
+
+.product-public-pa-badge {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--brand-azul-noche) 16%, var(--color-border-soft));
+  background: color-mix(in srgb, var(--brand-azul-noche) 5%, var(--color-surface));
+  color: var(--brand-azul-laguna);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.28rem 0.7rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.product-public-company-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.product-public-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 0.5rem 0.85rem;
+  text-decoration: none;
+}
+
+.product-public-cta:hover {
+  background: var(--color-primary-strong);
+  border-color: var(--color-primary-strong);
+  color: var(--color-white);
+}
+
+.product-public-shell > .info-request-card {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  box-shadow: var(--shadow-card);
+}
+
+@media (max-width: 1024px) {
+  .product-public-page {
+    padding: 1.35rem 0.9rem 2.4rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .product-public-page {
+    padding: 1.1rem 0.75rem 2rem;
+  }
+
+  .product-public-hero {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  .product-public-media {
+    width: 140px;
+    height: 140px;
+  }
+
+  .product-public-hero-copy {
+    min-height: 0;
+    width: 100%;
+  }
+
+  .product-public-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-public-cta {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-public-page {
+    padding: 0.9rem 0.65rem 1.5rem;
+  }
+
+  .product-public-card {
+    border-radius: var(--radius-md);
+    padding: 0.8rem;
+  }
+
+  .product-public-media {
+    width: 120px;
+    height: 120px;
+  }
+
+  .product-public-hero-copy h1 {
+    font-size: 1.2rem;
+  }
+}

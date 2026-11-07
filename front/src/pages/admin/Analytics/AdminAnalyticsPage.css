@@ -113,10 +113,10 @@
 }
 
 .admin-analytics-export-btn {
-  border: none;
+  border: 1px solid var(--color-primary);
   border-radius: var(--radius-sm);
-  background: var(--brand-magenta);
-  color: var(--color-text-inverse);
+  background: var(--color-primary);
+  color: var(--color-white);
   font-weight: 700;
   font-size: 0.86rem;
   padding: 0.55rem 0.85rem;
@@ -125,6 +125,7 @@
 
 .admin-analytics-export-btn:hover:not(:disabled) {
   background: var(--color-primary-strong);
+  border-color: var(--color-primary-strong);
 }
 
 .admin-analytics-export-btn:disabled {
@@ -483,7 +484,7 @@
  * 8. RESPONSIVE
  * ============================================================================= */
 
-@media (max-width: 980px) {
+@media (max-width: 1024px) {
   .admin-analytics-kpis,
   .admin-analytics-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -494,7 +495,7 @@
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .admin-analytics-kpis,
   .admin-analytics-grid,
   .admin-analytics-live-grid {

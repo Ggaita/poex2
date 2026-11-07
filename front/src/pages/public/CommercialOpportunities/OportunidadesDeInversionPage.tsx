@@ -99,7 +99,7 @@ export default function OportunidadesDeInversionPage() {
               <button type="button" className="investment-opportunities-btn-primary" onClick={scrollToCatalog}>
                 Explorar oportunidades
               </button>
-              <Link to="/contacto-institucional" className="investment-opportunities-btn-secondary">
+              <Link to="/institucional#contacto" className="investment-opportunities-btn-secondary">
                 Contactar a la Agencia
               </Link>
             </div>

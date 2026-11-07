@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { rememberSearchPath } from "../../../shared/navigation/searchBack";
 import MainLayout from "../../../layouts/MainLayouts";
 import { HeroSearchForm } from "../Home/components/Hero/Components/HeroSearchForm";
 import SpecialRequestForm from "../../../shared/components/SpecialRequestForm/SpecialRequestForm";
@@ -13,7 +14,7 @@ import type {
   SearchResultItem,
   SearchResultKindFilter
 } from "../../../shared/types/search.types";
-import { trackProductView, trackSearch } from "../../../shared/analytics/tracker";
+import { trackSearch } from "../../../shared/analytics/tracker";
 import "./SearchPage.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
@@ -90,6 +91,7 @@ const modeUi: Record<SearchMode, SearchModeUi> = {
 };
 
 export default function SearchPage() {
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q")?.trim() ?? "";
   const searchMode = parseSearchMode(searchParams.get("mode"));
@@ -107,6 +109,10 @@ export default function SearchPage() {
   const [facets, setFacets] = useState<SearchFacets>(EMPTY_FACETS);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    rememberSearchPath(`${location.pathname}${location.search}`);
+  }, [location.pathname, location.search]);
 
   useEffect(() => {
     if (!shouldRunSearch) {
@@ -184,20 +190,7 @@ export default function SearchPage() {
             resultCount: payload.data?.total ?? nextResults.length,
             path: `/search${window.location.search}`
           });
-
-          // Vistas de producto derivadas de resultados (modo producto o mixto).
-          nextResults
-            .filter((item) => item.kind === "product")
-            .slice(0, 12)
-            .forEach((item) => {
-              trackProductView({
-                profileId: item.profileId,
-                productId: item.product?.id,
-                productName: item.title,
-                companyName: item.companyName,
-                path: `/search${window.location.search}`
-              });
-            });
+          // product_view se registra en /productos/:id
         }
       } catch {
         if (!active) {
@@ -388,7 +381,7 @@ export default function SearchPage() {
             />
             <div className="search-page-actions">
               <Link to="/" className="search-page-link">
-                Volver al inicio
+                Inicio
               </Link>
               {searchMode === "all" ? (
                 <>
@@ -613,7 +606,13 @@ export default function SearchPage() {
           {!isLoading && visibleResults.length > 0 ? (
             <div className="search-results-grid">
               {visibleResults.map((item) => {
-                const detailHref = `/empresas/${item.profileId}`;
+                const detailHref =
+                  item.kind === "product" && item.product?.id
+                    ? `/productos/${item.product.id}`
+                    : `/empresas/${item.profileId}`;
+                const detailState = {
+                  fromSearch: `${location.pathname}${location.search}`
+                };
                 // Comprador: imagen de producto si hay; si no, logo de empresa.
                 const mediaSrc = item.product?.imageUrl || item.companyLogoUrl;
                 const isLogoOnly = Boolean(item.companyLogoUrl) && !item.product?.imageUrl;
@@ -636,7 +635,12 @@ export default function SearchPage() {
                     key={item.resultId}
                     className={`search-result-card search-result-card-compact search-result-card-${item.kind}`}
                   >
-                    <Link to={detailHref} className="search-card-media-link" aria-label={`Ver ficha de ${item.title}`}>
+                    <Link
+                      to={detailHref}
+                      state={detailState}
+                      className="search-card-media-link"
+                      aria-label={`Ver ficha de ${item.title}`}
+                    >
                       <div className="search-card-media">
                         {mediaSrc ? (
                           <img
@@ -659,7 +663,9 @@ export default function SearchPage() {
                     <div className="search-card-compact-body">
                       {/* Sin chips de tipo/categoría internos (Empresa, sector, etc.). */}
                       <h2 className="search-card-title">
-                        <Link to={detailHref}>{item.title}</Link>
+                        <Link to={detailHref} state={detailState}>
+                          {item.title}
+                        </Link>
                       </h2>
 
                       {showCompanyLine ? (
@@ -679,7 +685,7 @@ export default function SearchPage() {
                       </div>
 
                       <div className="search-card-actions search-card-actions-compact">
-                        <Link className="search-card-link" to={detailHref}>
+                        <Link className="search-card-link" to={detailHref} state={detailState}>
                           Ver ficha
                         </Link>
                       </div>

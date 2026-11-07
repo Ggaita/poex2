@@ -23,7 +23,8 @@
 .search-page {
   width: 100%;
   min-height: 100%;
-  background: var(--color-bg-app);
+  /* transparente: deja ver la marca de agua global (body::before) */
+  background: transparent;
   color: var(--color-text);
   padding: 2rem 1rem 3rem;
 }
@@ -55,7 +56,7 @@
 
 .search-page-header h1 {
   font-size: clamp(1.4rem, 2.8vw, 2rem);
-  color: var(--color-text);
+  color: var(--color-primary-strong);
 }
 
 .search-page-header small {
@@ -73,11 +74,14 @@
 
 .search-box {
   display: flex;
-  gap: 0.5rem;
+  align-items: stretch;
+  gap: 0;
   background: var(--color-primary-soft);
-  padding: 0.5rem;
+  padding: 0;
+  overflow: hidden;
   border-radius: 14px;
   border: 1px solid var(--color-border-soft);
+  min-height: 3.35rem;
 }
 
 .search-input {
@@ -87,7 +91,10 @@
   background: transparent;
   color: var(--color-text);
   font-size: 1rem;
-  padding: 0.9rem 1rem;
+  padding: 0 1.1rem;
+  min-height: 3.35rem;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .search-input::placeholder {
@@ -95,18 +102,28 @@
 }
 
 .search-button {
-  background: var(--brand-magenta);
+  flex: 0 0 auto;
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-cta);
   color: var(--color-white);
   border: none;
-  padding: 0.9rem 1.4rem;
-  border-radius: var(--radius-md);
-  font-weight: 600;
+  border-radius: 0;
+  padding: 0 1.5rem;
+  min-height: 3.35rem;
+  height: 100%;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease;
+  box-sizing: border-box;
 }
 
 .search-button:hover {
-  background: var(--color-primary-strong);
+  background: var(--color-cta-hover);
 }
 
 .search-page-header .search-form {
@@ -339,7 +356,7 @@
   min-height: 100%;
   height: auto;
   overflow: visible;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  box-shadow: var(--shadow-card);
 }
 
 /* --- Tarjeta compacta (solo resumen visual) ---
@@ -349,14 +366,15 @@
 .search-result-card-compact {
   padding: 0;
   gap: 0;
-  min-height: 0;
+  height: 100%;
+  min-height: 100%;
   overflow: hidden;
   transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .search-result-card-compact:hover {
-  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border-soft));
-  box-shadow: 0 8px 22px rgba(16, 24, 40, 0.08);
+  border-color: color-mix(in srgb, var(--brand-azul-noche) 28%, var(--color-border-soft));
+  box-shadow: var(--shadow-card-hover);
   transform: translateY(-1px);
 }
 
@@ -378,10 +396,13 @@
 }
 
 .search-card-compact-body {
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
   gap: 0.45rem;
   padding: 0.75rem 0.8rem 0.85rem;
   min-width: 0;
+  min-height: 0;
 }
 
 /* Etiqueta de experiencia exportadora (reemplaza Empresa/Producto) */
@@ -460,13 +481,22 @@
 }
 
 .search-card-actions-compact {
-  margin-top: 0.15rem;
+  margin-top: auto;
   padding-top: 0.55rem;
   border-top: 1px solid var(--color-border-subtle);
+  width: 100%;
+  display: block;
 }
 
 .search-card-actions-compact .search-card-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: 2.4rem;
+  padding: 0.55rem 0.75rem;
   text-align: center;
   justify-self: stretch;
 }
@@ -508,7 +538,7 @@
   object-fit: contain;
   object-position: center;
   border: 1px solid var(--color-border-soft);
-  background: #fff;
+  background: var(--color-white);
   flex-shrink: 0;
 }
 
@@ -884,19 +914,28 @@
 }
 
 .search-card-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   justify-self: start;
   text-decoration: none;
-  border: 1px solid var(--color-border-soft);
-  background: var(--color-primary-soft);
-  color: var(--color-primary-strong);
+  border: 1px solid var(--brand-azul-noche);
+  background: var(--brand-azul-noche);
+  color: var(--color-white);
   border-radius: var(--radius-sm);
   font-weight: 700;
-  font-size: 0.76rem;
-  padding: 0.32rem 0.58rem;
+  font-size: 0.82rem;
+  line-height: 1.2;
+  padding: 0.55rem 0.75rem;
+  min-height: 2.4rem;
+  box-sizing: border-box;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .search-card-link:hover {
-  border-color: var(--color-primary);
+  background: var(--brand-azul-laguna);
+  border-color: var(--brand-azul-laguna);
+  color: var(--color-white);
 }
 
 .search-info-request {
@@ -946,12 +985,12 @@
   display: inline-flex;
   align-items: center;
   max-width: 100%;
-  border: 1px solid color-mix(in srgb, var(--brand-magenta) 30%, var(--color-border-soft));
-  background: color-mix(in srgb, var(--brand-magenta) 8%, var(--color-surface));
-  color: var(--brand-magenta);
+  border: 1px solid color-mix(in srgb, var(--brand-azul-noche) 16%, var(--color-border-soft));
+  background: color-mix(in srgb, var(--brand-azul-noche) 5%, var(--color-surface));
+  color: var(--brand-azul-laguna);
   border-radius: 999px;
   font-size: 0.7rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.01em;
   padding: 0.14rem 0.48rem;
   font-variant-numeric: tabular-nums;
@@ -1020,12 +1059,13 @@
 
   .search-page-header .search-box {
     flex-direction: column;
-    gap: 0.45rem;
+    gap: 0;
   }
 
   .search-page-header .search-input,
   .search-page-header .search-button {
     width: 100%;
+    min-height: 2.9rem;
   }
 
   .search-page-actions {

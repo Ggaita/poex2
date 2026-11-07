@@ -2,79 +2,147 @@
  * =============================================================================
  * tokens.css — variables de marca y UI
  * Ruta: styles/tokens.css
+ * Fuente: front/doc/manualdeMarca.pdf
  * =============================================================================
  *
  * MAPA RÁPIDO PARA EDITAR A OJO
  * -----------------------------
- * 1. Paleta de marca (--brand-*)
- * 2. Tipografías
- * 3. Neutros (fondos, bordes, textos)
- * 4. Semánticos (primary, success, danger, info)
- * 5. Layout helpers (radius, shadow, container)
+ * 1. Paleta de marca (--brand-*)  ← solo colores del manual
+ * 2. Tipografías (Kanit / Manrope)
+ * 3. Neutros de producto (UI, no están en el PDF)
+ * 4. Roles semánticos (primary estructura / cta acción / estados)
+ * 5. Layout (radius, shadow, focus, container)
  *
- * NOTA: Cambios globales de color/tipografía empiezan acá.
- * Convención: preferir var(--...) en páginas; no hardcodear marca.
+ * ROLES (estándar del sitio)
+ * - Estructura / links / chrome: Azul Laguna + Río Azulado
+ * - CTA principal (botones de acción): Magenta (hover = magenta oscuro)
+ * - Éxito / positivo: Verde Naturaleza (+ Agricultura en fondos)
+ * - Peligro: rojo funcional de sistema (no está en el manual)
+ * - Aviso: ámbar funcional de sistema (no está en el manual)
+ *
+ * Convención: en CSS de páginas usar siempre var(--...); no hardcodear hex de marca.
  */
-:root {
-  /* Manual de marca - paleta principal */
-  --brand-verde-agricultura: #c8d29c;
-  --brand-verde-naturaleza: #8a9a46;
-  --brand-azul-noche: #00203a;
-  --brand-azul-laguna: #063565;
-  --brand-rio-azulado: #5059bc;
-  --brand-magenta: #e6007e; 
 
-  /* Tipografías */
+:root {
+  /* -------------------------------------------------------------------------
+   * 1. MANUAL DE MARCA — paleta principal (hex exactos del PDF)
+   * ------------------------------------------------------------------------- */
+  --brand-verde-agricultura: #c8d29c; /* Pantone 580 C */
+  --brand-verde-naturaleza: #8a9a46; /* Pantone 7495 C */
+  --brand-azul-noche: #00203a; /* Pantone 289 C */
+  --brand-azul-laguna: #063565; /* Pantone 2955 C */
+  --brand-rio-azulado: #5059bc; /* Pantone 2367 C */
+  --brand-magenta: #e6007e;
+
+  /* Derivados controlados (no inventan matiz: solo oscurecen/aclaran marca) */
+  --brand-magenta-strong: #b40064;
+  --brand-magenta-soft: color-mix(in srgb, var(--brand-magenta) 12%, #ffffff);
+  --brand-rio-strong: #3d4499;
+  --brand-rio-soft: color-mix(in srgb, var(--brand-rio-azulado) 12%, #ffffff);
+  --brand-laguna-soft: color-mix(in srgb, var(--brand-azul-laguna) 10%, #ffffff);
+  --brand-naturaleza-strong: #6f7c38;
+  --brand-naturaleza-soft: color-mix(in srgb, var(--brand-verde-agricultura) 55%, #ffffff);
+
+  /* -------------------------------------------------------------------------
+   * 2. TIPOGRAFÍAS (manual)
+   * ------------------------------------------------------------------------- */
   --font-heading: "Kanit", "Segoe UI", sans-serif;
   --font-body: "Manrope", "Segoe UI", sans-serif;
 
-  /* Neutros */
+  /* -------------------------------------------------------------------------
+   * 3. NEUTROS DE PRODUCTO (UI digital; el PDF no los define)
+   *    Anclados a Azul Noche para no caer en slate genérico “SaaS/IA”.
+   * ------------------------------------------------------------------------- */
   --color-white: #ffffff;
-  --color-black: #0b1320;
-  --color-bg-app: #c5b4be11;
-  --color-surface: #fffefeb2;
-  --color-surface-soft: #f8fafc;
-  --color-surface-accent: #eef2ff;
-  --color-border: #d0d5dd;
-  --color-border-soft: #dbe2ff;
-  --color-border-subtle: #eaecf0;
-  --color-text: #101828;
-  --color-text-muted: #475467;
-  --color-text-soft: #64748b;
+  --color-black: var(--brand-azul-noche);
+
+  --color-bg-app: color-mix(in srgb, var(--brand-azul-noche) 4%, #f4f6f8);
+  --color-surface: #ffffff;
+  --color-surface-soft: color-mix(in srgb, var(--brand-azul-noche) 3%, #ffffff);
+  --color-surface-accent: var(--brand-rio-soft);
+
+  --color-border: color-mix(in srgb, var(--brand-azul-noche) 16%, #ffffff);
+  --color-border-soft: color-mix(in srgb, var(--brand-rio-azulado) 18%, #ffffff);
+  --color-border-subtle: color-mix(in srgb, var(--brand-azul-noche) 8%, #ffffff);
+
+  --color-text: var(--brand-azul-noche);
+  --color-text-muted: color-mix(in srgb, var(--brand-azul-noche) 72%, #ffffff);
+  --color-text-soft: color-mix(in srgb, var(--brand-azul-noche) 55%, #ffffff);
   --color-text-inverse: #f8f9ff;
   --color-link: var(--brand-azul-laguna);
 
-  /* Semánticos */
+  /* -------------------------------------------------------------------------
+   * 4. ROLES SEMÁNTICOS
+   * ------------------------------------------------------------------------- */
+  /* Estructura / selección / chrome */
   --color-primary: var(--brand-rio-azulado);
-  --color-primary-strong: #3e469e;
-  --color-primary-soft: #eef0ff;
-  --color-secondary: #e4e7ec;
-  --color-success: #067647;
-  --color-success-strong: #079455;
-  --color-success-bg: #ecfdf3;
-  --color-success-border: #abefc6;
-  --color-warning: #b54708;
-  --color-warning-bg: #fffaeb;
-  --color-warning-border: #fedf89;
-  --color-danger: #b42318;
-  --color-danger-strong: #d92d20;
-  --color-danger-bg: #fef3f2;
-  --color-danger-bg-hover: #fee4e2;
-  --color-danger-border: #fecdca;
-  --color-info: var(--brand-azul-laguna);
-  --color-info-bg: rgba(6, 53, 101, 0.08);
+  --color-primary-strong: var(--brand-azul-laguna);
+  --color-primary-soft: var(--brand-rio-soft);
 
-  /* Layout helpers */
+  /* CTA de acción (botones principales del sitio) */
+  --color-cta: var(--brand-magenta);
+  --color-cta-hover: var(--brand-magenta-strong);
+  --color-cta-soft: var(--brand-magenta-soft);
+
+  --color-secondary: color-mix(in srgb, var(--brand-azul-noche) 8%, #ffffff);
+
+  /* Estados */
+  --color-success: var(--brand-verde-naturaleza);
+  --color-success-strong: var(--brand-naturaleza-strong);
+  --color-success-bg: var(--brand-naturaleza-soft);
+  --color-success-border: color-mix(in srgb, var(--brand-verde-naturaleza) 35%, #ffffff);
+
+  --color-warning: #9a6700;
+  --color-warning-bg: #fff8e8;
+  --color-warning-border: #f0d48a;
+
+  --color-danger: #9f1239;
+  --color-danger-strong: #be123c;
+  --color-danger-bg: #fff1f2;
+  --color-danger-bg-hover: #ffe4e6;
+  --color-danger-border: #feacb8;
+
+  --color-info: var(--brand-azul-laguna);
+  --color-info-bg: var(--brand-laguna-soft);
+
+  /* Badges / mapas (siempre marca) */
+  --color-badge-alert: var(--color-warning);
+  --color-badge-alert-text: var(--brand-azul-noche);
+  --color-map-park: var(--brand-magenta);
+  --color-map-company: var(--brand-rio-azulado);
+  --color-map-stroke: var(--brand-azul-noche);
+
+  /* -------------------------------------------------------------------------
+   * 5. LAYOUT
+   * ------------------------------------------------------------------------- */
   --radius-sm: 6px;
   --radius-md: 10px;
-  --radius-lg: 10px;
-  /* Elevación de bloques públicos (institucional, sectores, servicios, etc.) */
-  --shadow-soft: 0 4px 14px rgba(16, 24, 40, 0.05);
-  --shadow-card: 0 10px 28px rgba(16, 24, 40, 0.08);
-  --shadow-card-hover: 0 16px 36px rgba(16, 24, 40, 0.12);
+  --radius-lg: 14px;
+
+  --shadow-soft: 0 4px 14px color-mix(in srgb, var(--brand-azul-noche) 8%, transparent);
+  --shadow-card: 0 10px 28px color-mix(in srgb, var(--brand-azul-noche) 10%, transparent);
+  --shadow-card-hover: 0 16px 36px color-mix(in srgb, var(--brand-azul-noche) 14%, transparent);
+
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--brand-rio-azulado) 35%, transparent);
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+
   --container-xl: min(1200px, 100%);
 
   /* Compatibilidad con variables viejas */
   --background-color: var(--color-bg-app);
   --color-text-accent: var(--brand-magenta);
+  /* Alias legacy Vite (evitar roturas si queda CSS viejo) */
+  --accent: var(--color-cta);
+  --accent-bg: var(--color-cta-soft);
+  --accent-border: var(--brand-magenta-strong);
+  --border: var(--color-border);
+  --text-h: var(--color-text);
+  --shadow: var(--shadow-soft);
+  --social-bg: var(--color-surface-soft);
 }

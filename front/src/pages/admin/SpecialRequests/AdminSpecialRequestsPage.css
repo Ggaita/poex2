@@ -118,8 +118,7 @@
 }
 
 .special-list-toolbar select,
-.special-list-toolbar input,
-.special-list-toolbar button {
+.special-list-toolbar input {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
@@ -132,6 +131,17 @@
   width: fit-content;
   cursor: pointer;
   font-weight: 700;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: var(--color-white);
+  padding: 0.45rem 0.75rem;
+  font: inherit;
+}
+
+.special-list-toolbar button:hover:not(:disabled) {
+  background: var(--color-primary-strong);
+  border-color: var(--color-primary-strong);
 }
 
 .special-list-feedback,
@@ -157,7 +167,7 @@
   width: 100%;
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-sm);
-  background: var(--color-bg-soft);
+  background: var(--color-surface-soft);
   padding: 0.5rem 0.56rem;
   text-align: left;
   cursor: pointer;
@@ -198,7 +208,7 @@
 }
 
 .special-status-chip.pending {
-  background: var(--color-bg-soft);
+  background: var(--color-surface-soft);
   color: var(--color-text-soft);
 }
 
@@ -211,7 +221,7 @@
 .special-status-chip.forwarded {
   background: var(--color-info-bg);
   color: var(--color-info);
-  border-color: var(--color-info-border);
+  border-color: color-mix(in srgb, var(--color-info) 30%, #ffffff);
 }
 
 .special-status-chip.resolved {
@@ -284,7 +294,7 @@
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-sm);
   padding: 0.7rem;
-  background: var(--color-bg-soft);
+  background: var(--color-surface-soft);
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
@@ -318,11 +328,16 @@
   width: fit-content;
   border: 1px solid var(--color-primary);
   border-radius: var(--radius-sm);
-  background: var(--color-primary-soft);
-  color: var(--color-primary-strong);
-  padding: 0.42rem 0.64rem;
+  background: var(--color-primary);
+  color: var(--color-white);
+  padding: 0.5rem 0.85rem;
   font-weight: 700;
   cursor: pointer;
+}
+
+.special-save-button:hover:not(:disabled) {
+  background: var(--color-primary-strong);
+  border-color: var(--color-primary-strong);
 }
 
 .special-save-button:disabled {
@@ -343,14 +358,11 @@
   }
 }
 
-@media (max-width: 720px) {
-
-/* --- Página / shell --- */
+@media (max-width: 768px) {
   .admin-special-requests-page {
     padding: 1.35rem 0.8rem 2.1rem;
   }
 
-/* --- Listados / grillas --- */
   .special-detail-grid {
     grid-template-columns: 1fr;
   }
@@ -380,8 +392,8 @@
 }
 
 .special-whatsapp-button {
-  background: #25d366;
-  color: #fff;
+  background: var(--color-success);
+  color: var(--color-white);
 }
 
 .special-mail-button {

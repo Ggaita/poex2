@@ -93,6 +93,15 @@ a {
   color: var(--color-link);
 }
 
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
 input,
 select,
 textarea,

@@ -16,10 +16,17 @@
  *
  * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
  */
-/* --- Página / shell --- */
+/* --- Página / shell ---
+ * El layout (main flex:1) deja hueco si el hero es solo 59.5vh.
+ * Home llena el main hasta el footer para no ver franja vacía.
+ */
 .home-page {
   width: 100%;
   position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 /*
@@ -52,10 +59,11 @@
 /* --- Hero --- */
 .home-hero {
   position: relative;
-  min-height: 59.5vh;
+  flex: 1;
+  min-height: min(59.5vh, 520px);
   display: flex;
   align-items: center;
-  justify-content:flex-start;
+  justify-content: flex-start;
   overflow: hidden;
   background: var(--brand-azul-noche);
 }
@@ -137,12 +145,15 @@
 
 .home-hero .search-box {
   display: flex;
-  gap: 0.5rem;
+  align-items: stretch;
+  gap: 0;
   background: rgba(255, 255, 255, 0.08);
-  padding: 0.5rem;
+  padding: 0;
+  overflow: hidden;
   border-radius: 14px;
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.12);
+  min-height: 3.35rem;
 }
 
 /* INPUT */
@@ -154,43 +165,59 @@
   background: transparent;
   color: white;
   font-size: 1rem;
-  padding: 0.9rem 1rem;
+  padding: 0 1.1rem;
+  min-height: 3.35rem;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .home-hero .search-input::placeholder {
   color: rgba(255, 255, 255, 0.5);
 }
 
-/* BUTTON */
+/* BUTTON — alto completo de la barra */
 
 .home-hero .search-button {
-  background: var(--brand-magenta);
+  flex: 0 0 auto;
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-cta);
   color: var(--color-white);
   border: none;
-  padding: 0.9rem 1.4rem;
-  border-radius: var(--radius-md);
-  font-weight: 600;
+  border-radius: 0;
+  padding: 0 1.5rem;
+  min-height: 3.35rem;
+  height: 100%;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease;
+  box-sizing: border-box;
 }
 
 .home-hero .search-button:hover {
-  background: var(--color-primary-strong);
-  transform: translateY(-1px);
+  background: var(--color-cta-hover);
+  transform: none;
 }
 
 .home-hero .search-button:active {
-  transform: translateY(0px);
+  transform: none;
 }
 
 /* =============================================================================
- * 4. RESPONSIVE
+ * 4. RESPONSIVE — escritorio >1024 | tablet ≤1024 | tablet sm ≤768 | cel ≤480
  * ============================================================================= */
 
 @media (max-width: 1024px) {
   .home-hero {
-    min-height: 59.5vh;
-    padding-bottom: 4.5rem;
+    min-height: min(52vh, 460px);
+  }
+
+  .home-hero-container {
+    margin: 0 12px;
   }
 
   .home-hero-title {
@@ -204,51 +231,61 @@
 
 @media (max-width: 768px) {
   .home-hero {
-    min-height: 59.5vh;
-    padding-bottom: 4.5rem;
+    min-height: min(50vh, 440px);
+    align-items: center;
   }
 
   .home-hero-container {
-    padding: 0 0.85rem;
+    margin: 0 10px;
+    padding: 0 0.75rem;
   }
 
   .home-hero-content {
     gap: 0.95rem;
+    width: 100%;
   }
 
   .home-hero-subtitle {
     font-size: 0.98rem;
     line-height: 1.5;
+    max-width: 100%;
   }
 
   .home-hero .search-form {
     margin-top: 0.75rem;
+    max-width: 100%;
   }
 
   .home-hero .search-box {
     flex-direction: column;
-    gap: 0.42rem;
+    gap: 0;
     border-radius: 12px;
+    min-height: 0;
   }
 
   .home-hero .search-input,
   .home-hero .search-button {
     width: 100%;
+    min-height: 2.9rem;
+  }
+
+  .home-hero .search-button {
+    border-radius: 0;
   }
 }
 
 @media (max-width: 480px) {
   .home-hero {
-    min-height: 59.5vh;
-    padding-bottom: 4.5rem;
+    min-height: min(48vh, 400px);
   }
 
   .home-hero-container {
-    padding: 0 0.65rem;
+    margin: 0 8px;
+    padding: 0 0.55rem;
   }
 
   .home-hero-title {
-    font-size: clamp(1.5rem, 7vw, 2rem);
+    font-size: clamp(1.45rem, 7vw, 1.95rem);
     line-height: 1.15;
   }
 
@@ -257,13 +294,15 @@
   }
 
   .home-hero .search-input {
-    padding: 0.78rem 0.85rem;
+    padding: 0 0.9rem;
     font-size: 0.92rem;
+    min-height: 2.85rem;
   }
 
   .home-hero .search-button {
-    padding: 0.78rem 0.95rem;
+    padding: 0 0.95rem;
     font-size: 0.9rem;
+    min-height: 2.85rem;
   }
 }
 

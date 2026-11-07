@@ -100,7 +100,7 @@
   height: 140px;
   object-fit: contain;
   object-position: center;
-  background: #fff;
+  background: var(--color-white);
   border-radius: 6px;
 }
 

@@ -1,4 +1,4 @@
-﻿import { type ChangeEvent, type FormEvent, useState } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import PrivateLayout from "../../../layouts/PrivateLayout";
 import type {
@@ -9,6 +9,7 @@ import type {
 } from "./register.types";
 import OsmLocationPicker from "../../../shared/components/OsmLocationPicker/OsmLocationPicker";
 import "./RegisterPage.css";
+
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
 
 const stepTitles = [
@@ -34,11 +35,11 @@ const initialFormState: RegisterFormState = {
   companyName: "",
   contactEmail: "",
   phone: "",
+  taxId: "",
   address: "",
   city: "",
   latitude: "",
   longitude: "",
-  googleMapsEmbed: "",
   description: "",
   representativeName: "",
   representativeRole: "",
@@ -101,9 +102,7 @@ const isValidUrl = (value: string): boolean => {
   }
 };
 
-const hasFile = (
-  items: Array<{ file: File | null }>
-): boolean => {
+const hasFile = (items: Array<{ file: File | null }>): boolean => {
   return items.some((item) => item.file !== null);
 };
 
@@ -119,6 +118,16 @@ const parseCoordinate = (value: string): number | null => {
 
 const formatCoordinate = (value: number): string => value.toFixed(6);
 
+const formatBytes = (size: number): string => {
+  if (size < 1024) {
+    return `${size} B`;
+  }
+  if (size < 1024 * 1024) {
+    return `${(size / 1024).toFixed(1)} KB`;
+  }
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+};
+
 export default function RegisterPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [formState, setFormState] = useState<RegisterFormState>(initialFormState);
@@ -131,6 +140,22 @@ export default function RegisterPage() {
   const [apiError, setApiError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const logoPreviewUrl = useMemo(() => {
+    if (!logo) {
+      return null;
+    }
+    return URL.createObjectURL(logo);
+  }, [logo]);
+
+  useEffect(() => {
+    return () => {
+      if (logoPreviewUrl) {
+        URL.revokeObjectURL(logoPreviewUrl);
+      }
+    };
+  }, [logoPreviewUrl]);
 
   const clearError = (field: string) => {
     setErrors((prev) => {
@@ -218,7 +243,6 @@ export default function RegisterPage() {
       if (prev.length >= 6) {
         return prev;
       }
-
       return [...prev, createCatalogItem()];
     });
   };
@@ -246,7 +270,6 @@ export default function RegisterPage() {
       if (prev.length >= 6) {
         return prev;
       }
-
       return [...prev, createProductPhotoItem()];
     });
   };
@@ -274,7 +297,6 @@ export default function RegisterPage() {
       if (prev.length >= 6) {
         return prev;
       }
-
       return [...prev, createCompanyPhotoItem()];
     });
   };
@@ -288,6 +310,20 @@ export default function RegisterPage() {
 
   const removeCompanyPhoto = (id: string) => {
     setCompanyPhotos((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const resetForm = () => {
+    setCurrentStep(0);
+    setFormState(initialFormState);
+    setLogo(null);
+    setCatalogItems([]);
+    setProductPhotos([]);
+    setCompanyPhotos([]);
+    setAcceptedTerms(false);
+    setErrors({});
+    setApiError("");
+    setSuccessMessage("");
+    setIsSubmitted(false);
   };
 
   const validateStep = (step: number): boolean => {
@@ -321,19 +357,13 @@ export default function RegisterPage() {
 
       if (hasLatitude && latitude === null) {
         nextErrors.latitude = "La latitud debe ser numérica.";
-      } else if (
-        latitude !== null &&
-        (latitude < -90 || latitude > 90)
-      ) {
+      } else if (latitude !== null && (latitude < -90 || latitude > 90)) {
         nextErrors.latitude = "La latitud debe estar entre -90 y 90.";
       }
 
       if (hasLongitude && longitude === null) {
         nextErrors.longitude = "La longitud debe ser numérica.";
-      } else if (
-        longitude !== null &&
-        (longitude < -180 || longitude > 180)
-      ) {
+      } else if (longitude !== null && (longitude < -180 || longitude > 180)) {
         nextErrors.longitude = "La longitud debe estar entre -180 y 180.";
       }
 
@@ -363,10 +393,7 @@ export default function RegisterPage() {
       if (!formState.chamberMembership) {
         nextErrors.chamberMembership = "Indicá si la empresa está en una cámara.";
       }
-      if (
-        formState.chamberMembership === "si" &&
-        !formState.chamberNames.trim()
-      ) {
+      if (formState.chamberMembership === "si" && !formState.chamberNames.trim()) {
         nextErrors.chamberNames = "Indicá qué cámara/s integra la empresa.";
       }
     }
@@ -432,64 +459,97 @@ export default function RegisterPage() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if (isSubmitted || isSubmitting) {
+      return;
+    }
+
     if (!validateStep(3)) {
       return;
     }
 
     const latitude = parseCoordinate(formState.latitude);
     const longitude = parseCoordinate(formState.longitude);
-    const contactName = formState.representativeName.trim() || formState.companyName.trim();
-    const payload = {
-      companyName: formState.companyName.trim(),
-      contactName,
-      email: formState.contactEmail.trim(),
-      phone: formState.phone.trim() || undefined,
-      message: JSON.stringify({
-        address: formState.address.trim(),
-        city: formState.city.trim(),
-        geo: {
-          latitude,
-          longitude
-        },
-        description: formState.description.trim(),
-        representativeRole: formState.representativeRole.trim(),
-        representativeEmail: formState.representativeEmail.trim(),
-        sector: formState.sector,
-        chamberMembership: formState.chamberMembership,
-        chamberNames: formState.chamberNames.trim(),
-        product: formState.product.trim(),
-        keywords: formState.keywords.trim(),
-        tariffPosition: formState.tariffPosition.trim(),
-        exportDestinations: formState.exportDestinations.trim(),
-        awards: formState.awards.trim(),
-        certifications: formState.certifications.trim(),
-        links: {
-          website: formState.website.trim(),
-          facebook: formState.facebook.trim(),
-          instagram: formState.instagram.trim(),
-          linkedin: formState.linkedin.trim(),
-          youtube: formState.youtube.trim(),
-          other: formState.otherLink.trim()
-        },
-        attachments: {
-          logo: logo?.name ?? null,
-          hasCatalog: formState.hasCatalog,
-          catalog: catalogItems.map((item) => ({
-            title: item.title.trim(),
-            fileName: item.file?.name ?? null
-          })),
-          hasProductPhotos: formState.hasProductPhotos,
-          productPhotos: productPhotos.map((item) => ({
-            description: item.description.trim(),
-            fileName: item.file?.name ?? null
-          })),
-          hasCompanyPhotos: formState.hasCompanyPhotos,
-          companyPhotos: companyPhotos.map((item) => ({
-            fileName: item.file?.name ?? null
-          }))
-        }
-      })
+    const contactName =
+      formState.representativeName.trim() || formState.companyName.trim();
+
+    const catalogWithFiles = catalogItems.filter((item) => item.file);
+    const productWithFiles = productPhotos.filter((item) => item.file);
+    const companyWithFiles = companyPhotos.filter((item) => item.file);
+
+    const details = {
+      address: formState.address.trim(),
+      city: formState.city.trim(),
+      geo: {
+        latitude,
+        longitude
+      },
+      description: formState.description.trim(),
+      representativeRole: formState.representativeRole.trim(),
+      representativeEmail: formState.representativeEmail.trim(),
+      sector: formState.sector,
+      chamberMembership: formState.chamberMembership,
+      chamberNames: formState.chamberNames.trim(),
+      product: formState.product.trim(),
+      keywords: formState.keywords.trim(),
+      tariffPosition: formState.tariffPosition.trim(),
+      exportDestinations: formState.exportDestinations.trim(),
+      awards: formState.awards.trim(),
+      certifications: formState.certifications.trim(),
+      links: {
+        website: formState.website.trim(),
+        facebook: formState.facebook.trim(),
+        instagram: formState.instagram.trim(),
+        linkedin: formState.linkedin.trim(),
+        youtube: formState.youtube.trim(),
+        other: formState.otherLink.trim()
+      },
+      attachments: {
+        hasCatalog: formState.hasCatalog,
+        hasProductPhotos: formState.hasProductPhotos,
+        hasCompanyPhotos: formState.hasCompanyPhotos
+      }
     };
+
+    const formData = new FormData();
+    formData.append("companyName", formState.companyName.trim());
+    formData.append("contactName", contactName);
+    formData.append("email", formState.contactEmail.trim());
+    if (formState.phone.trim()) {
+      formData.append("phone", formState.phone.trim());
+    }
+    if (formState.taxId.trim()) {
+      formData.append("taxId", formState.taxId.trim());
+    }
+    formData.append("details", JSON.stringify(details));
+    formData.append(
+      "catalogMeta",
+      JSON.stringify(catalogWithFiles.map((item) => ({ title: item.title.trim() })))
+    );
+    formData.append(
+      "productPhotoMeta",
+      JSON.stringify(
+        productWithFiles.map((item) => ({ description: item.description.trim() }))
+      )
+    );
+
+    if (logo) {
+      formData.append("logo", logo);
+    }
+    catalogWithFiles.forEach((item) => {
+      if (item.file) {
+        formData.append("catalogs", item.file);
+      }
+    });
+    productWithFiles.forEach((item) => {
+      if (item.file) {
+        formData.append("productPhotos", item.file);
+      }
+    });
+    companyWithFiles.forEach((item) => {
+      if (item.file) {
+        formData.append("companyPhotos", item.file);
+      }
+    });
 
     setIsSubmitting(true);
     setApiError("");
@@ -498,10 +558,7 @@ export default function RegisterPage() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/public/applications`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
+        body: formData
       });
 
       const result = await response.json();
@@ -511,11 +568,14 @@ export default function RegisterPage() {
         return;
       }
 
+      setIsSubmitted(true);
       setSuccessMessage(
         `Solicitud enviada correctamente (ID ${result?.data?.id ?? "N/A"}). Quedó registrada para revisión del administrador.`
       );
     } catch {
-      setApiError("No se pudo conectar con el backend. Verificá que la API esté levantada.");
+      setApiError(
+        "No se pudo conectar con el backend. Verificá que la API esté levantada."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -523,13 +583,14 @@ export default function RegisterPage() {
 
   const mapLatitude = parseCoordinate(formState.latitude);
   const mapLongitude = parseCoordinate(formState.longitude);
+  const formLocked = isSubmitted;
 
   return (
     <PrivateLayout guestContext="register">
       <section className="register-page">
         <div className="register-shell">
           <Link to="/" className="register-back-link">
-            ← Volver al inicio
+            Inicio
           </Link>
           <header className="register-header">
             <p className="register-eyebrow">Incorporá tu empresa</p>
@@ -541,30 +602,42 @@ export default function RegisterPage() {
           </header>
 
           <ol className="register-steps" aria-label="Paso del formulario">
-            {stepTitles.map((title, index) => (
-              <li
-                key={title}
-                className={index === currentStep ? "step-item active" : "step-item"}
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (index <= currentStep) {
-                      setCurrentStep(index);
-                    }
-                  }}
-                  disabled={index > currentStep}
-                >
-                  <span>{index + 1}</span>
-                  <small>{title}</small>
-                </button>
-              </li>
-            ))}
+            {stepTitles.map((title, index) => {
+              const stateClass =
+                index === currentStep
+                  ? "step-item active"
+                  : index < currentStep
+                    ? "step-item done"
+                    : "step-item";
+
+              return (
+                <li key={title} className={stateClass}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (formLocked) {
+                        return;
+                      }
+                      if (index <= currentStep) {
+                        setCurrentStep(index);
+                      }
+                    }}
+                    disabled={formLocked || index > currentStep}
+                  >
+                    <span>{index < currentStep ? "✓" : index + 1}</span>
+                    <small>{title}</small>
+                  </button>
+                </li>
+              );
+            })}
           </ol>
 
           {successMessage ? (
             <div className="form-success" role="status">
-              {successMessage}
+              <p>{successMessage}</p>
+              <button type="button" className="register-btn-ghost" onClick={resetForm}>
+                Enviar otra solicitud
+              </button>
             </div>
           ) : null}
           {apiError ? (
@@ -573,604 +646,637 @@ export default function RegisterPage() {
             </div>
           ) : null}
 
-          <form className="register-form" onSubmit={handleSubmit} noValidate>
-            {currentStep === 0 ? (
-              <div className="form-step">
-                <h2>Datos de la empresa</h2>
-                <div className="form-grid">
-                  <label>
-                    Nombre de la empresa *
-                    <input
-                      type="text"
-                      name="companyName"
-                      value={formState.companyName}
-                      onChange={handleInputChange}
-                    />
-                    {errors.companyName ? <span>{errors.companyName}</span> : null}
-                  </label>
-
-                  <label>
-                    Email de contacto *
-                    <input
-                      type="email"
-                      name="contactEmail"
-                      value={formState.contactEmail}
-                      onChange={handleInputChange}
-                    />
-                    {errors.contactEmail ? <span>{errors.contactEmail}</span> : null}
-                  </label>
-
-                  <label>
-                    Teléfono *
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formState.phone}
-                      onChange={handleInputChange}
-                    />
-                    {errors.phone ? <span>{errors.phone}</span> : null}
-                  </label>
-
-                  <label>
-                    Domicilio *
-                    <input
-                      type="text"
-                      name="address"
-                      value={formState.address}
-                      onChange={handleInputChange}
-                    />
-                    {errors.address ? <span>{errors.address}</span> : null}
-                  </label>
-
-                  <label>
-                    Localidad *
-                    <input
-                      type="text"
-                      name="city"
-                      value={formState.city}
-                      onChange={handleInputChange}
-                    />
-                    {errors.city ? <span>{errors.city}</span> : null}
-                  </label>
-
-                  <label>
-                    Latitud
-                    <input
-                      type="text"
-                      name="latitude"
-                      value={formState.latitude}
-                      onChange={handleInputChange}
-                      placeholder="-27.451234"
-                    />
-                    {errors.latitude ? <span>{errors.latitude}</span> : null}
-                  </label>
-
-                  <label>
-                    Longitud
-                    <input
-                      type="text"
-                      name="longitude"
-                      value={formState.longitude}
-                      onChange={handleInputChange}
-                      placeholder="-58.986543"
-                    />
-                    {errors.longitude ? <span>{errors.longitude}</span> : null}
-                  </label>
-
-                  <div className="register-map-block full-width">
-                    <div className="register-map-head">
-                      <p>Ubicación en OpenStreetMap</p>
-                      <small>
-                        Hacé clic en el mapa para marcar la empresa. También podés
-                        editar latitud y longitud manualmente.
-                      </small>
-                    </div>
-                    <OsmLocationPicker
-                      latitude={mapLatitude}
-                      longitude={mapLongitude}
-                      onChange={handleMapLocationChange}
-                    />
-                    {errors.location ? <span>{errors.location}</span> : null}
-                  </div>
-
-                  <label className="full-width">
-                    Referencia adicional del mapa (opcional)
-                    <textarea
-                      name="googleMapsEmbed"
-                      value={formState.googleMapsEmbed}
-                      onChange={handleInputChange}
-                      rows={3}
-                    />
-                  </label>
-
-                  <label className="full-width">
-                    Breve descripción *
-                    <textarea
-                      name="description"
-                      value={formState.description}
-                      onChange={handleInputChange}
-                      rows={4}
-                    />
-                    {errors.description ? <span>{errors.description}</span> : null}
-                  </label>
-
-                  <label className="full-width">
-                    Logo (jpg/png/jpeg, máx 2 MB)
-                    <input
-                      type="file"
-                      accept=".jpg,.jpeg,.png"
-                      onChange={handleLogoChange}
-                    />
-                    {errors.logo ? <span>{errors.logo}</span> : null}
-                  </label>
-                </div>
-              </div>
-            ) : null}
-
-            {currentStep === 1 ? (
-              <div className="form-step">
-                <h2>Información de contacto</h2>
-                <div className="form-grid">
-                  <label>
-                    Representante de la empresa *
-                    <input
-                      type="text"
-                      name="representativeName"
-                      value={formState.representativeName}
-                      onChange={handleInputChange}
-                    />
-                    {errors.representativeName ? (
-                      <span>{errors.representativeName}</span>
-                    ) : null}
-                  </label>
-
-                  <label>
-                    Cargo
-                    <input
-                      type="text"
-                      name="representativeRole"
-                      value={formState.representativeRole}
-                      onChange={handleInputChange}
-                    />
-                  </label>
-
-                  <label>
-                    Email del representante
-                    <input
-                      type="email"
-                      name="representativeEmail"
-                      value={formState.representativeEmail}
-                      onChange={handleInputChange}
-                    />
-                    {errors.representativeEmail ? (
-                      <span>{errors.representativeEmail}</span>
-                    ) : null}
-                  </label>
-
-                  <label>
-                    Sector productivo *
-                    <select
-                      name="sector"
-                      value={formState.sector}
-                      onChange={handleInputChange}
-                    >
-                      <option value="">Seleccionar sector</option>
-                      {sectorOptions.map((sector) => (
-                        <option key={sector} value={sector}>
-                          {sector}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.sector ? <span>{errors.sector}</span> : null}
-                  </label>
-
-                  <label>
-                    Inscripta en alguna cámara *
-                    <select
-                      name="chamberMembership"
-                      value={formState.chamberMembership}
-                      onChange={handleInputChange}
-                    >
-                      <option value="">Seleccionar</option>
-                      <option value="si">Sí</option>
-                      <option value="no">No</option>
-                    </select>
-                    {errors.chamberMembership ? (
-                      <span>{errors.chamberMembership}</span>
-                    ) : null}
-                  </label>
-
-                  {formState.chamberMembership === "si" ? (
+          {!formLocked ? (
+            <form className="register-form" onSubmit={handleSubmit} noValidate>
+              {currentStep === 0 ? (
+                <div className="form-step">
+                  <h2>Datos de la empresa</h2>
+                  <div className="form-grid">
                     <label>
-                      ¿Cuáles?
+                      Nombre de la empresa *
                       <input
                         type="text"
-                        name="chamberNames"
-                        value={formState.chamberNames}
+                        name="companyName"
+                        value={formState.companyName}
                         onChange={handleInputChange}
-                        placeholder="Ej: Cámara de Comercio de..."
                       />
-                      {errors.chamberNames ? <span>{errors.chamberNames}</span> : null}
+                      {errors.companyName ? <span>{errors.companyName}</span> : null}
                     </label>
+
+                    <label>
+                      Email de contacto *
+                      <input
+                        type="email"
+                        name="contactEmail"
+                        value={formState.contactEmail}
+                        onChange={handleInputChange}
+                      />
+                      {errors.contactEmail ? <span>{errors.contactEmail}</span> : null}
+                    </label>
+
+                    <label>
+                      Teléfono *
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formState.phone}
+                        onChange={handleInputChange}
+                      />
+                      {errors.phone ? <span>{errors.phone}</span> : null}
+                    </label>
+
+                    <label>
+                      CUIT (opcional)
+                      <input
+                        type="text"
+                        name="taxId"
+                        value={formState.taxId}
+                        onChange={handleInputChange}
+                        placeholder="XX-XXXXXXXX-X"
+                      />
+                    </label>
+
+                    <label>
+                      Domicilio *
+                      <input
+                        type="text"
+                        name="address"
+                        value={formState.address}
+                        onChange={handleInputChange}
+                      />
+                      {errors.address ? <span>{errors.address}</span> : null}
+                    </label>
+
+                    <label>
+                      Localidad *
+                      <input
+                        type="text"
+                        name="city"
+                        value={formState.city}
+                        onChange={handleInputChange}
+                      />
+                      {errors.city ? <span>{errors.city}</span> : null}
+                    </label>
+
+                    <label>
+                      Latitud
+                      <input
+                        type="text"
+                        name="latitude"
+                        value={formState.latitude}
+                        onChange={handleInputChange}
+                        placeholder="-27.451234"
+                      />
+                      {errors.latitude ? <span>{errors.latitude}</span> : null}
+                    </label>
+
+                    <label>
+                      Longitud
+                      <input
+                        type="text"
+                        name="longitude"
+                        value={formState.longitude}
+                        onChange={handleInputChange}
+                        placeholder="-58.986543"
+                      />
+                      {errors.longitude ? <span>{errors.longitude}</span> : null}
+                    </label>
+
+                    <div className="register-map-block full-width">
+                      <div className="register-map-head">
+                        <p>Ubicación en el mapa</p>
+                        <small>
+                          Hacé clic en el mapa para marcar la empresa. También podés
+                          editar latitud y longitud manualmente.
+                        </small>
+                      </div>
+                      <OsmLocationPicker
+                        latitude={mapLatitude}
+                        longitude={mapLongitude}
+                        onChange={handleMapLocationChange}
+                      />
+                      {errors.location ? <span>{errors.location}</span> : null}
+                    </div>
+
+                    <label className="full-width">
+                      Breve descripción *
+                      <textarea
+                        name="description"
+                        value={formState.description}
+                        onChange={handleInputChange}
+                        rows={4}
+                      />
+                      {errors.description ? <span>{errors.description}</span> : null}
+                    </label>
+
+                    <div className="logo-field full-width">
+                      <label>
+                        Logo (jpg/png/jpeg, máx 2 MB)
+                        <input
+                          type="file"
+                          accept=".jpg,.jpeg,.png"
+                          onChange={handleLogoChange}
+                        />
+                      </label>
+                      {logo ? (
+                        <div className="logo-preview">
+                          {logoPreviewUrl ? (
+                            <img src={logoPreviewUrl} alt="Vista previa del logo" />
+                          ) : null}
+                          <div className="logo-preview-meta">
+                            <strong>{logo.name}</strong>
+                            <small>{formatBytes(logo.size)}</small>
+                            <button
+                              type="button"
+                              className="register-btn-ghost logo-clear"
+                              onClick={() => setLogo(null)}
+                            >
+                              Quitar logo
+                            </button>
+                          </div>
+                        </div>
+                      ) : null}
+                      {errors.logo ? <span>{errors.logo}</span> : null}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {currentStep === 1 ? (
+                <div className="form-step">
+                  <h2>Contacto y sector</h2>
+                  <div className="form-grid">
+                    <label>
+                      Representante de la empresa *
+                      <input
+                        type="text"
+                        name="representativeName"
+                        value={formState.representativeName}
+                        onChange={handleInputChange}
+                      />
+                      {errors.representativeName ? (
+                        <span>{errors.representativeName}</span>
+                      ) : null}
+                    </label>
+
+                    <label>
+                      Cargo
+                      <input
+                        type="text"
+                        name="representativeRole"
+                        value={formState.representativeRole}
+                        onChange={handleInputChange}
+                      />
+                    </label>
+
+                    <label>
+                      Email del representante
+                      <input
+                        type="email"
+                        name="representativeEmail"
+                        value={formState.representativeEmail}
+                        onChange={handleInputChange}
+                      />
+                      {errors.representativeEmail ? (
+                        <span>{errors.representativeEmail}</span>
+                      ) : null}
+                    </label>
+
+                    <label>
+                      Sector productivo *
+                      <select
+                        name="sector"
+                        value={formState.sector}
+                        onChange={handleInputChange}
+                      >
+                        <option value="">Seleccionar sector</option>
+                        {sectorOptions.map((sector) => (
+                          <option key={sector} value={sector}>
+                            {sector}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.sector ? <span>{errors.sector}</span> : null}
+                    </label>
+
+                    <label>
+                      Inscripta en alguna cámara *
+                      <select
+                        name="chamberMembership"
+                        value={formState.chamberMembership}
+                        onChange={handleInputChange}
+                      >
+                        <option value="">Seleccionar</option>
+                        <option value="si">Sí</option>
+                        <option value="no">No</option>
+                      </select>
+                      {errors.chamberMembership ? (
+                        <span>{errors.chamberMembership}</span>
+                      ) : null}
+                    </label>
+
+                    {formState.chamberMembership === "si" ? (
+                      <label>
+                        ¿Cuáles?
+                        <input
+                          type="text"
+                          name="chamberNames"
+                          value={formState.chamberNames}
+                          onChange={handleInputChange}
+                          placeholder="Ej: Cámara de Comercio de..."
+                        />
+                        {errors.chamberNames ? <span>{errors.chamberNames}</span> : null}
+                      </label>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
+
+              {currentStep === 2 ? (
+                <div className="form-step">
+                  <h2>Producto y comunicación</h2>
+                  <div className="form-grid">
+                    <label>
+                      Producto o servicio
+                      <input
+                        type="text"
+                        name="product"
+                        value={formState.product}
+                        onChange={handleInputChange}
+                      />
+                    </label>
+
+                    <label>
+                      Palabras clave
+                      <input
+                        type="text"
+                        name="keywords"
+                        value={formState.keywords}
+                        onChange={handleInputChange}
+                        placeholder="Separar con coma"
+                      />
+                    </label>
+
+                    <label>
+                      Posición arancelaria
+                      <input
+                        type="text"
+                        name="tariffPosition"
+                        value={formState.tariffPosition}
+                        onChange={handleInputChange}
+                      />
+                    </label>
+
+                    <label>
+                      Destinos de exportación
+                      <input
+                        type="text"
+                        name="exportDestinations"
+                        value={formState.exportDestinations}
+                        onChange={handleInputChange}
+                      />
+                    </label>
+
+                    <label>
+                      Premios (últimos 2 años)
+                      <input
+                        type="text"
+                        name="awards"
+                        value={formState.awards}
+                        onChange={handleInputChange}
+                      />
+                    </label>
+
+                    <label>
+                      Certificaciones
+                      <input
+                        type="text"
+                        name="certifications"
+                        value={formState.certifications}
+                        onChange={handleInputChange}
+                      />
+                    </label>
+
+                    <label>
+                      Web
+                      <input
+                        type="url"
+                        name="website"
+                        value={formState.website}
+                        onChange={handleInputChange}
+                        placeholder="https://..."
+                      />
+                      {errors.website ? <span>{errors.website}</span> : null}
+                    </label>
+
+                    <label>
+                      Facebook
+                      <input
+                        type="url"
+                        name="facebook"
+                        value={formState.facebook}
+                        onChange={handleInputChange}
+                        placeholder="https://..."
+                      />
+                      {errors.facebook ? <span>{errors.facebook}</span> : null}
+                    </label>
+
+                    <label>
+                      Instagram
+                      <input
+                        type="url"
+                        name="instagram"
+                        value={formState.instagram}
+                        onChange={handleInputChange}
+                        placeholder="https://..."
+                      />
+                      {errors.instagram ? <span>{errors.instagram}</span> : null}
+                    </label>
+
+                    <label>
+                      LinkedIn
+                      <input
+                        type="url"
+                        name="linkedin"
+                        value={formState.linkedin}
+                        onChange={handleInputChange}
+                        placeholder="https://..."
+                      />
+                      {errors.linkedin ? <span>{errors.linkedin}</span> : null}
+                    </label>
+
+                    <label>
+                      YouTube
+                      <input
+                        type="url"
+                        name="youtube"
+                        value={formState.youtube}
+                        onChange={handleInputChange}
+                        placeholder="https://..."
+                      />
+                      {errors.youtube ? <span>{errors.youtube}</span> : null}
+                    </label>
+
+                    <label>
+                      Otro enlace
+                      <input
+                        type="url"
+                        name="otherLink"
+                        value={formState.otherLink}
+                        onChange={handleInputChange}
+                        placeholder="https://..."
+                      />
+                      {errors.otherLink ? <span>{errors.otherLink}</span> : null}
+                    </label>
+                  </div>
+                </div>
+              ) : null}
+
+              {currentStep === 3 ? (
+                <div className="form-step">
+                  <h2>Adjuntos y envío</h2>
+                  <div className="form-grid">
+                    <label>
+                      ¿Desea adjuntar catálogo? *
+                      <select
+                        name="hasCatalog"
+                        value={formState.hasCatalog}
+                        onChange={handleInputChange}
+                      >
+                        <option value="">Seleccionar</option>
+                        <option value="si">Sí</option>
+                        <option value="no">No</option>
+                      </select>
+                      {errors.hasCatalog ? <span>{errors.hasCatalog}</span> : null}
+                    </label>
+
+                    <label>
+                      ¿Desea adjuntar fotos del producto? *
+                      <select
+                        name="hasProductPhotos"
+                        value={formState.hasProductPhotos}
+                        onChange={handleInputChange}
+                      >
+                        <option value="">Seleccionar</option>
+                        <option value="si">Sí</option>
+                        <option value="no">No</option>
+                      </select>
+                      {errors.hasProductPhotos ? (
+                        <span>{errors.hasProductPhotos}</span>
+                      ) : null}
+                    </label>
+
+                    <label>
+                      ¿Desea agregar fotos de la empresa? *
+                      <select
+                        name="hasCompanyPhotos"
+                        value={formState.hasCompanyPhotos}
+                        onChange={handleInputChange}
+                      >
+                        <option value="">Seleccionar</option>
+                        <option value="si">Sí</option>
+                        <option value="no">No</option>
+                      </select>
+                      {errors.hasCompanyPhotos ? (
+                        <span>{errors.hasCompanyPhotos}</span>
+                      ) : null}
+                    </label>
+                  </div>
+
+                  {formState.hasCatalog === "si" ? (
+                    <div className="dynamic-block">
+                      <div className="dynamic-header">
+                        <h3>Catálogo de productos (máx. 6)</h3>
+                        <button
+                          type="button"
+                          onClick={addCatalogItem}
+                          disabled={catalogItems.length >= 6}
+                        >
+                          + Agregar archivo
+                        </button>
+                      </div>
+                      {catalogItems.map((item) => (
+                        <article key={item.id} className="dynamic-row">
+                          <label>
+                            Título
+                            <input
+                              type="text"
+                              value={item.title}
+                              onChange={(event) =>
+                                updateCatalogTitle(item.id, event.target.value)
+                              }
+                            />
+                          </label>
+                          <label>
+                            Archivo PDF
+                            <input
+                              type="file"
+                              accept=".pdf"
+                              onChange={(event) =>
+                                updateCatalogFile(item.id, event.target.files?.[0] ?? null)
+                              }
+                            />
+                            {item.file ? (
+                              <small className="file-name">{item.file.name}</small>
+                            ) : null}
+                          </label>
+                          <button
+                            type="button"
+                            className="remove-row"
+                            onClick={() => removeCatalogItem(item.id)}
+                          >
+                            Quitar
+                          </button>
+                        </article>
+                      ))}
+                      {errors.catalogItems ? <span>{errors.catalogItems}</span> : null}
+                    </div>
                   ) : null}
-                </div>
-              </div>
-            ) : null}
 
-            {currentStep === 2 ? (
-              <div className="form-step">
-                <h2>Producto/servicio y comunicación</h2>
-                <div className="form-grid">
-                  <label>
-                    Producto o servicio
-                    <input
-                      type="text"
-                      name="product"
-                      value={formState.product}
-                      onChange={handleInputChange}
-                    />
-                  </label>
-
-                  <label>
-                    Palabras clave
-                    <input
-                      type="text"
-                      name="keywords"
-                      value={formState.keywords}
-                      onChange={handleInputChange}
-                      placeholder="Separar con coma"
-                    />
-                  </label>
-
-                  <label>
-                    Posición arancelaria
-                    <input
-                      type="text"
-                      name="tariffPosition"
-                      value={formState.tariffPosition}
-                      onChange={handleInputChange}
-                    />
-                  </label>
-
-                  <label>
-                    Destinos de exportación
-                    <input
-                      type="text"
-                      name="exportDestinations"
-                      value={formState.exportDestinations}
-                      onChange={handleInputChange}
-                    />
-                  </label>
-
-                  <label>
-                    Premios (últimos 2 años)
-                    <input
-                      type="text"
-                      name="awards"
-                      value={formState.awards}
-                      onChange={handleInputChange}
-                    />
-                  </label>
-
-                  <label>
-                    Certificaciones
-                    <input
-                      type="text"
-                      name="certifications"
-                      value={formState.certifications}
-                      onChange={handleInputChange}
-                    />
-                  </label>
-
-                  <label>
-                    Web
-                    <input
-                      type="url"
-                      name="website"
-                      value={formState.website}
-                      onChange={handleInputChange}
-                      placeholder="https://..."
-                    />
-                    {errors.website ? <span>{errors.website}</span> : null}
-                  </label>
-
-                  <label>
-                    Facebook
-                    <input
-                      type="url"
-                      name="facebook"
-                      value={formState.facebook}
-                      onChange={handleInputChange}
-                      placeholder="https://..."
-                    />
-                    {errors.facebook ? <span>{errors.facebook}</span> : null}
-                  </label>
-
-                  <label>
-                    Instagram
-                    <input
-                      type="url"
-                      name="instagram"
-                      value={formState.instagram}
-                      onChange={handleInputChange}
-                      placeholder="https://..."
-                    />
-                    {errors.instagram ? <span>{errors.instagram}</span> : null}
-                  </label>
-
-                  <label>
-                    LinkedIn
-                    <input
-                      type="url"
-                      name="linkedin"
-                      value={formState.linkedin}
-                      onChange={handleInputChange}
-                      placeholder="https://..."
-                    />
-                    {errors.linkedin ? <span>{errors.linkedin}</span> : null}
-                  </label>
-
-                  <label>
-                    YouTube
-                    <input
-                      type="url"
-                      name="youtube"
-                      value={formState.youtube}
-                      onChange={handleInputChange}
-                      placeholder="https://..."
-                    />
-                    {errors.youtube ? <span>{errors.youtube}</span> : null}
-                  </label>
-
-                  <label>
-                    Otro enlace
-                    <input
-                      type="url"
-                      name="otherLink"
-                      value={formState.otherLink}
-                      onChange={handleInputChange}
-                      placeholder="https://..."
-                    />
-                    {errors.otherLink ? <span>{errors.otherLink}</span> : null}
-                  </label>
-                </div>
-              </div>
-            ) : null}
-
-            {currentStep === 3 ? (
-              <div className="form-step">
-                <h2>Adjuntos y envío</h2>
-                <div className="form-grid">
-                  <label>
-                    ¿Desea adjuntar catálogo? *
-                    <select
-                      name="hasCatalog"
-                      value={formState.hasCatalog}
-                      onChange={handleInputChange}
-                    >
-                      <option value="">Seleccionar</option>
-                      <option value="si">Sí</option>
-                      <option value="no">No</option>
-                    </select>
-                    {errors.hasCatalog ? <span>{errors.hasCatalog}</span> : null}
-                  </label>
-
-                  <label>
-                    ¿Desea adjuntar fotos del producto? *
-                    <select
-                      name="hasProductPhotos"
-                      value={formState.hasProductPhotos}
-                      onChange={handleInputChange}
-                    >
-                      <option value="">Seleccionar</option>
-                      <option value="si">Sí</option>
-                      <option value="no">No</option>
-                    </select>
-                    {errors.hasProductPhotos ? (
-                      <span>{errors.hasProductPhotos}</span>
-                    ) : null}
-                  </label>
-
-                  <label>
-                    ¿Desea agregar fotos de la empresa? *
-                    <select
-                      name="hasCompanyPhotos"
-                      value={formState.hasCompanyPhotos}
-                      onChange={handleInputChange}
-                    >
-                      <option value="">Seleccionar</option>
-                      <option value="si">Sí</option>
-                      <option value="no">No</option>
-                    </select>
-                    {errors.hasCompanyPhotos ? (
-                      <span>{errors.hasCompanyPhotos}</span>
-                    ) : null}
-                  </label>
-                </div>
-
-                {formState.hasCatalog === "si" ? (
-                  <div className="dynamic-block">
-                    <div className="dynamic-header">
-                      <h3>Catálogo de productos (máx. 6)</h3>
-                      <button
-                        type="button"
-                        onClick={addCatalogItem}
-                        disabled={catalogItems.length >= 6}
-                      >
-                        + Agregar archivo
-                      </button>
-                    </div>
-                    {catalogItems.map((item) => (
-                      <article key={item.id} className="dynamic-row">
-                        <label>
-                          Título
-                          <input
-                            type="text"
-                            value={item.title}
-                            onChange={(event) =>
-                              updateCatalogTitle(item.id, event.target.value)
-                            }
-                          />
-                        </label>
-                        <label>
-                          Archivo PDF
-                          <input
-                            type="file"
-                            accept=".pdf"
-                            onChange={(event) =>
-                              updateCatalogFile(item.id, event.target.files?.[0] ?? null)
-                            }
-                          />
-                        </label>
+                  {formState.hasProductPhotos === "si" ? (
+                    <div className="dynamic-block">
+                      <div className="dynamic-header">
+                        <h3>Fotos de producto (máx. 6)</h3>
                         <button
                           type="button"
-                          className="remove-row"
-                          onClick={() => removeCatalogItem(item.id)}
+                          onClick={addProductPhoto}
+                          disabled={productPhotos.length >= 6}
                         >
-                          Quitar
+                          + Agregar foto
                         </button>
-                      </article>
-                    ))}
-                    {errors.catalogItems ? <span>{errors.catalogItems}</span> : null}
-                  </div>
-                ) : null}
-
-                {formState.hasProductPhotos === "si" ? (
-                  <div className="dynamic-block">
-                    <div className="dynamic-header">
-                      <h3>Fotos de producto (máx. 6)</h3>
-                      <button
-                        type="button"
-                        onClick={addProductPhoto}
-                        disabled={productPhotos.length >= 6}
-                      >
-                        + Agregar foto
-                      </button>
+                      </div>
+                      {productPhotos.map((item) => (
+                        <article key={item.id} className="dynamic-row">
+                          <label>
+                            Foto (jpg/png/jpeg)
+                            <input
+                              type="file"
+                              accept=".jpg,.jpeg,.png"
+                              onChange={(event) =>
+                                updateProductPhotoFile(
+                                  item.id,
+                                  event.target.files?.[0] ?? null
+                                )
+                              }
+                            />
+                            {item.file ? (
+                              <small className="file-name">{item.file.name}</small>
+                            ) : null}
+                          </label>
+                          <label>
+                            Descripción breve
+                            <input
+                              type="text"
+                              value={item.description}
+                              onChange={(event) =>
+                                updateProductPhotoDescription(item.id, event.target.value)
+                              }
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            className="remove-row"
+                            onClick={() => removeProductPhoto(item.id)}
+                          >
+                            Quitar
+                          </button>
+                        </article>
+                      ))}
+                      {errors.productPhotos ? <span>{errors.productPhotos}</span> : null}
                     </div>
-                    {productPhotos.map((item) => (
-                      <article key={item.id} className="dynamic-row">
-                        <label>
-                          Foto (jpg/png/jpeg)
-                          <input
-                            type="file"
-                            accept=".jpg,.jpeg,.png"
-                            onChange={(event) =>
-                              updateProductPhotoFile(
-                                item.id,
-                                event.target.files?.[0] ?? null
-                              )
-                            }
-                          />
-                        </label>
-                        <label>
-                          Descripción breve
-                          <input
-                            type="text"
-                            value={item.description}
-                            onChange={(event) =>
-                              updateProductPhotoDescription(
-                                item.id,
-                                event.target.value
-                              )
-                            }
-                          />
-                        </label>
+                  ) : null}
+
+                  {formState.hasCompanyPhotos === "si" ? (
+                    <div className="dynamic-block">
+                      <div className="dynamic-header">
+                        <h3>Fotos de empresa (máx. 6)</h3>
                         <button
                           type="button"
-                          className="remove-row"
-                          onClick={() => removeProductPhoto(item.id)}
+                          onClick={addCompanyPhoto}
+                          disabled={companyPhotos.length >= 6}
                         >
-                          Quitar
+                          + Agregar foto
                         </button>
-                      </article>
-                    ))}
-                    {errors.productPhotos ? <span>{errors.productPhotos}</span> : null}
-                  </div>
-                ) : null}
-
-                {formState.hasCompanyPhotos === "si" ? (
-                  <div className="dynamic-block">
-                    <div className="dynamic-header">
-                      <h3>Fotos de empresa (máx. 6)</h3>
-                      <button
-                        type="button"
-                        onClick={addCompanyPhoto}
-                        disabled={companyPhotos.length >= 6}
-                      >
-                        + Agregar foto
-                      </button>
+                      </div>
+                      {companyPhotos.map((item) => (
+                        <article key={item.id} className="dynamic-row dynamic-row-single">
+                          <label>
+                            Foto (jpg/png/jpeg)
+                            <input
+                              type="file"
+                              accept=".jpg,.jpeg,.png"
+                              onChange={(event) =>
+                                updateCompanyPhotoFile(
+                                  item.id,
+                                  event.target.files?.[0] ?? null
+                                )
+                              }
+                            />
+                            {item.file ? (
+                              <small className="file-name">{item.file.name}</small>
+                            ) : null}
+                          </label>
+                          <button
+                            type="button"
+                            className="remove-row"
+                            onClick={() => removeCompanyPhoto(item.id)}
+                          >
+                            Quitar
+                          </button>
+                        </article>
+                      ))}
+                      {errors.companyPhotos ? <span>{errors.companyPhotos}</span> : null}
                     </div>
-                    {companyPhotos.map((item) => (
-                      <article key={item.id} className="dynamic-row">
-                        <label>
-                          Foto (jpg/png/jpeg)
-                          <input
-                            type="file"
-                            accept=".jpg,.jpeg,.png"
-                            onChange={(event) =>
-                              updateCompanyPhotoFile(
-                                item.id,
-                                event.target.files?.[0] ?? null
-                              )
-                            }
-                          />
-                        </label>
-                        <button
-                          type="button"
-                          className="remove-row"
-                          onClick={() => removeCompanyPhoto(item.id)}
-                        >
-                          Quitar
-                        </button>
-                      </article>
-                    ))}
-                    {errors.companyPhotos ? <span>{errors.companyPhotos}</span> : null}
-                  </div>
-                ) : null}
+                  ) : null}
 
-                <label className="terms-check">
-                  <input
-                    type="checkbox"
-                    checked={acceptedTerms}
-                    onChange={(event) => {
-                      setAcceptedTerms(event.target.checked);
-                      clearError("terms");
-                    }}
-                  />
-                  <span>
-                    Confirmo que los datos serán revisados por el administrador
-                    antes de su publicación.
-                  </span>
-                </label>
-                {errors.terms ? <span className="terms-error">{errors.terms}</span> : null}
-              </div>
-            ) : null}
+                  <label className="terms-check">
+                    <input
+                      type="checkbox"
+                      checked={acceptedTerms}
+                      onChange={(event) => {
+                        setAcceptedTerms(event.target.checked);
+                        clearError("terms");
+                      }}
+                    />
+                    <span>
+                      Confirmo que los datos serán revisados por el administrador
+                      antes de su publicación.
+                    </span>
+                  </label>
+                  {errors.terms ? <span className="terms-error">{errors.terms}</span> : null}
+                </div>
+              ) : null}
 
-            <footer className="form-actions">
-              <button
-                type="button"
-                className="register-btn-ghost"
-                onClick={handlePrevStep}
-                disabled={currentStep === 0}
-              >
-                Anterior
-              </button>
-
-              {currentStep < stepTitles.length - 1 ? (
+              <footer className="form-actions">
                 <button
                   type="button"
-                  className="register-btn-primary"
-                  onClick={handleNextStep}
+                  className="register-btn-ghost"
+                  onClick={handlePrevStep}
+                  disabled={currentStep === 0 || isSubmitting}
                 >
-                  Siguiente
+                  Anterior
                 </button>
-              ) : (
-                <button type="submit" className="register-btn-primary">
-                  {isSubmitting ? "Enviando..." : "Enviar solicitud"}
-                </button>
-              )}
-            </footer>
-          </form>
+
+                {currentStep < stepTitles.length - 1 ? (
+                  <button
+                    type="button"
+                    className="register-btn-primary"
+                    onClick={handleNextStep}
+                  >
+                    Siguiente
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    className="register-btn-primary"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Enviando..." : "Enviar solicitud"}
+                  </button>
+                )}
+              </footer>
+            </form>
+          ) : null}
         </div>
       </section>
     </PrivateLayout>

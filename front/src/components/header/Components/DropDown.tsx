@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+
 type DropdownItem = {
   label: string;
   to: string;
@@ -7,10 +8,12 @@ type DropdownItem = {
 
 type DropdownProps = {
   title: string;
+  /** Si se define, el título del menú navega a la página hub. */
+  to?: string;
   items: DropdownItem[];
 };
 
-export default function Dropdown({ title, items }: DropdownProps) {
+export default function Dropdown({ title, to, items }: DropdownProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -19,7 +22,15 @@ export default function Dropdown({ title, items }: DropdownProps) {
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
     >
-      <a className="dropdown-title">{title}</a>
+      {to ? (
+        <Link to={to} className="dropdown-title">
+          {title}
+        </Link>
+      ) : (
+        <button type="button" className="dropdown-title" aria-expanded={open}>
+          {title}
+        </button>
+      )}
 
       <ul className="submenu-nav">
         {items.map((item, i: number) => (

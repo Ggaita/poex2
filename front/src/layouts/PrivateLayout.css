@@ -17,20 +17,23 @@
  *
  * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
  */
+/* Misma marca de agua global (body::before) que Quiénes somos y el sitio público */
 .private-layout {
-  background: var(--color-bg-app);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
   background-image: none;
 }
 
-/* --- Guest: login vs inscripción (sin sesión) --- */
+/* --- Guest: login / inscripción / genérico (mismo chrome de marca) --- */
 .private-layout.guest-login .private-header,
-.private-layout.guest-login .private-footer {
-  background: var(--brand-azul-noche);
-}
-
+.private-layout.guest-login .private-footer,
 .private-layout.guest-register .private-header,
-.private-layout.guest-register .private-footer {
-  background: var(--brand-azul-laguna);
+.private-layout.guest-register .private-footer,
+.private-layout.guest-generic .private-header,
+.private-layout.guest-generic .private-footer {
+  background: var(--brand-azul-noche);
 }
 
 .private-guest-links {
@@ -64,7 +67,7 @@
 .private-header {
   margin-top: 0;
   min-height: auto;
-  background: var(--brand-rio-azulado);
+  background: var(--brand-azul-noche);
   color: var(--color-text-inverse);
   padding: 0.9rem 1rem 0.85rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
@@ -152,8 +155,8 @@
   height: 1.25rem;
   padding: 0 0.35rem;
   border-radius: 999px;
-  background: #f59e0b;
-  color: #1f2937;
+  background: var(--color-badge-alert);
+  color: var(--color-badge-alert-text);
   font-size: 0.72rem;
   font-weight: 800;
   line-height: 1.25rem;
@@ -172,12 +175,18 @@
 
 .private-main-content {
   padding: 0;
+  flex: 1;
+  width: 100%;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 /* --- Footer --- */
 .private-footer {
   width: 100%;
-  background: var(--brand-rio-azulado);
+  background: var(--brand-azul-noche);
   color: rgba(255, 255, 255, 0.85);
   text-align: center;
   padding: 0.65rem 1rem;

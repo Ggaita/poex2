@@ -1,8 +1,11 @@
 import { Router } from "express";
-import { createPublicApplication } from "../controllers/public-applications.controller";
+import {
+  createPublicApplication,
+  parseApplicationMultipart
+} from "../controllers/public-applications.controller";
 
 const router = Router();
 
-router.post("/", createPublicApplication);
+router.post("/", parseApplicationMultipart, createPublicApplication);
 
 export default router;

@@ -15,4 +15,6 @@
  */
 @import "./styles/tokens.css";
 @import "./styles/base.css";
+/* Sistema de botones global (aliases de páginas incluidos) */
+@import "./components/ui/button/Button.css";
 

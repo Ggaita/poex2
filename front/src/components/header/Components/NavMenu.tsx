@@ -8,32 +8,35 @@ export default function NavMenu() {
 
         <Dropdown
           title="INSTITUCIONAL"
+          to="/institucional"
           items={[
-            { label: "Quiénes somos", to: "/quienes-somos" },
-            { label: "Objetivos", to: "/objetivos" },
-            { label: "Organismos vinculados", to: "/organismos-vinculados" },
-            { label: "Contacto institucional", to: "/contacto-institucional" }
+            { label: "Quiénes somos", to: "/institucional#quienes-somos" },
+            { label: "Objetivos", to: "/institucional#objetivos" },
+            { label: "Organismos vinculados", to: "/institucional#organismos-vinculados" },
+            { label: "Contacto institucional", to: "/institucional#contacto" }
           ]}
         />
 
         <Dropdown
           title="SECTORES ECONÓMICOS"
+          to="/sectores"
           items={[
-            { label: "Agro y alimentos", to: "/agro-y-alimentos" },
-            { label: "Industria", to: "/industria" },
-            { label: "Industrias Creativas", to: "/industrias-creativas" },
-            { label: "Servicios Tecnológicos", to: "/servicios-tecnologicos" },
+            { label: "Agro y alimentos", to: "/sectores#agro-y-alimentos" },
+            { label: "Industria", to: "/sectores#industria" },
+            { label: "Industrias Creativas", to: "/sectores#industrias-creativas" },
+            { label: "Servicios Tecnológicos", to: "/sectores#servicios-tecnologicos" }
           ]}
         />
 
         <Dropdown
           title="SERVICIOS DE COMERCIO EXTERIOR"
+          to="/servicios-comercio-exterior"
           items={[
-            { label: "Asistencia exportadora", to: "/asistencia-exportadora" },
-            { label: "Certificaciones", to: "/certificaciones" },
-            { label: "Normativas", to: "/normativas" },
-            { label: "Logística y aduana", to: "/logistica-y-aduana" },
-            { label: "Capacitación", to: "/capacitacion" },
+            { label: "Asistencia exportadora", to: "/servicios-comercio-exterior#asistencia-exportadora" },
+            { label: "Certificaciones", to: "/servicios-comercio-exterior#certificaciones" },
+            { label: "Normativas", to: "/servicios-comercio-exterior#normativas" },
+            { label: "Logística y aduana", to: "/servicios-comercio-exterior#logistica-y-aduana" },
+            { label: "Capacitación", to: "/servicios-comercio-exterior#capacitacion" }
           ]}
         />
 

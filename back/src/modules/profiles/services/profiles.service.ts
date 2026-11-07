@@ -289,6 +289,9 @@ type ParsedApplicationMessage = {
     youtube?: string;
     other?: string;
   };
+  attachments?: {
+    logo?: { url?: string } | null;
+  };
   geo?: {
     latitude?: number | string;
     longitude?: number | string;
@@ -675,7 +678,9 @@ export const syncProfileFromApprovedApplicationTx = async (
     exportDestinations: trimToNullable(parsedMessage.exportDestinations),
     awards: trimToNullable(parsedMessage.awards),
     certifications: trimToNullable(parsedMessage.certifications),
-    logoUrl: normalizeImageUrl(parsedMessage.links?.logo),
+    logoUrl: normalizeImageUrl(
+      parsedMessage.links?.logo ?? parsedMessage.attachments?.logo?.url
+    ),
     website: trimToNullable(parsedMessage.links?.website),
     facebook: trimToNullable(parsedMessage.links?.facebook),
     instagram: trimToNullable(parsedMessage.links?.instagram),
@@ -1535,4 +1540,99 @@ export const getPublicProfileById = async (
   }
 
   return toPublicView(row, buildVisibilityMap(row.visibilityRules));
+};
+
+export type PublicProductDetailView = {
+  id: number;
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  tariffPosition?: string;
+  company: {
+    id: number;
+    companyName?: string;
+    logoUrl?: string;
+    sector?: string;
+    subSector?: string;
+    city?: string;
+    website?: string;
+    contactName?: string;
+    contactEmail?: string;
+    phone?: string;
+  };
+};
+
+export const getPublicProductById = async (
+  productId: number
+): Promise<PublicProductDetailView | null> => {
+  const product = await prisma.companyProduct.findFirst({
+    where: {
+      id: productId,
+      isAccepted: true,
+      profile: {
+        isPublished: true
+      }
+    },
+    include: {
+      profile: {
+        include: {
+          visibilityRules: true
+        }
+      }
+    }
+  });
+
+  if (!product) {
+    return null;
+  }
+
+  const visibility = buildVisibilityMap(product.profile.visibilityRules);
+  const companyName = visibility.companyName
+    ? trimToNullable(product.profile.companyName) ?? undefined
+    : undefined;
+
+  if (!companyName) {
+    return null;
+  }
+
+  const name = trimToNullable(product.name);
+  if (!name) {
+    return null;
+  }
+
+  return {
+    id: product.id,
+    name,
+    description: trimToNullable(product.description) ?? undefined,
+    imageUrl: normalizeImageUrl(product.imageUrl) ?? undefined,
+    tariffPosition: trimToNullable(product.tariffPosition) ?? undefined,
+    company: {
+      id: product.profile.id,
+      companyName,
+      logoUrl: visibility.logoUrl
+        ? normalizeImageUrl(product.profile.logoUrl) ?? undefined
+        : undefined,
+      sector: visibility.sector
+        ? trimToNullable(product.profile.sector) ?? undefined
+        : undefined,
+      subSector: visibility.subSector
+        ? trimToNullable(product.profile.subSector) ?? undefined
+        : undefined,
+      city: visibility.city
+        ? trimToNullable(product.profile.city) ?? undefined
+        : undefined,
+      website: visibility.website
+        ? trimToNullable(product.profile.website) ?? undefined
+        : undefined,
+      contactName: visibility.contactName
+        ? trimToNullable(product.profile.contactName) ?? undefined
+        : undefined,
+      contactEmail: visibility.contactEmail
+        ? trimToNullable(product.profile.contactEmail) ?? undefined
+        : undefined,
+      phone: visibility.phone
+        ? trimToNullable(product.profile.phone) ?? undefined
+        : undefined
+    }
+  };
 };

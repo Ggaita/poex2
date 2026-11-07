@@ -40,6 +40,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+  box-shadow: var(--shadow-soft);
 }
 
 .admin-dashboard-header p {
@@ -74,6 +75,13 @@
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.admin-module-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-1px);
 }
 
 .admin-module-card h2 {
@@ -92,19 +100,24 @@
   text-decoration: none;
   border: 1px solid var(--color-primary);
   color: var(--color-white);
-  background: var(--brand-magenta);
+  background: var(--color-primary);
   border-radius: var(--radius-sm);
-  padding: 0.45rem 0.65rem;
+  padding: 0.5rem 0.85rem;
   font-weight: 700;
+  font-size: 0.88rem;
   width: fit-content;
+  margin-top: auto;
 }
 
 .admin-module-link:hover {
-  background: var(--brand-rio-azulado);
+  background: var(--color-primary-strong);
+  border-color: var(--color-primary-strong);
+  color: var(--color-white);
 }
 
 .admin-module-link.disabled {
-  border-color: var(--color-border);
+  border-color: var(--color-border-soft);
+  background: var(--color-surface-soft);
   color: var(--color-text-soft);
   pointer-events: none;
 }

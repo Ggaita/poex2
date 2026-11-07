@@ -1,4 +1,4 @@
-﻿import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import PrivateLayout from "../../../layouts/PrivateLayout";
 import {
@@ -128,10 +128,10 @@ export default function LoginPage() {
       <section className="login-page">
         <div className="login-card">
           <Link to="/" className="login-back-link">
-            ← Volver al inicio
+            Inicio
           </Link>
           <header>
-            <p>Ingreso al sistema</p>
+            <p className="login-eyebrow">Ingreso al sistema</p>
             <h1>Admin / Empresa</h1>
             <small>
               Seleccioná el perfil de acceso y cargá tus credenciales.
@@ -141,17 +141,23 @@ export default function LoginPage() {
           <div className="role-switch" role="tablist" aria-label="Tipo de acceso">
             <button
               type="button"
+              role="tab"
+              aria-selected={role === "admin"}
               className={role === "admin" ? "active" : ""}
               onClick={() => setRole("admin")}
             >
-              Administrador
+              <span>A</span>
+              <small>Administrador</small>
             </button>
             <button
               type="button"
+              role="tab"
+              aria-selected={role === "empresa"}
               className={role === "empresa" ? "active" : ""}
               onClick={() => setRole("empresa")}
             >
-              Empresa
+              <span>E</span>
+              <small>Empresa</small>
             </button>
           </div>
 

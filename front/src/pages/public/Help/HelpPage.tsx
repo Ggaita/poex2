@@ -411,7 +411,7 @@ export default function HelpPage() {
             No incluyas contraseñas ni información confidencial en el mensaje.
           </p>
           <div className="help-actions">
-            <Link to="/contacto-institucional" className="help-action">
+            <Link to="/institucional#contacto" className="help-action">
               Contactar a la Agencia
             </Link>
             <Link to="/formularios-de-consulta" className="help-action help-action-soft">

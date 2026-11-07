@@ -201,7 +201,7 @@ export default function PrivateLayout({
           ) : (
             <div className="private-guest-links" aria-label="Accesos relacionados">
               <NavLink to="/" className="private-guest-link">
-                Inicio público
+                Inicio
               </NavLink>
               {guestContext === "login" ? (
                 <NavLink to="/register" className="private-guest-link">

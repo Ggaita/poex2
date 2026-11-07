@@ -54,7 +54,7 @@
 
 .industrial-park-header h1 {
   margin: 0;
-  color: var(--color-text);
+  color: var(--color-primary-strong);
   font-size: clamp(1.3rem, 2.2vw, 1.9rem);
 }
 
@@ -232,7 +232,7 @@
   object-fit: contain;
   object-position: center;
   display: block;
-  background: #fff;
+  background: var(--color-white);
   padding: 0.75rem;
 }
 

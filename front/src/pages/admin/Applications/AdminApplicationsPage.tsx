@@ -39,16 +39,100 @@ const formatDate = (value?: string): string => {
   }).format(date);
 };
 
-const parseJsonMessage = (message?: string): unknown => {
+type AttachmentFile = {
+  title?: string;
+  description?: string;
+  url?: string;
+  originalName?: string;
+  mimeType?: string;
+  size?: number;
+};
+
+type ApplicationMessageDetails = {
+  address?: string;
+  city?: string;
+  description?: string;
+  representativeRole?: string;
+  representativeEmail?: string;
+  sector?: string;
+  chamberMembership?: string;
+  chamberNames?: string;
+  product?: string;
+  keywords?: string;
+  tariffPosition?: string;
+  exportDestinations?: string;
+  awards?: string;
+  certifications?: string;
+  links?: {
+    logo?: string;
+    website?: string;
+    facebook?: string;
+    instagram?: string;
+    linkedin?: string;
+    youtube?: string;
+    other?: string;
+  };
+  geo?: {
+    latitude?: number | string | null;
+    longitude?: number | string | null;
+  };
+  attachments?: {
+    logo?: AttachmentFile | null;
+    hasCatalog?: string;
+    catalog?: AttachmentFile[];
+    hasProductPhotos?: string;
+    productPhotos?: AttachmentFile[];
+    hasCompanyPhotos?: string;
+    companyPhotos?: AttachmentFile[];
+  };
+};
+
+const parseJsonMessage = (message?: string): ApplicationMessageDetails | null => {
   if (!message) {
     return null;
   }
 
   try {
-    return JSON.parse(message);
+    const parsed = JSON.parse(message) as unknown;
+    if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+      return parsed as ApplicationMessageDetails;
+    }
+    return null;
   } catch {
     return null;
   }
+};
+
+const resolveAssetUrl = (url?: string): string | null => {
+  if (!url || !url.trim()) {
+    return null;
+  }
+  if (/^https?:\/\//i.test(url)) {
+    return url;
+  }
+  const base = API_BASE_URL.replace(/\/$/, "");
+  return url.startsWith("/") ? `${base}${url}` : `${base}/${url}`;
+};
+
+const formatFileSize = (size?: number): string => {
+  if (typeof size !== "number" || !Number.isFinite(size)) {
+    return "";
+  }
+  if (size < 1024) {
+    return `${size} B`;
+  }
+  if (size < 1024 * 1024) {
+    return `${(size / 1024).toFixed(1)} KB`;
+  }
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+const isImageAttachment = (item: AttachmentFile): boolean => {
+  if (item.mimeType?.startsWith("image/")) {
+    return true;
+  }
+  const name = item.originalName ?? item.url ?? "";
+  return /\.(jpe?g|png|webp)$/i.test(name);
 };
 
 export default function AdminApplicationsPage() {
@@ -421,8 +505,8 @@ export default function AdminApplicationsPage() {
                       <dt>Teléfono</dt>
                       <dd>{selectedApplication.phone ?? "-"}</dd>
                     </div>
-                    <div>
-                      <dt>Tax ID</dt>
+                  <div>
+                      <dt>CUIT / Tax ID</dt>
                       <dd>{selectedApplication.taxId ?? "-"}</dd>
                     </div>
                     <div>
@@ -442,7 +526,224 @@ export default function AdminApplicationsPage() {
                   <section className="detail-section">
                     <h3>Información enviada</h3>
                     {messageJson ? (
-                      <pre>{JSON.stringify(messageJson, null, 2)}</pre>
+                      <div className="application-details">
+                        <dl className="detail-grid compact">
+                          <div>
+                            <dt>Sector</dt>
+                            <dd>{messageJson.sector || "-"}</dd>
+                          </div>
+                          <div>
+                            <dt>Producto</dt>
+                            <dd>{messageJson.product || "-"}</dd>
+                          </div>
+                          <div>
+                            <dt>Localidad</dt>
+                            <dd>{messageJson.city || "-"}</dd>
+                          </div>
+                          <div>
+                            <dt>Domicilio</dt>
+                            <dd>{messageJson.address || "-"}</dd>
+                          </div>
+                          <div>
+                            <dt>Cargo representante</dt>
+                            <dd>{messageJson.representativeRole || "-"}</dd>
+                          </div>
+                          <div>
+                            <dt>Email representante</dt>
+                            <dd>{messageJson.representativeEmail || "-"}</dd>
+                          </div>
+                          <div>
+                            <dt>Cámara</dt>
+                            <dd>
+                              {messageJson.chamberMembership === "si"
+                                ? messageJson.chamberNames || "Sí"
+                                : messageJson.chamberMembership === "no"
+                                  ? "No"
+                                  : "-"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt>Geo</dt>
+                            <dd>
+                              {messageJson.geo?.latitude != null &&
+                              messageJson.geo?.longitude != null
+                                ? `${messageJson.geo.latitude}, ${messageJson.geo.longitude}`
+                                : "-"}
+                            </dd>
+                          </div>
+                        </dl>
+
+                        {messageJson.description ? (
+                          <p className="detail-description">{messageJson.description}</p>
+                        ) : null}
+
+                        <div className="detail-chips">
+                          {messageJson.keywords ? (
+                            <span>Keywords: {messageJson.keywords}</span>
+                          ) : null}
+                          {messageJson.tariffPosition ? (
+                            <span>Arancel: {messageJson.tariffPosition}</span>
+                          ) : null}
+                          {messageJson.exportDestinations ? (
+                            <span>Exporta a: {messageJson.exportDestinations}</span>
+                          ) : null}
+                          {messageJson.awards ? <span>Premios: {messageJson.awards}</span> : null}
+                          {messageJson.certifications ? (
+                            <span>Certificaciones: {messageJson.certifications}</span>
+                          ) : null}
+                        </div>
+
+                        {messageJson.links ? (
+                          <ul className="detail-links">
+                            {Object.entries(messageJson.links)
+                              .filter(
+                                ([key, value]) =>
+                                  key !== "logo" &&
+                                  typeof value === "string" &&
+                                  value.trim().length > 0
+                              )
+                              .map(([key, value]) => (
+                                <li key={key}>
+                                  <a
+                                    href={String(value)}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                  >
+                                    {key}
+                                  </a>
+                                </li>
+                              ))}
+                          </ul>
+                        ) : null}
+
+                        <div className="attachments-block">
+                          <h4>Adjuntos</h4>
+                          {!messageJson.attachments?.logo &&
+                          !(messageJson.attachments?.catalog?.length) &&
+                          !(messageJson.attachments?.productPhotos?.length) &&
+                          !(messageJson.attachments?.companyPhotos?.length) ? (
+                            <p className="detail-feedback">Sin archivos adjuntos.</p>
+                          ) : null}
+
+                          {messageJson.attachments?.logo?.url ? (
+                            <div className="attachment-group">
+                              <strong>Logo</strong>
+                              <div className="attachment-grid">
+                                <a
+                                  className="attachment-card"
+                                  href={
+                                    resolveAssetUrl(messageJson.attachments.logo.url) ?? "#"
+                                  }
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  {isImageAttachment(messageJson.attachments.logo) ? (
+                                    <img
+                                      src={
+                                        resolveAssetUrl(messageJson.attachments.logo.url) ??
+                                        ""
+                                      }
+                                      alt="Logo adjunto"
+                                    />
+                                  ) : null}
+                                  <span>
+                                    {messageJson.attachments.logo.originalName || "logo"}
+                                  </span>
+                                  <small>
+                                    {formatFileSize(messageJson.attachments.logo.size)}
+                                  </small>
+                                </a>
+                              </div>
+                            </div>
+                          ) : null}
+
+                          {(messageJson.attachments?.catalog?.length ?? 0) > 0 ? (
+                            <div className="attachment-group">
+                              <strong>Catálogos</strong>
+                              <div className="attachment-grid">
+                                {messageJson.attachments?.catalog?.map((item, index) => {
+                                  const href = resolveAssetUrl(item.url);
+                                  if (!href) {
+                                    return null;
+                                  }
+                                  return (
+                                    <a
+                                      key={`${item.url}-${index}`}
+                                      className="attachment-card"
+                                      href={href}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                    >
+                                      <span>{item.title || item.originalName || `PDF ${index + 1}`}</span>
+                                      <small>{formatFileSize(item.size)}</small>
+                                    </a>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ) : null}
+
+                          {(messageJson.attachments?.productPhotos?.length ?? 0) > 0 ? (
+                            <div className="attachment-group">
+                              <strong>Fotos de producto</strong>
+                              <div className="attachment-grid">
+                                {messageJson.attachments?.productPhotos?.map((item, index) => {
+                                  const href = resolveAssetUrl(item.url);
+                                  if (!href) {
+                                    return null;
+                                  }
+                                  return (
+                                    <a
+                                      key={`${item.url}-${index}`}
+                                      className="attachment-card"
+                                      href={href}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                    >
+                                      {isImageAttachment(item) ? (
+                                        <img src={href} alt={item.description || "Producto"} />
+                                      ) : null}
+                                      <span>
+                                        {item.description || item.originalName || `Foto ${index + 1}`}
+                                      </span>
+                                      <small>{formatFileSize(item.size)}</small>
+                                    </a>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ) : null}
+
+                          {(messageJson.attachments?.companyPhotos?.length ?? 0) > 0 ? (
+                            <div className="attachment-group">
+                              <strong>Fotos de empresa</strong>
+                              <div className="attachment-grid">
+                                {messageJson.attachments?.companyPhotos?.map((item, index) => {
+                                  const href = resolveAssetUrl(item.url);
+                                  if (!href) {
+                                    return null;
+                                  }
+                                  return (
+                                    <a
+                                      key={`${item.url}-${index}`}
+                                      className="attachment-card"
+                                      href={href}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                    >
+                                      {isImageAttachment(item) ? (
+                                        <img src={href} alt={item.originalName || "Empresa"} />
+                                      ) : null}
+                                      <span>{item.originalName || `Foto ${index + 1}`}</span>
+                                      <small>{formatFileSize(item.size)}</small>
+                                    </a>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
                     ) : (
                       <p>{selectedApplication.message ?? "Sin detalle adicional."}</p>
                     )}

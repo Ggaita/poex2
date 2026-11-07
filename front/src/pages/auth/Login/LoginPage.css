@@ -40,20 +40,23 @@
 .login-back-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  color: var(--color-white);
+  gap: 0.3rem;
+  color: var(--color-primary-strong);
   font-weight: 700;
+  font-size: 0.9rem;
   text-decoration: none;
-  margin: 1rem 0;
-  background: var(--brand-magenta);
+  margin: 0 0 0.85rem;
+  background: transparent;
   border-radius: var(--radius-sm);
-  padding: 0.45rem 0.65rem;
-  border: 1px solid var(--brand-magenta);
+  /* sin padding horizontal: alinea con título / labels del card */
+  padding: 0.2rem 0;
+  border: none;
+  width: fit-content;
 }
 
 .login-back-link:hover {
   text-decoration: none;
-  background-color: var(--color-primary-strong);
+  color: var(--color-cta);
 }
 
 /* --- Tarjetas / cards --- */
@@ -64,17 +67,18 @@
   margin-bottom: 1rem;
 }
 
-.login-card header p {
+.login-card header p,
+.login-eyebrow {
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-weight: 700;
-  color: var(--color-primary);
+  color: var(--color-primary-strong); /* Azul Laguna — igual que preinscripción */
 }
 
 .login-card header h1 {
   font-size: 1.5rem;
-  color: var(--color-text);
+  color: var(--color-primary-strong);
 }
 
 .login-card header small {
@@ -85,24 +89,66 @@
 .role-switch {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.6rem;
+  gap: 0.55rem;
   margin: 1rem 0 1.1rem;
 }
 
 .role-switch button {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: var(--color-surface-soft);
+  background: var(--color-surface);
   color: var(--color-text-muted);
-  padding: 0.62rem 0.8rem;
+  padding: 0.55rem 0.65rem;
   font-weight: 700;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  text-align: left;
+  box-shadow: var(--shadow-soft);
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.role-switch button span {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--brand-azul-noche) 12%, #ffffff);
+  color: var(--brand-azul-noche);
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.role-switch button small {
+  color: var(--color-text-muted);
+  font-weight: 600;
+  font-size: 0.88rem;
+  line-height: 1.2;
+}
+
+.role-switch button:hover:not(.active) {
+  border-color: color-mix(in srgb, var(--brand-azul-noche) 28%, #ffffff);
+  background: color-mix(in srgb, var(--brand-azul-noche) 4%, #ffffff);
 }
 
 .role-switch button.active {
-  border-color: var(--color-primary);
-  color: var(--color-primary-strong);
-  background: var(--color-primary-soft);
+  border-color: var(--brand-azul-noche);
+  background: var(--brand-azul-noche);
+  box-shadow: var(--shadow-card);
+}
+
+.role-switch button.active span {
+  background: var(--brand-magenta);
+  color: var(--color-white);
+}
+
+.role-switch button.active small {
+  color: var(--color-text-inverse);
+  font-weight: 700;
 }
 
 /* --- Formularios --- */
@@ -142,7 +188,7 @@
 .login-form button[type="submit"] {
   border: none;
   border-radius: var(--radius-md);
-  background: var(--brand-magenta);
+   background: var(--color-cta);
   color: var(--color-white);
   font-weight: 700;
   padding: 0.7rem 1rem;
@@ -150,7 +196,7 @@
 }
 
 .login-form button[type="submit"]:hover {
-  background: var(--color-primary-strong);
+  background: var(--color-cta-hover);
 }
 
 .login-error,
@@ -189,15 +235,12 @@
   text-decoration: underline;
 }
 
-/* --- Responsive --- */
+/* Responsive: escritorio >1024 | tablet ≤1024 | tablet sm ≤768 | cel ≤480 */
 @media (max-width: 1024px) {
-
-/* --- Página / shell --- */
   .login-page {
     padding: 1.6rem 1rem 2.4rem;
   }
 
-/* --- Tarjetas / cards --- */
   .login-card {
     width: min(520px, 100%);
     padding: 1.35rem;
@@ -205,14 +248,11 @@
 }
 
 @media (max-width: 768px) {
-
-/* --- Página / shell --- */
   .login-page {
     padding: 1.25rem 0.85rem 2rem;
     place-items: start center;
   }
 
-/* --- Tarjetas / cards --- */
   .login-card {
     border-radius: var(--radius-md);
     padding: 1.15rem;
@@ -229,24 +269,19 @@
 }
 
 @media (max-width: 480px) {
-
-/* --- Página / shell --- */
   .login-page {
     padding: 1rem 0.7rem 1.5rem;
   }
 
-/* --- Tarjetas / cards --- */
   .login-card {
     padding: 1rem 0.9rem;
   }
 
-/* --- Acciones / botones --- */
   .login-back-link {
     margin-bottom: 0.7rem;
     font-size: 0.92rem;
   }
 
-/* --- Tarjetas / cards --- */
   .login-card header h1 {
     font-size: 1.2rem;
   }
@@ -259,12 +294,10 @@
     align-items: flex-start;
   }
 
-/* --- Formularios --- */
   .login-form button[type="submit"] {
     width: 100%;
   }
 
-/* --- Tarjetas / cards --- */
   .login-card footer {
     margin-top: 0.8rem;
   }

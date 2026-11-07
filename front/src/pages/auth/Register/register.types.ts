@@ -1,14 +1,14 @@
-export type YesNo = "" | "si" | "no";
+﻿export type YesNo = "" | "si" | "no";
 
 export type RegisterFormState = {
   companyName: string;
   contactEmail: string;
   phone: string;
+  taxId: string;
   address: string;
   city: string;
   latitude: string;
   longitude: string;
-  googleMapsEmbed: string;
   description: string;
   representativeName: string;
   representativeRole: string;

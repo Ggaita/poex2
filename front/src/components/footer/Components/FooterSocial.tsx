@@ -2,9 +2,7 @@ import { FaFacebook, FaGlobe, FaInstagram, FaWhatsapp } from "react-icons/fa";
 
 const FooterSocial = () => {
   return (
-    <div className="footer-section">
-      <h3>Redes</h3>
-
+    <div className="footer-section footer-section-social" aria-label="Redes sociales">
       <ul className="footer-social">
         <li className="footer-social-item">
           <a

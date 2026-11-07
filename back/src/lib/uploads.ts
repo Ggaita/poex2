@@ -3,7 +3,12 @@ import path from "path";
 import multer from "multer";
 import type { Request } from "express";
 
-export type UploadKind = "logos" | "products" | "opportunities" | "documents";
+export type UploadKind =
+  | "logos"
+  | "products"
+  | "opportunities"
+  | "documents"
+  | "applications";
 
 const uploadsRoot = path.resolve(process.cwd(), "uploads");
 
@@ -17,6 +22,7 @@ ensureDir(path.join(uploadsRoot, "logos"));
 ensureDir(path.join(uploadsRoot, "products"));
 ensureDir(path.join(uploadsRoot, "opportunities"));
 ensureDir(path.join(uploadsRoot, "documents"));
+ensureDir(path.join(uploadsRoot, "applications"));
 
 const allowedImageMimeTypes = new Set([
   "image/jpeg",
@@ -45,7 +51,8 @@ const prefixByKind: Record<UploadKind, string> = {
   logos: "logo",
   products: "product",
   opportunities: "opportunity",
-  documents: "document"
+  documents: "document",
+  applications: "application"
 };
 
 const createStorage = (kind: UploadKind) =>
@@ -120,6 +127,23 @@ export const opportunityDocumentUpload = multer({
     fileSize: 10 * 1024 * 1024
   }
 });
+
+/** Adjuntos de preinscripción pública (logo, catálogos PDF, fotos). */
+export const applicationAttachmentUpload = multer({
+  storage: createStorage("applications"),
+  fileFilter: documentFileFilter,
+  limits: {
+    fileSize: 8 * 1024 * 1024,
+    files: 19
+  }
+});
+
+export const applicationAttachmentFields = [
+  { name: "logo", maxCount: 1 },
+  { name: "catalogs", maxCount: 6 },
+  { name: "productPhotos", maxCount: 6 },
+  { name: "companyPhotos", maxCount: 6 }
+] as const;
 
 export const getUploadsRoot = (): string => uploadsRoot;
 

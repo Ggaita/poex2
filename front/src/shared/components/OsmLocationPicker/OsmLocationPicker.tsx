@@ -13,8 +13,8 @@ type OsmLocationPickerProps = {
 const FALLBACK_CENTER: [number, number] = [-27.4516, -58.9866];
 
 const baseMarkerStyle: L.CircleMarkerOptions = {
-  color: "#1d4ed8",
-  fillColor: "#60a5fa",
+  color: "#063565",
+  fillColor: "#5059bc",
   fillOpacity: 0.88,
   radius: 7,
   weight: 2
