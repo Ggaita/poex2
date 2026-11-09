@@ -1,4 +1,4 @@
-﻿import fs from "node:fs";
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -15,8 +15,10 @@ const resolveDataFile = (fileName) => {
     path.join(__dirname, "..", "data", fileName),
     path.join(process.cwd(), "data", fileName),
     path.join(process.cwd(), "back", "data", fileName),
+    path.join(process.cwd(), "app", "back", "data", fileName),
     `/app/data/${fileName}`,
-    `/app/back/data/${fileName}`
+    `/app/back/data/${fileName}`,
+    `/data/${fileName}`
   ];
   for (const candidate of candidates) {
     if (fs.existsSync(candidate)) return path.resolve(candidate);

@@ -17,7 +17,9 @@ const generateEmpresaPassword = () => {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Candidatos: env, back/data junto al script, cwd/data (Docker a veces monta distinto)
+// Candidatos: env, back/data junto al script, cwd/data.
+// Docker stack típico (host): app/back/data  →  en container suele ser /app/data
+// (WORKDIR=/app + COPY del back) o /app/back/data si montan todo el monorepo.
 const resolveBaseCsvPath = () => {
   const fromEnv = process.env.RELEVAMIENTO_CSV?.trim();
   const candidates = [
@@ -28,8 +30,12 @@ const resolveBaseCsvPath = () => {
     path.join(process.cwd(), "data", "base-completa.csv"),
     path.join(process.cwd(), "back", "data", "poex-empresas.csv"),
     path.join(process.cwd(), "back", "data", "base-completa.csv"),
+    path.join(process.cwd(), "app", "back", "data", "poex-empresas.csv"),
+    path.join(process.cwd(), "app", "back", "data", "base-completa.csv"),
     "/app/data/poex-empresas.csv",
     "/app/data/base-completa.csv",
+    "/app/back/data/poex-empresas.csv",
+    "/app/back/data/base-completa.csv",
     "/data/poex-empresas.csv",
     "/data/base-completa.csv"
   ].filter(Boolean);
@@ -898,13 +904,32 @@ const ensureEmpresaUserForProfile = async (profile, company) => {
   return { status, email, userId, passwordGenerated: Boolean(plainPassword) };
 };
 
-const writeCredentialsFile = () => {
+const writeCredentialsFile = (preferredDataDir) => {
   if (generatedCredentials.length === 0) {
     return null;
   }
 
-  const outDir = path.join(__dirname, "..", "data");
-  fs.mkdirSync(outDir, { recursive: true });
+  const outDirCandidates = [
+    preferredDataDir,
+    path.join(__dirname, "..", "data"),
+    path.join(process.cwd(), "data"),
+    path.join(process.cwd(), "back", "data"),
+    "/app/data",
+    "/app/back/data"
+  ].filter(Boolean);
+
+  let outDir = outDirCandidates[0];
+  for (const candidate of outDirCandidates) {
+    try {
+      fs.mkdirSync(candidate, { recursive: true });
+      fs.accessSync(candidate, fs.constants.W_OK);
+      outDir = candidate;
+      break;
+    } catch {
+      // probar siguiente
+    }
+  }
+
   const outPath = path.join(outDir, "empresa-credentials.csv");
   const header = "profile_id,company_name,email,password,status,generated_at\n";
   const now = new Date().toISOString();
@@ -1070,7 +1095,7 @@ const run = async () => {
     console.log(
       `\nListo. Creadas: ${created} · Actualizadas: ${updated} · Total perfiles: ${companies.length}`
     );
-    const credsPath = writeCredentialsFile();
+    const credsPath = writeCredentialsFile(path.dirname(basePath));
     if (credsPath) {
       console.log(`Claves empresa generadas (${generatedCredentials.length}): ${credsPath}`);
       console.log("IMPORTANTE: guardá ese CSV; las claves no se pueden volver a leer (solo resetear)." );
@@ -1134,7 +1159,7 @@ const run = async () => {
   console.log(
     `\nListo. Creadas: ${created} · Actualizadas: ${updated} · Total perfiles: ${companies.length}`
   );
-  const credsPath = writeCredentialsFile();
+  const credsPath = writeCredentialsFile(path.dirname(basePath));
   if (credsPath) {
     console.log(`Claves empresa generadas (${generatedCredentials.length}): ${credsPath}`);
     console.log("IMPORTANTE: guardá ese CSV; las claves no se pueden volver a leer (solo resetear).");
