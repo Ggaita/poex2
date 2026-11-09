@@ -198,19 +198,36 @@ export const updateApplicationStatus = async (
             ? PrismaUserRole.empresa
             : undefined;
 
-      await syncProfileFromApprovedApplicationTx(db, updated, {
+      const access = await syncProfileFromApprovedApplicationTx(db, updated, {
         userId: input.reviewedByUserId,
         email: input.reviewedByEmail ?? input.reviewedBy,
         role: reviewerRole,
         displayName: input.reviewedBy
       });
 
+      const accessInstructions = access.temporaryPassword
+        ? `Ya podés ingresar al panel de empresa.\nEmail: ${access.loginEmail}\nContraseña temporal: ${access.temporaryPassword}\nTe recomendamos cambiarla luego del primer ingreso.`
+        : access.passwordWasChosenByApplicant
+          ? `Ya podés ingresar al panel de empresa con tu email (${access.loginEmail}) y la contraseña que elegiste al inscribirte.`
+          : `Ya podés ingresar al panel de empresa con tu email (${access.loginEmail}). Si no recordás la clave, pedile un reset al administrador.`;
+
       await prepareApplicationApprovedEmailTx(db, {
         applicationId: updated.id,
         companyName: updated.companyName,
         contactName: updated.contactName,
-        recipientEmail: updated.email
+        recipientEmail: updated.email,
+        loginEmail: access.loginEmail,
+        accessInstructions
       });
+
+      return {
+        application: toApiApplication(updated),
+        access: {
+          loginEmail: access.loginEmail,
+          temporaryPassword: access.temporaryPassword,
+          passwordWasChosenByApplicant: access.passwordWasChosenByApplicant
+        }
+      };
     }
 
     return { application: toApiApplication(updated) };

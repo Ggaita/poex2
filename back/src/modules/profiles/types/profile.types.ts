@@ -150,10 +150,19 @@ export interface CompanyProductView {
   updatedAt: string;
 }
 
+export interface CompanyOwnerUserView {
+  id: number;
+  email: string;
+  displayName: string;
+  isActive: boolean;
+}
+
 export interface CompanyProfileAdminView {
   id: number;
   applicationId?: number;
   ownerUserId?: number;
+  /** Cuenta de acceso rol=empresa vinculada (si existe). */
+  ownerUser?: CompanyOwnerUserView;
   slug: string;
   companyName: string;
   contactName: string;

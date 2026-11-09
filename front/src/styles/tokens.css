@@ -70,6 +70,8 @@
   --color-text-soft: color-mix(in srgb, var(--brand-azul-noche) 55%, #ffffff);
   --color-text-inverse: #f8f9ff;
   --color-link: var(--brand-azul-laguna);
+  /* Títulos sobre fondo claro (header, footer, páginas, cards) */
+  --color-heading: var(--brand-azul-laguna);
 
   /* -------------------------------------------------------------------------
    * 4. ROLES SEMÁNTICOS

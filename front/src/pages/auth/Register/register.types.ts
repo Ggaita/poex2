@@ -31,6 +31,9 @@ export type RegisterFormState = {
   hasCatalog: YesNo;
   hasProductPhotos: YesNo;
   hasCompanyPhotos: YesNo;
+  /** Clave deseada para el panel empresa (opcional: si vacía, el sistema genera una al aprobar). */
+  accessPassword: string;
+  accessPasswordConfirm: string;
 };
 
 export type CatalogItem = {

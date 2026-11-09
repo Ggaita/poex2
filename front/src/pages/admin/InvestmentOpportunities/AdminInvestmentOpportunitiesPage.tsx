@@ -745,7 +745,7 @@ export default function AdminInvestmentOpportunitiesPage() {
                         </button>
                       </div>
                     ))}
-                    <label className="admin-investment-btn admin-investment-btn-ghost" style={{ width: "fit-content" }}>
+                    <label className="admin-investment-btn admin-investment-btn-ghost admin-investment-upload-doc">
                       Subir documento
                       <input
                         type="file"
@@ -839,7 +839,7 @@ export default function AdminInvestmentOpportunitiesPage() {
               <div className="admin-investment-form-card">
                 {selectedInquiry ? (
                   <div className="admin-investment-form">
-                    <h2 style={{ margin: 0 }}>{selectedInquiry.opportunityTitle}</h2>
+                    <h2 className="admin-investment-inquiry-title">{selectedInquiry.opportunityTitle}</h2>
                     <p className="admin-investment-meta">
                       {selectedInquiry.requesterName} · {selectedInquiry.requesterEmail}
                       {selectedInquiry.requesterPhone ? ` · ${selectedInquiry.requesterPhone}` : ""}

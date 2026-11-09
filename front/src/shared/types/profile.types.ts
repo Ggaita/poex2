@@ -28,10 +28,18 @@ export type ProfileFieldKey =
   | "latitude"
   | "longitude";
 
+export interface CompanyOwnerUserView {
+  id: number;
+  email: string;
+  displayName: string;
+  isActive: boolean;
+}
+
 export interface CompanyProfileAdminView {
   id: number;
   applicationId?: number;
   ownerUserId?: number;
+  ownerUser?: CompanyOwnerUserView;
   slug: string;
   companyName: string;
   contactName: string;

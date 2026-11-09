@@ -1,4 +1,4 @@
-/*
+﻿/*
  * =============================================================================
  * AdminDashboardPage.css — panel inicio admin
  * Ruta: pages/admin/Dashboard/AdminDashboardPage.css
@@ -52,7 +52,7 @@
 }
 
 .admin-dashboard-header h1 {
-  color: var(--color-text);
+  color: var(--color-heading);
   font-size: clamp(1.25rem, 2.1vw, 1.9rem);
 }
 

@@ -60,12 +60,14 @@
 .home-hero {
   position: relative;
   flex: 1;
-  min-height: min(59.5vh, 520px);
+  min-height: min(59.5svh, 520px);
   display: flex;
   align-items: center;
   justify-content: flex-start;
   overflow: hidden;
   background: var(--brand-azul-noche);
+  width: 100%;
+  max-width: 100%;
 }
 
 /* --- 2. Hero: BACKGROUND --- */
@@ -100,10 +102,12 @@
 .home-hero-container {
   position: relative;
   z-index: 2;
+  /* width 100% + margin horizontal desbordaba el viewport en mobile */
+  box-sizing: border-box;
+  width: auto;
   max-width: 1200px;
-  margin: 0 17px;
-  width: 100%;
-  padding: 0 1rem;
+  margin: 0 auto;
+  padding: 0 1.15rem;
   text-align: left;
 }
 
@@ -213,11 +217,11 @@
 
 @media (max-width: 1024px) {
   .home-hero {
-    min-height: min(52vh, 460px);
+    min-height: min(52svh, 460px);
   }
 
   .home-hero-container {
-    margin: 0 12px;
+    padding: 0 1rem;
   }
 
   .home-hero-title {
@@ -231,13 +235,15 @@
 
 @media (max-width: 768px) {
   .home-hero {
-    min-height: min(50vh, 440px);
+    /* En celular: alto por contenido, sin forzar media pantalla + flex extra */
+    flex: 0 0 auto;
+    min-height: 0;
+    padding: 1.75rem 0 2rem;
     align-items: center;
   }
 
   .home-hero-container {
-    margin: 0 10px;
-    padding: 0 0.75rem;
+    padding: 0 0.85rem;
   }
 
   .home-hero-content {
@@ -276,12 +282,11 @@
 
 @media (max-width: 480px) {
   .home-hero {
-    min-height: min(48vh, 400px);
+    padding: 1.4rem 0 1.65rem;
   }
 
   .home-hero-container {
-    margin: 0 8px;
-    padding: 0 0.55rem;
+    padding: 0 0.7rem;
   }
 
   .home-hero-title {

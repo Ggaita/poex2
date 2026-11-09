@@ -1,9 +1,19 @@
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { PrismaClient, ProfileEditMode } from "@prisma/client";
+import bcrypt from "bcryptjs";
+import { PrismaClient, ProfileEditMode, UserRole } from "@prisma/client";
 
 const prisma = new PrismaClient();
+
+/** Claves generadas en esta corrida (solo se muestran/escriben una vez). */
+const generatedCredentials = [];
+
+const generateEmpresaPassword = () => {
+  // 12 chars URL-safe, legible para entregar a la empresa
+  return crypto.randomBytes(9).toString("base64url").replace(/[^a-zA-Z0-9]/g, "x").slice(0, 12);
+};
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -806,7 +816,112 @@ const upsertCompany = async (company) => {
     });
   }
 
-  return { profile, created: !existing };
+  // Usuario empresa: email del CSV + clave auto (admin puede resetear después)
+  const access = await ensureEmpresaUserForProfile(profile, company);
+
+  return { profile, created: !existing, access };
+};
+
+/**
+ * Crea o reutiliza AppUser role=empresa y lo vincula al perfil (ownerUserId).
+ * Si el usuario ya existía, NO regenera la clave (salvo SEED_RESET_EMPRESA_PASSWORDS=1).
+ */
+const ensureEmpresaUserForProfile = async (profile, company) => {
+  const email = String(company.contactEmail || profile.contactEmail || "")
+    .trim()
+    .toLowerCase();
+  if (!email || !email.includes("@")) {
+    return { status: "skipped", reason: "email_invalido" };
+  }
+
+  const forceReset = process.env.SEED_RESET_EMPRESA_PASSWORDS === "1";
+  const existingUser = await prisma.appUser.findFirst({
+    where: { email: { equals: email, mode: "insensitive" } }
+  });
+
+  // Si el email ya es admin, no lo convertimos a empresa.
+  if (existingUser?.role === UserRole.admin) {
+    return { status: "skipped", reason: "email_es_admin", email };
+  }
+
+  let userId = existingUser?.id ?? null;
+  let plainPassword = null;
+  let status = "linked_existing";
+
+  if (!existingUser) {
+    plainPassword = generateEmpresaPassword();
+    const passwordHash = await bcrypt.hash(plainPassword, 10);
+    const created = await prisma.appUser.create({
+      data: {
+        email,
+        passwordHash,
+        role: UserRole.empresa,
+        displayName: company.companyName || profile.companyName,
+        isActive: true
+      }
+    });
+    userId = created.id;
+    status = "created";
+  } else if (forceReset || existingUser.role !== UserRole.empresa) {
+    plainPassword = generateEmpresaPassword();
+    const passwordHash = await bcrypt.hash(plainPassword, 10);
+    await prisma.appUser.update({
+      where: { id: existingUser.id },
+      data: {
+        passwordHash,
+        role: UserRole.empresa,
+        displayName: company.companyName || existingUser.displayName,
+        isActive: true
+      }
+    });
+    userId = existingUser.id;
+    status = forceReset ? "password_reset" : "converted_to_empresa";
+  }
+
+  if (userId && profile.ownerUserId !== userId) {
+    await prisma.companyProfile.update({
+      where: { id: profile.id },
+      data: { ownerUserId: userId }
+    });
+  }
+
+  if (plainPassword) {
+    generatedCredentials.push({
+      profileId: profile.id,
+      companyName: profile.companyName,
+      email,
+      password: plainPassword,
+      status
+    });
+  }
+
+  return { status, email, userId, passwordGenerated: Boolean(plainPassword) };
+};
+
+const writeCredentialsFile = () => {
+  if (generatedCredentials.length === 0) {
+    return null;
+  }
+
+  const outDir = path.join(__dirname, "..", "data");
+  fs.mkdirSync(outDir, { recursive: true });
+  const outPath = path.join(outDir, "empresa-credentials.csv");
+  const header = "profile_id,company_name,email,password,status,generated_at\n";
+  const now = new Date().toISOString();
+  const lines = generatedCredentials.map((row) => {
+    const safe = (value) =>
+      `"${String(value ?? "").replace(/"/g, '""')}"`;
+    return [
+      row.profileId,
+      safe(row.companyName),
+      safe(row.email),
+      safe(row.password),
+      row.status,
+      now
+    ].join(",");
+  });
+  fs.writeFileSync(outPath, header + lines.join("\n") + "\n", "utf8");
+  return outPath;
 };
 
 const mergeCompanies = (base, extra) => {
@@ -955,6 +1070,13 @@ const run = async () => {
     console.log(
       `\nListo. Creadas: ${created} · Actualizadas: ${updated} · Total perfiles: ${companies.length}`
     );
+    const credsPath = writeCredentialsFile();
+    if (credsPath) {
+      console.log(`Claves empresa generadas (${generatedCredentials.length}): ${credsPath}`);
+      console.log("IMPORTANTE: guardá ese CSV; las claves no se pueden volver a leer (solo resetear)." );
+    } else {
+      console.log("Sin claves nuevas (usuarios empresa ya existían). SEED_RESET_EMPRESA_PASSWORDS=1 para regenerar.");
+    }
     return;
   }
   const builtCompanies = rows
@@ -1012,6 +1134,13 @@ const run = async () => {
   console.log(
     `\nListo. Creadas: ${created} · Actualizadas: ${updated} · Total perfiles: ${companies.length}`
   );
+  const credsPath = writeCredentialsFile();
+  if (credsPath) {
+    console.log(`Claves empresa generadas (${generatedCredentials.length}): ${credsPath}`);
+    console.log("IMPORTANTE: guardá ese CSV; las claves no se pueden volver a leer (solo resetear).");
+  } else {
+    console.log("Sin claves nuevas (usuarios empresa ya existían). SEED_RESET_EMPRESA_PASSWORDS=1 para regenerar.");
+  }
 };
 
 run()

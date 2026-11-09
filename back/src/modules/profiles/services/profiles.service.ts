@@ -8,6 +8,8 @@ import {
   type CompanyProfileVisibility as DbCompanyProfileVisibility,
   type Prisma
 } from "@prisma/client";
+import bcrypt from "bcryptjs";
+import crypto from "node:crypto";
 import prisma from "../../../lib/prisma";
 import { prepareProductReviewStatusChangedEmailTx } from "../../communications/services/communications.service";
 import type {
@@ -67,6 +69,12 @@ type NumericFieldKey = (typeof numericFieldKeys)[number];
 type ProfileWithRelations = DbCompanyProfile & {
   visibilityRules: DbCompanyProfileVisibility[];
   products: DbCompanyProduct[];
+  ownerUser?: {
+    id: number;
+    email: string;
+    displayName: string;
+    isActive: boolean;
+  } | null;
 };
 
 const defaultVisibilityByField: Record<ProfileFieldKey, boolean> = {
@@ -327,6 +335,14 @@ const toAdminView = (
     id: profile.id,
     applicationId: toOptionalNumber(profile.applicationId),
     ownerUserId: toOptionalNumber(profile.ownerUserId),
+    ownerUser: profile.ownerUser
+      ? {
+          id: profile.ownerUser.id,
+          email: profile.ownerUser.email,
+          displayName: profile.ownerUser.displayName,
+          isActive: profile.ownerUser.isActive
+        }
+      : undefined,
     slug: profile.slug,
     companyName: profile.companyName,
     contactName: profile.contactName,
@@ -633,6 +649,14 @@ const includeProfileRelations = {
   visibilityRules: true,
   products: {
     orderBy: [{ updatedAt: "desc" }, { id: "desc" }]
+  },
+  ownerUser: {
+    select: {
+      id: true,
+      email: true,
+      displayName: true,
+      isActive: true
+    }
   }
 } satisfies Prisma.CompanyProfileInclude;
 
@@ -643,27 +667,83 @@ export const isProfileFieldKey = (value: unknown): value is ProfileFieldKey => {
   );
 };
 
+const generateEmpresaPassword = (): string => {
+  return crypto.randomBytes(9).toString("base64url").replace(/[^a-zA-Z0-9]/g, "x").slice(0, 12);
+};
+
+export type ApprovedApplicationAccess = {
+  loginEmail: string;
+  /** Solo si el sistema generó la clave (no si el usuario la eligió en la inscripción). */
+  temporaryPassword?: string;
+  passwordWasChosenByApplicant: boolean;
+};
+
 export const syncProfileFromApprovedApplicationTx = async (
   db: ProfilePrismaClient,
   application: DbCompanyApplication,
   actor?: ProfileAuditActor
-): Promise<void> => {
+): Promise<ApprovedApplicationAccess> => {
   const parsedMessage = parseApplicationMessage(application.message);
+  const loginEmail = application.email.trim().toLowerCase();
+  const chosenHash =
+    typeof (parsedMessage as { accessPasswordHash?: unknown }).accessPasswordHash === "string"
+      ? String((parsedMessage as { accessPasswordHash: string }).accessPasswordHash)
+      : null;
+  const passwordWasChosenByApplicant = Boolean(
+    (parsedMessage as { accessPasswordChosen?: unknown }).accessPasswordChosen
+  ) && Boolean(chosenHash);
 
-  const ownerUser = await db.appUser.findFirst({
+  let temporaryPassword: string | undefined;
+  let passwordHash = chosenHash;
+
+  if (!passwordHash) {
+    temporaryPassword = generateEmpresaPassword();
+    passwordHash = await bcrypt.hash(temporaryPassword, 10);
+  }
+
+  const existingUser = await db.appUser.findFirst({
     where: {
       email: {
-        equals: application.email,
+        equals: loginEmail,
         mode: "insensitive"
-      },
-      role: PrismaUserRole.empresa
-    },
-    select: { id: true }
+      }
+    }
   });
+
+  let ownerUserId: number | null = null;
+
+  if (existingUser?.role === PrismaUserRole.admin) {
+    // No convertimos admin en empresa; el perfil queda sin owner.
+    ownerUserId = null;
+    temporaryPassword = undefined;
+  } else if (existingUser) {
+    await db.appUser.update({
+      where: { id: existingUser.id },
+      data: {
+        passwordHash,
+        role: PrismaUserRole.empresa,
+        displayName: application.companyName,
+        isActive: true,
+        email: loginEmail
+      }
+    });
+    ownerUserId = existingUser.id;
+  } else {
+    const createdUser = await db.appUser.create({
+      data: {
+        email: loginEmail,
+        passwordHash: passwordHash!,
+        role: PrismaUserRole.empresa,
+        displayName: application.companyName,
+        isActive: true
+      }
+    });
+    ownerUserId = createdUser.id;
+  }
 
   const baseData: Prisma.CompanyProfileUncheckedCreateInput = {
     applicationId: application.id,
-    ownerUserId: ownerUser?.id ?? null,
+    ownerUserId,
     slug: await generateUniqueSlug(db, application.companyName),
     companyName: application.companyName,
     contactName: application.contactName,
@@ -703,7 +783,7 @@ export const syncProfileFromApprovedApplicationTx = async (
 
   if (existing) {
     const nextData: Prisma.CompanyProfileUncheckedUpdateInput = {
-      ownerUserId: existing.ownerUserId ?? ownerUser?.id ?? null,
+      ownerUserId: existing.ownerUserId ?? ownerUserId,
       companyName: baseData.companyName,
       contactName: baseData.contactName,
       contactEmail: baseData.contactEmail,
@@ -716,15 +796,27 @@ export const syncProfileFromApprovedApplicationTx = async (
       data: nextData
     });
 
+    if (ownerUserId && !existing.ownerUserId) {
+      await db.companyProfile.update({
+        where: { id: existing.id },
+        data: { ownerUserId }
+      });
+    }
+
     await createAuditLog(db, existing.id, actor, {
       action: "profile_synced_from_application",
       metadata: {
         applicationId: application.id,
-        profileId: updated.id
+        profileId: updated.id,
+        ownerUserId
       }
     });
 
-    return;
+    return {
+      loginEmail,
+      temporaryPassword: existingUser?.role === PrismaUserRole.admin ? undefined : temporaryPassword,
+      passwordWasChosenByApplicant
+    };
   }
 
   const created = await db.companyProfile.create({
@@ -739,21 +831,47 @@ export const syncProfileFromApprovedApplicationTx = async (
     action: "profile_created_from_application",
     metadata: {
       applicationId: application.id,
-      profileId: created.id
+      profileId: created.id,
+      ownerUserId
     }
   });
+
+  return {
+    loginEmail,
+    temporaryPassword: existingUser?.role === PrismaUserRole.admin ? undefined : temporaryPassword,
+    passwordWasChosenByApplicant
+  };
 };
 
 export const listAdminProfiles = async (
   query?: string
 ): Promise<CompanyProfileAdminView[]> => {
+  const cleanedQuery = query?.trim();
+
   const rows = await prisma.companyProfile.findMany({
-    where: query
+    where: cleanedQuery
       ? {
           OR: [
-            { companyName: { contains: query, mode: "insensitive" } },
-            { sector: { contains: query, mode: "insensitive" } },
-            { product: { contains: query, mode: "insensitive" } }
+            { companyName: { contains: cleanedQuery, mode: "insensitive" } },
+            { contactName: { contains: cleanedQuery, mode: "insensitive" } },
+            { contactEmail: { contains: cleanedQuery, mode: "insensitive" } },
+            { sector: { contains: cleanedQuery, mode: "insensitive" } },
+            { subSector: { contains: cleanedQuery, mode: "insensitive" } },
+            { product: { contains: cleanedQuery, mode: "insensitive" } },
+            { keywords: { contains: cleanedQuery, mode: "insensitive" } },
+            { city: { contains: cleanedQuery, mode: "insensitive" } },
+            { taxId: { contains: cleanedQuery, mode: "insensitive" } },
+            {
+              products: {
+                some: {
+                  OR: [
+                    { name: { contains: cleanedQuery, mode: "insensitive" } },
+                    { description: { contains: cleanedQuery, mode: "insensitive" } },
+                    { tariffPosition: { contains: cleanedQuery, mode: "insensitive" } }
+                  ]
+                }
+              }
+            }
           ]
         }
       : undefined,
@@ -900,6 +1018,129 @@ export const updateAdminProfileData = async (
     }
 
     return toAdminView(updated, buildVisibilityMap(updated.visibilityRules));
+  });
+};
+
+/**
+ * Crea o resetea la cuenta de acceso (rol empresa) del perfil.
+ * Devuelve la clave en texto plano UNA sola vez (no se puede re-leer el hash).
+ */
+export const resetAdminProfileAccessPassword = async (
+  profileId: number,
+  options?: { password?: string; email?: string },
+  actor?: ProfileAuditActor
+): Promise<
+  | {
+      profile: CompanyProfileAdminView;
+      access: {
+        userId: number;
+        email: string;
+        password: string;
+        created: boolean;
+      };
+    }
+  | null
+> => {
+  return prisma.$transaction(async (db) => {
+    const profile = await db.companyProfile.findUnique({
+      where: { id: profileId },
+      include: includeProfileRelations
+    });
+
+    if (!profile) {
+      return null;
+    }
+
+    const email = (options?.email ?? profile.contactEmail).trim().toLowerCase();
+    if (!email || !email.includes("@")) {
+      throw new Error("EMAIL_INVALID");
+    }
+
+    const plainPassword =
+      options?.password && options.password.trim().length >= 8
+        ? options.password.trim()
+        : generateEmpresaPassword();
+
+    if (plainPassword.length < 8) {
+      throw new Error("PASSWORD_TOO_SHORT");
+    }
+
+    const passwordHash = await bcrypt.hash(plainPassword, 10);
+
+    const existingByEmail = await db.appUser.findFirst({
+      where: { email: { equals: email, mode: "insensitive" } }
+    });
+
+    if (existingByEmail?.role === PrismaUserRole.admin) {
+      throw new Error("EMAIL_IS_ADMIN");
+    }
+
+    let userId: number;
+    let created = false;
+
+    if (existingByEmail) {
+      await db.appUser.update({
+        where: { id: existingByEmail.id },
+        data: {
+          passwordHash,
+          role: PrismaUserRole.empresa,
+          displayName: profile.companyName,
+          isActive: true,
+          email
+        }
+      });
+      userId = existingByEmail.id;
+    } else if (profile.ownerUserId) {
+      await db.appUser.update({
+        where: { id: profile.ownerUserId },
+        data: {
+          passwordHash,
+          role: PrismaUserRole.empresa,
+          displayName: profile.companyName,
+          isActive: true,
+          email
+        }
+      });
+      userId = profile.ownerUserId;
+    } else {
+      const createdUser = await db.appUser.create({
+        data: {
+          email,
+          passwordHash,
+          role: PrismaUserRole.empresa,
+          displayName: profile.companyName,
+          isActive: true
+        }
+      });
+      userId = createdUser.id;
+      created = true;
+    }
+
+    const updated = await db.companyProfile.update({
+      where: { id: profileId },
+      data: { ownerUserId: userId },
+      include: includeProfileRelations
+    });
+
+    await createAuditLog(db, profileId, actor, {
+      action: created ? "admin_profile_access_created" : "admin_profile_access_password_reset",
+      fieldKey: "contactEmail",
+      newValue: email,
+      metadata: {
+        userId,
+        created
+      }
+    });
+
+    return {
+      profile: toAdminView(updated, buildVisibilityMap(updated.visibilityRules)),
+      access: {
+        userId,
+        email,
+        password: plainPassword,
+        created
+      }
+    };
   });
 };
 

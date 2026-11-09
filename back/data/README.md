@@ -1,41 +1,35 @@
-﻿# Datos de seed (relevamiento)
+﻿# Datos de seed
 
-Archivos usados por `npm run seed:relevamiento`:
+## Archivos oficiales
 
-| Archivo | Uso |
+| Archivo | Comando |
 | --- | --- |
-| `poex-empresas.csv` | **Principal (limpio)** — 1 fila por producto, campos separados |
-| `base-completa.csv` | Relevamiento crudo original (fallback) |
-| `ncm-correcciones.csv` | Referencia / backup de correcciones NCM |
+| `poex-empresas.csv` | `npm run seed:relevamiento` |
+| `investment-opportunities-seed.json` | `npm run seed:investment-portfolio` |
+| `industrial-parks-seed.json` | (mismo comando portfolio) |
 
-## Generar CSV limpio desde el relevamiento
+## Auth
 
 ```bash
-cd back
-npm run build:clean-csv
+npm run seed:auth-users
 ```
 
-Salida: `back/data/poex-empresas.csv`
+Crea solo el **admin** (`admin@poex.local` / `Admin1234!` por default).
 
-## En el servidor
-
-1. Subí `back/data/poex-empresas.csv`
-2. Corré:
+## Empresas + accesos
 
 ```bash
-cd back
 npm run seed:relevamiento
 ```
 
-Override opcional:
+- Importa perfiles desde `poex-empresas.csv`
+- Crea usuario `empresa` por cada email del CSV
+- Genera claves automáticas y las escribe en `empresa-credentials.csv` (solo en esa corrida)
+- Para regenerar claves: `SEED_RESET_EMPRESA_PASSWORDS=1 npm run seed:relevamiento`
 
-```bash
-RELEVAMIENTO_CSV=/ruta/poex-empresas.csv npm run seed:relevamiento
-```
+El admin puede **resetear/definir** claves en Perfiles → Acceso empresa (no se pueden "ver" las claves hasheadas).
 
-## Columnas del CSV limpio
+## Ya no se usan
 
-company_name, trade_name, tax_id, contact_name, contact_email, phone,
-description, sector, sub_sector, city, address, website, facebook, instagram,
-linkedin, logo_url, export_destinations, certifications, is_published,
-product_name, product_description, tariff_position
+- `seed:demo-companies` (eliminado)
+- cuenta demo `empresa@poex.local`

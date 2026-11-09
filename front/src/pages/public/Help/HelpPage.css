@@ -91,7 +91,7 @@
 
 .help-block h3 {
   margin: 0;
-  color: var(--color-text);
+  color: var(--color-heading);
   font-family: var(--font-heading);
   font-size: 1.05rem;
 }

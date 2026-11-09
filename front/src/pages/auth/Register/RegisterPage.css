@@ -20,16 +20,23 @@
 /* --- Página / shell --- */
 .register-page {
   width: 100%;
+  max-width: 100%;
   padding: 2rem 1rem 3rem;
+  overflow-x: clip;
+  box-sizing: border-box;
 }
 
 .register-shell {
   width: min(1100px, 100%);
+  max-width: 100%;
   margin: 0 auto;
   background: var(--color-surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   padding: 1.25rem 1.35rem 1.45rem;
+  box-sizing: border-box;
+  overflow-x: clip;
+  min-width: 0;
 }
 
 /* --- Acciones / botones --- */
@@ -65,7 +72,7 @@
 
 .register-header h1 {
   font-size: clamp(1.4rem, 2.2vw, 2rem);
-  color: var(--color-primary-strong);
+  color: var(--color-heading);
 }
 
 .register-header p {
@@ -180,12 +187,20 @@
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-lg);
   padding: 0.85rem;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
 }
 
 .form-step {
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .form-step h2 {
@@ -198,6 +213,9 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.7rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .form-grid label {
@@ -207,6 +225,8 @@
   font-weight: 600;
   color: var(--color-text-muted);
   font-size: 0.88rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .form-grid label.full-width {
@@ -215,11 +235,19 @@
 
 .form-grid .full-width {
   grid-column: 1 / -1;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .form-grid input,
 .form-grid textarea,
 .form-grid select {
+  /* Sin width:100% los inputs crecen por content/min-content y se salen del card en mobile */
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   padding: 0.5rem 0.6rem;
@@ -232,6 +260,18 @@
 .logo-field {
   display: grid;
   gap: 0.55rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.logo-field input[type="file"],
+.logo-field input {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .logo-field > label {
@@ -257,6 +297,9 @@
   border-radius: var(--radius-md);
   background: var(--color-surface-soft);
   padding: 0.55rem 0.65rem;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .logo-preview img {
@@ -313,6 +356,11 @@
   padding: 0.7rem;
   display: grid;
   gap: 0.55rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .register-map-head {
@@ -355,6 +403,19 @@
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-x: clip;
+}
+
+.register-access-block .register-access-help {
+  margin: 0;
+  color: var(--color-text-soft);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  font-weight: 500;
 }
 
 /* --- Header --- */
@@ -387,16 +448,20 @@
 
 .dynamic-row {
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
   gap: 0.55rem;
   align-items: end;
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-md);
   padding: 0.55rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .dynamic-row-single {
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
 }
 
 .dynamic-row label {
@@ -406,9 +471,16 @@
   font-size: 0.88rem;
   color: var(--color-text-muted);
   font-weight: 600;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .dynamic-row input {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   padding: 0.52rem 0.6rem;
@@ -522,18 +594,28 @@
   }
 
   .form-grid,
-  .dynamic-row {
-    grid-template-columns: 1fr;
+  .dynamic-row,
+  .dynamic-row-single {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dynamic-row .remove-row,
+  .dynamic-row-single .remove-row {
+    width: 100%;
   }
 }
 
 @media (max-width: 768px) {
   .register-page {
-    padding: 1.15rem 0.75rem 1.8rem;
+    padding: 1.15rem 0.65rem 1.8rem;
   }
 
   .register-shell {
-    padding: 1rem;
+    padding: 0.9rem;
+  }
+
+  .register-form {
+    padding: 0.7rem;
   }
 
   /* Mantener 2 cols en tablet portrait */
@@ -546,33 +628,53 @@
     padding: 0.62rem 0.68rem;
   }
 
+  .step-item button small {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
   .form-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .dynamic-header {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .dynamic-header button {
+    width: 100%;
   }
 
   .form-actions {
     flex-direction: column-reverse;
   }
+
+  .form-actions > * {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
   .register-page {
-    padding: 0.95rem 0.65rem 1.45rem;
+    padding: 0.85rem 0.5rem 1.45rem;
   }
 
   .register-shell,
   .register-form {
-    padding: 0.85rem;
+    padding: 0.75rem;
+  }
+
+  .dynamic-block,
+  .dynamic-row,
+  .register-map-block {
+    padding: 0.6rem;
   }
 
   /* 2 → 1 columna en celular */
   .register-steps {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .register-back-link {
@@ -586,6 +688,13 @@
 
   .register-header h1 {
     font-size: 1.25rem;
+  }
+
+  .form-grid input,
+  .form-grid textarea,
+  .form-grid select,
+  .dynamic-row input {
+    font-size: 16px; /* evita zoom automático iOS al focus */
   }
 
   .dynamic-header button,

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * =============================================================================
  * AdminSpecialRequestsPage.css — pedidos especiales / info requests
  * Ruta: pages/admin/SpecialRequests/AdminSpecialRequestsPage.css
@@ -51,7 +51,7 @@
 }
 
 .admin-special-requests-header h1 {
-  color: var(--color-text);
+  color: var(--color-heading);
   font-size: clamp(1.25rem, 2.1vw, 1.9rem);
 }
 
@@ -256,7 +256,7 @@
 }
 
 .special-detail-header h2 {
-  color: var(--color-text);
+  color: var(--color-heading);
   font-size: 1.1rem;
 }
 

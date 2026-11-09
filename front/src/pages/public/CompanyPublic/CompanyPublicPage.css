@@ -137,7 +137,7 @@
 
 .company-public-hero-copy h1 {
   margin: 0;
-  color: var(--color-primary-strong);
+  color: var(--color-heading);
   font-size: clamp(1.35rem, 2.1vw, 1.9rem);
   font-weight: 800;
   line-height: 1.2;
@@ -188,7 +188,7 @@
 
 .company-public-section h2 {
   margin: 0;
-  color: var(--color-text);
+  color: var(--color-heading);
   font-size: 0.98rem;
   font-weight: 800;
   letter-spacing: 0.02em;

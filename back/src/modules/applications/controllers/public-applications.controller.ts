@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
+import bcrypt from "bcryptjs";
 import {
   applicationAttachmentFields,
   applicationAttachmentUpload,
@@ -264,8 +265,9 @@ export const createPublicApplication = async (
   const email = getRequiredString(req.body?.email);
   const phone = getOptionalString(req.body?.phone);
   const taxId = getOptionalString(req.body?.taxId);
+  const accessPassword = getOptionalString(req.body?.accessPassword);
   const rawMessage = getOptionalString(req.body?.message);
-  const message = buildMessageWithAttachments(req, rawMessage);
+  let message = buildMessageWithAttachments(req, rawMessage);
 
   if (!companyName || !contactName || !email) {
     res.status(400).json({
@@ -281,6 +283,29 @@ export const createPublicApplication = async (
       error: "email inválido"
     });
     return;
+  }
+
+  if (accessPassword && accessPassword.length < 8) {
+    res.status(400).json({
+      success: false,
+      error: "La contraseña de acceso debe tener al menos 8 caracteres"
+    });
+    return;
+  }
+
+  // Guardamos solo el hash de la clave elegida (nunca en texto plano).
+  if (accessPassword) {
+    try {
+      const details = message ? JSON.parse(message) : {};
+      if (details && typeof details === "object") {
+        const accessPasswordHash = await bcrypt.hash(accessPassword, 10);
+        (details as Record<string, unknown>).accessPasswordHash = accessPasswordHash;
+        (details as Record<string, unknown>).accessPasswordChosen = true;
+        message = JSON.stringify(details);
+      }
+    } catch {
+      // si el message no es JSON, no bloqueamos el alta
+    }
   }
 
   try {

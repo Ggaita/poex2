@@ -7,6 +7,17 @@ export type CreateApplicationResult =
   | { application: CompanyApplication; error?: never }
   | { application?: never; error: CreateApplicationError };
 
+export type ApprovedApplicationAccessPayload = {
+  loginEmail: string;
+  /** Clave en texto plano solo si el sistema la generó en esta aprobación. */
+  temporaryPassword?: string;
+  passwordWasChosenByApplicant: boolean;
+};
+
 export type UpdateStatusResult =
-  | { application: CompanyApplication; error?: never }
+  | {
+      application: CompanyApplication;
+      access?: ApprovedApplicationAccessPayload;
+      error?: never;
+    }
   | { application?: never; error: UpdateStatusError };

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * =============================================================================
  * AdminCommunicationsPage.css — comunicaciones/plantillas
  * Ruta: pages/admin/Communications/AdminCommunicationsPage.css
@@ -51,7 +51,7 @@
 }
 
 .admin-communications-header h1 {
-  color: var(--color-text);
+  color: var(--color-heading);
   font-size: clamp(1.2rem, 2vw, 1.8rem);
 }
 

@@ -15,18 +15,25 @@
  * Convención: preferir var(--...) de tokens.css; no hardcodear marca.
  */
 .layout {
+  /* 100vh en mobile cuenta la barra del browser y deja scroll vacío al final */
   min-height: 100vh;
+  min-height: 100svh;
   display: flex;
   flex-direction: column;
   background: transparent;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 .main-content {
-  flex: 1;
+  flex: 1 0 auto;
   width: 100%;
+  max-width: 100%;
   background: transparent;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  overflow-x: clip;
 }
 

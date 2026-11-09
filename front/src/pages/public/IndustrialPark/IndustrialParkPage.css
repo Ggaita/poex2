@@ -54,7 +54,7 @@
 
 .industrial-park-header h1 {
   margin: 0;
-  color: var(--color-primary-strong);
+  color: var(--color-heading);
   font-size: clamp(1.3rem, 2.2vw, 1.9rem);
 }
 
@@ -162,7 +162,7 @@
 .industrial-section-head h2 {
   margin: 0;
   font-size: 1.15rem;
-  color: var(--color-text);
+  color: var(--color-heading);
 }
 
 .industrial-section-head small {
@@ -306,7 +306,7 @@
   font-size: 0.96rem;
   font-weight: 600;
   line-height: 1.28;
-  color: var(--color-text);
+  color: var(--color-heading);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;

@@ -169,9 +169,21 @@ const run = async () => {
       }
     );
     assert(reviewed.status === 200, `PATCH esperado 200 y obtuvo ${reviewed.status}`);
+    const reviewedApplication =
+      reviewed.body?.data?.application ?? reviewed.body?.data;
     assert(
-      reviewed.body?.data?.status === "approved",
+      reviewedApplication?.status === "approved",
       "La solicitud no quedó en estado approved tras el PATCH"
+    );
+    assert(
+      typeof reviewed.body?.data?.access?.loginEmail === "string" &&
+        reviewed.body.data.access.loginEmail.length > 0,
+      "La aprobación no devolvió access.loginEmail para el admin"
+    );
+    assert(
+      typeof reviewed.body?.data?.access?.temporaryPassword === "string" &&
+        reviewed.body.data.access.temporaryPassword.length >= 8,
+      "La aprobación no devolvió temporaryPassword generada para copiar en admin"
     );
 
     await stopServer(server);

@@ -53,7 +53,9 @@
 
 .company-panel-header h1 {
   font-size: clamp(1.22rem, 2vw, 1.8rem);
-  color: var(--color-text);
+  color: var(--color-heading);
+  font-family: var(--font-heading);
+  font-weight: 800;
 }
 
 .company-panel-header small {
@@ -108,7 +110,9 @@
 }
 
 .company-empty-card h2 {
-  color: var(--color-text);
+  color: var(--color-heading);
+  font-family: var(--font-heading);
+  font-weight: 800;
   font-size: 1.1rem;
 }
 
@@ -135,8 +139,10 @@
 }
 
 .form-card h2 {
-  color: var(--color-text);
-  font-size: 1rem;
+  color: var(--color-heading);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.02rem;
 }
 
 /* --- Listados / grillas --- */

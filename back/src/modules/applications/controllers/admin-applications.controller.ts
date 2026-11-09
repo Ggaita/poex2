@@ -171,10 +171,21 @@ export const updateAdminApplicationStatus = async (
       return;
     }
 
+    if (result.error || !result.application) {
+      res.status(500).json({
+        success: false,
+        error: "No se pudo actualizar la solicitud"
+      });
+      return;
+    }
+
     res.json({
       success: true,
       message: "Estado de solicitud actualizado",
-      data: result.application
+      data: {
+        application: result.application,
+        ...(result.access ? { access: result.access } : {})
+      }
     });
   } catch (_error) {
     res.status(500).json({

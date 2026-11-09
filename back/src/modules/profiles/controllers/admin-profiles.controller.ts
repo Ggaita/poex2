@@ -19,6 +19,7 @@ import {
   isProfileFieldKey,
   listAdminProfiles,
   listProfileAuditLogs,
+  resetAdminProfileAccessPassword,
   reviewAdminProfileProduct,
   updateAdminProfileProduct,
   updateAdminProfileData,
@@ -500,6 +501,87 @@ export const patchAdminProfileSettings = async (
     res.status(500).json({
       success: false,
       error: "No se pudo actualizar la configuración del perfil"
+    });
+  }
+};
+
+export const postAdminProfileAccessPassword = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const profileId = parseId(req.params?.id);
+  if (profileId === null) {
+    res.status(400).json({
+      success: false,
+      error: "id inválido"
+    });
+    return;
+  }
+
+  const body = (req.body ?? {}) as Record<string, unknown>;
+  const password =
+    typeof body.password === "string" && body.password.trim().length > 0
+      ? body.password.trim()
+      : undefined;
+  const email =
+    typeof body.email === "string" && body.email.trim().length > 0
+      ? body.email.trim()
+      : undefined;
+
+  if (password && password.length < 8) {
+    res.status(400).json({
+      success: false,
+      error: "La contraseña debe tener al menos 8 caracteres."
+    });
+    return;
+  }
+
+  try {
+    const result = await resetAdminProfileAccessPassword(
+      profileId,
+      { password, email },
+      getAuditActor(req)
+    );
+
+    if (!result) {
+      res.status(404).json({
+        success: false,
+        error: "Perfil no encontrado"
+      });
+      return;
+    }
+
+    res.json({
+      success: true,
+      message: result.access.created
+        ? "Acceso empresa creado. Guardá la clave: solo se muestra una vez."
+        : "Contraseña actualizada. Guardá la clave: solo se muestra una vez.",
+      data: result
+    });
+  } catch (error) {
+    const code = error instanceof Error ? error.message : "";
+    if (code === "EMAIL_INVALID") {
+      res.status(400).json({ success: false, error: "Email de acceso inválido." });
+      return;
+    }
+    if (code === "EMAIL_IS_ADMIN") {
+      res.status(400).json({
+        success: false,
+        error: "Ese email pertenece a un administrador y no puede usarse como empresa."
+      });
+      return;
+    }
+    if (code === "PASSWORD_TOO_SHORT") {
+      res.status(400).json({
+        success: false,
+        error: "La contraseña debe tener al menos 8 caracteres."
+      });
+      return;
+    }
+
+    res.status(500).json({
+      success: false,
+      error: "No se pudo generar/resetear el acceso de la empresa."
     });
   }
 };

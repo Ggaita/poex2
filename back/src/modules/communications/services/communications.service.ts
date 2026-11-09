@@ -44,11 +44,11 @@ const templateDefinitionsByKey: Record<EmailTemplateKey, TemplateDefinition> = {
     key: "application_approved",
     name: "Solicitud de empresa aprobada",
     description:
-      "Mensaje automático cuando una solicitud de alta queda aprobada.",
+      "Mensaje automático cuando una solicitud de alta queda aprobada (incluye acceso al panel).",
     defaultSubjectTemplate: "Tu solicitud de {{companyName}} fue aprobada",
     defaultBodyTemplate:
-      "Hola {{contactName}},\n\nTu solicitud de alta de {{companyName}} fue aprobada.\nYa podés ingresar al panel de empresa para completar y mantener tu perfil.\n\nSaludos,\nEquipo POEX",
-    variables: ["companyName", "contactName"]
+      "Hola {{contactName}},\n\nTu solicitud de alta de {{companyName}} fue aprobada.\n\n{{accessInstructions}}\n\nSaludos,\nEquipo POEX",
+    variables: ["companyName", "contactName", "loginEmail", "accessInstructions"]
   },
   product_review_status_changed: {
     key: "product_review_status_changed",
@@ -214,20 +214,41 @@ const ensureDefaultTemplatesTx = async (
   db: CommunicationsPrismaClient
 ): Promise<void> => {
   for (const definition of templateDefinitions) {
-    await db.emailTemplate.upsert({
+    const existing = await db.emailTemplate.findUnique({
+      where: { key: definition.key }
+    });
+
+    if (!existing) {
+      await db.emailTemplate.create({
+        data: {
+          key: definition.key,
+          name: definition.name,
+          description: definition.description,
+          subjectTemplate: definition.defaultSubjectTemplate,
+          bodyTemplate: definition.defaultBodyTemplate,
+          isActive: true
+        }
+      });
+      continue;
+    }
+
+    const data: Prisma.EmailTemplateUpdateInput = {
+      name: definition.name,
+      description: definition.description
+    };
+
+    // Si el default introdujo variables nuevas que el body guardado no usa,
+    // actualizamos el body (no pisamos customizaciones que ya las incluyen).
+    const defaultVars = definition.defaultBodyTemplate.match(/\{\{\s*[a-zA-Z0-9_]+\s*\}\}/g) ?? [];
+    const missingDefaultVar = defaultVars.some((token) => !existing.bodyTemplate.includes(token));
+    if (missingDefaultVar) {
+      data.bodyTemplate = definition.defaultBodyTemplate;
+      data.subjectTemplate = definition.defaultSubjectTemplate;
+    }
+
+    await db.emailTemplate.update({
       where: { key: definition.key },
-      update: {
-        name: definition.name,
-        description: definition.description
-      },
-      create: {
-        key: definition.key,
-        name: definition.name,
-        description: definition.description,
-        subjectTemplate: definition.defaultSubjectTemplate,
-        bodyTemplate: definition.defaultBodyTemplate,
-        isActive: true
-      }
+      data
     });
   }
 };
@@ -697,6 +718,8 @@ export const prepareApplicationApprovedEmailTx = async (
     companyName: string;
     contactName: string;
     recipientEmail: string;
+    loginEmail?: string;
+    accessInstructions?: string;
   }
 ): Promise<void> => {
   await queueTemplatedEmailTx(db, {
@@ -706,10 +729,15 @@ export const prepareApplicationApprovedEmailTx = async (
     recipientName: input.contactName,
     context: {
       companyName: input.companyName,
-      contactName: input.contactName
+      contactName: input.contactName,
+      loginEmail: input.loginEmail ?? input.recipientEmail,
+      accessInstructions:
+        input.accessInstructions ??
+        "Ya podés ingresar al panel de empresa para completar y mantener tu perfil."
     },
     metadata: {
-      applicationId: input.applicationId
+      applicationId: input.applicationId,
+      loginEmail: input.loginEmail ?? input.recipientEmail
     } satisfies Prisma.InputJsonValue
   });
 };

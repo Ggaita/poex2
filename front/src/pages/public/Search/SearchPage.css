@@ -56,7 +56,7 @@
 
 .search-page-header h1 {
   font-size: clamp(1.4rem, 2.8vw, 2rem);
-  color: var(--color-primary-strong);
+  color: var(--color-heading);
 }
 
 .search-page-header small {
@@ -568,7 +568,7 @@
   font-weight: 600; /* ← semi-bold / medium-bold (antes 700) */
   letter-spacing: -0.01em;
   line-height: 1.28;
-  color: var(--color-text);
+  color: var(--color-heading);
   overflow-wrap: break-word;
   word-break: normal;
   display: -webkit-box;

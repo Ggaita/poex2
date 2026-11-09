@@ -61,7 +61,9 @@ const initialFormState: RegisterFormState = {
   otherLink: "",
   hasCatalog: "",
   hasProductPhotos: "",
-  hasCompanyPhotos: ""
+  hasCompanyPhotos: "",
+  accessPassword: "",
+  accessPasswordConfirm: ""
 };
 
 const createId = (): string => {
@@ -438,6 +440,17 @@ export default function RegisterPage() {
       if (!acceptedTerms) {
         nextErrors.terms = "Debés aceptar la revisión de datos para enviar.";
       }
+
+      const pwd = formState.accessPassword;
+      const pwd2 = formState.accessPasswordConfirm;
+      if (pwd || pwd2) {
+        if (pwd.length < 8) {
+          nextErrors.accessPassword = "La contraseña debe tener al menos 8 caracteres.";
+        }
+        if (pwd !== pwd2) {
+          nextErrors.accessPasswordConfirm = "Las contraseñas no coinciden.";
+        }
+      }
     }
 
     setErrors(nextErrors);
@@ -521,6 +534,9 @@ export default function RegisterPage() {
       formData.append("taxId", formState.taxId.trim());
     }
     formData.append("details", JSON.stringify(details));
+    if (formState.accessPassword.trim()) {
+      formData.append("accessPassword", formState.accessPassword.trim());
+    }
     formData.append(
       "catalogMeta",
       JSON.stringify(catalogWithFiles.map((item) => ({ title: item.title.trim() })))
@@ -1228,6 +1244,45 @@ export default function RegisterPage() {
                       {errors.companyPhotos ? <span>{errors.companyPhotos}</span> : null}
                     </div>
                   ) : null}
+
+                  <div className="dynamic-block register-access-block">
+                    <div className="dynamic-header">
+                      <h3>Acceso al panel empresa (opcional)</h3>
+                    </div>
+                    <p className="register-access-help">
+                      Cuando el administrador apruebe tu solicitud, se crea tu usuario con el
+                      email de contacto. Podés definir ahora tu contraseña, o dejarla vacía y el
+                      sistema te enviará una generada automáticamente por email.
+                    </p>
+                    <div className="form-grid">
+                      <label>
+                        Contraseña de acceso
+                        <input
+                          type="password"
+                          name="accessPassword"
+                          value={formState.accessPassword}
+                          onChange={handleInputChange}
+                          autoComplete="new-password"
+                          placeholder="Mín. 8 caracteres (opcional)"
+                        />
+                        {errors.accessPassword ? <span>{errors.accessPassword}</span> : null}
+                      </label>
+                      <label>
+                        Confirmar contraseña
+                        <input
+                          type="password"
+                          name="accessPasswordConfirm"
+                          value={formState.accessPasswordConfirm}
+                          onChange={handleInputChange}
+                          autoComplete="new-password"
+                          placeholder="Repetí la contraseña"
+                        />
+                        {errors.accessPasswordConfirm ? (
+                          <span>{errors.accessPasswordConfirm}</span>
+                        ) : null}
+                      </label>
+                    </div>
+                  </div>
 
                   <label className="terms-check">
                     <input

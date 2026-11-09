@@ -11,6 +11,7 @@ import {
   patchAdminProfileSettings,
   patchAdminProfileVisibility,
   postAdminProfile,
+  postAdminProfileAccessPassword,
   postAdminProfileProduct
 } from "../controllers/admin-profiles.controller";
 
@@ -25,6 +26,7 @@ router.get("/:id/audit", getAdminProfileAuditTrail);
 router.patch("/:id/data", patchAdminProfileData);
 router.patch("/:id/settings", patchAdminProfileSettings);
 router.patch("/:id/visibility", patchAdminProfileVisibility);
+router.post("/:id/access-password", postAdminProfileAccessPassword);
 router.post("/:id/products", postAdminProfileProduct);
 router.patch("/:id/products/:productId", patchAdminProfileProduct);
 router.patch("/:id/products/:productId/review", patchAdminProfileProductReview);

@@ -148,6 +148,12 @@ export default function AdminApplicationsPage() {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [actionMessage, setActionMessage] = useState("");
+  const [issuedAccess, setIssuedAccess] = useState<{
+    loginEmail: string;
+    temporaryPassword?: string;
+    passwordWasChosenByApplicant: boolean;
+  } | null>(null);
+  const [copyFeedback, setCopyFeedback] = useState("");
   const [reviewedBy] = useState(() => {
     return (
       getStoredReviewerName() ??
@@ -327,26 +333,40 @@ export default function AdminApplicationsPage() {
         }
       );
 
-      const result = (await response.json()) as ApiResponse<CompanyApplication>;
+      const result = (await response.json()) as ApiResponse<{
+        application: CompanyApplication;
+        access?: {
+          loginEmail: string;
+          temporaryPassword?: string;
+          passwordWasChosenByApplicant: boolean;
+        };
+      }>;
 
       if (response.status === 401) {
         handleUnauthorized();
         return;
       }
 
-      if (!response.ok) {
+      if (!response.ok || !result.data?.application) {
         setErrorMessage(result.error ?? "No se pudo actualizar el estado.");
         return;
       }
       setStoredReviewerName(reviewer);
-      setSelectedApplication(result.data);
-      setActionMessage(
-        nextStatus === "approved"
-          ? "Solicitud aprobada correctamente."
-          : "Solicitud rechazada correctamente."
-      );
+      setSelectedApplication(result.data.application);
       if (nextStatus === "approved") {
+        setIssuedAccess(result.data.access ?? null);
+        setCopyFeedback("");
         setRejectionReason("");
+        setActionMessage(
+          result.data.access?.temporaryPassword
+            ? "Solicitud aprobada. Copiá la clave generada abajo si vas a enviarla manualmente."
+            : result.data.access?.passwordWasChosenByApplicant
+              ? "Solicitud aprobada. El solicitante eligió su propia contraseña (no se puede ver)."
+              : "Solicitud aprobada correctamente."
+        );
+      } else {
+        setIssuedAccess(null);
+        setActionMessage("Solicitud rechazada correctamente.");
       }
       await loadApplications(statusFilter);
     } catch {
@@ -403,6 +423,8 @@ export default function AdminApplicationsPage() {
                       setDetailLoading(false);
                       setListLoading(true);
                       setActionMessage("");
+                      setIssuedAccess(null);
+                      setCopyFeedback("");
                     }}
                   >
                     <option value="all">Todos</option>
@@ -418,6 +440,9 @@ export default function AdminApplicationsPage() {
                     setSelectedApplication(null);
                     setDetailLoading(false);
                     setListLoading(true);
+                    setActionMessage("");
+                    setIssuedAccess(null);
+                    setCopyFeedback("");
                     void loadApplications(statusFilter);
                   }}
                   disabled={listLoading}
@@ -449,6 +474,8 @@ export default function AdminApplicationsPage() {
                         setSelectedApplication(null);
                         setDetailLoading(true);
                         setActionMessage("");
+                        setIssuedAccess(null);
+                        setCopyFeedback("");
                         void loadApplicationDetail(application.id);
                       }}
                     >
@@ -748,6 +775,76 @@ export default function AdminApplicationsPage() {
                       <p>{selectedApplication.message ?? "Sin detalle adicional."}</p>
                     )}
                   </section>
+
+                  {issuedAccess && selectedApplication.status === "approved" ? (
+                    <section className="access-credentials-panel" role="status">
+                      <h3>Acceso empresa generado</h3>
+                      <p className="access-credentials-help">
+                        {issuedAccess.temporaryPassword
+                          ? "Copiá estos datos para enviarlos vos (WhatsApp/mail). La clave solo se muestra ahora; después solo podés regenerarla en Perfiles."
+                          : issuedAccess.passwordWasChosenByApplicant
+                            ? "El solicitante definió su contraseña al inscribirse. No se puede ver esa clave (solo hash). Si no la recuerda, regenerala en Perfiles."
+                            : "No hay clave temporal para mostrar. Podés crear/resetear acceso desde Perfiles."}
+                      </p>
+                      <dl className="access-credentials-grid">
+                        <div>
+                          <dt>Email de login</dt>
+                          <dd>
+                            <code>{issuedAccess.loginEmail}</code>
+                          </dd>
+                        </div>
+                        {issuedAccess.temporaryPassword ? (
+                          <div>
+                            <dt>Contraseña temporal</dt>
+                            <dd>
+                              <code className="access-password-value">
+                                {issuedAccess.temporaryPassword}
+                              </code>
+                            </dd>
+                          </div>
+                        ) : null}
+                      </dl>
+                      {issuedAccess.temporaryPassword ? (
+                        <div className="access-credentials-actions">
+                          <button
+                            type="button"
+                            className="btn-copy-access"
+                            onClick={() => {
+                              const text = [
+                                `Email: ${issuedAccess.loginEmail}`,
+                                `Contraseña: ${issuedAccess.temporaryPassword}`
+                              ].join("\n");
+                              void navigator.clipboard
+                                ?.writeText(text)
+                                .then(() => setCopyFeedback("Credenciales copiadas."))
+                                .catch(() =>
+                                  setCopyFeedback("No se pudo copiar; seleccioná el texto a mano.")
+                                );
+                            }}
+                          >
+                            Copiar email + contraseña
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-copy-access secondary"
+                            onClick={() => {
+                              void navigator.clipboard
+                                ?.writeText(issuedAccess.temporaryPassword ?? "")
+                                .then(() => setCopyFeedback("Contraseña copiada."))
+                                .catch(() =>
+                                  setCopyFeedback("No se pudo copiar; seleccioná el texto a mano.")
+                                );
+                            }}
+                          >
+                            Copiar solo contraseña
+                          </button>
+                        </div>
+                      ) : null}
+                      {copyFeedback ? (
+                        <small className="access-copy-feedback">{copyFeedback}</small>
+                      ) : null}
+                    </section>
+                  ) : null}
 
                   {selectedApplication.status === "pending" ? (
                     <section className="decision-panel">

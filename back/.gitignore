@@ -7,3 +7,8 @@ uploads/**
 !uploads/**/.gitkeep
 !uploads/**/.gitignore
 
+
+# Claves generadas por seed (no commitear)
+back/data/empresa-credentials.csv
+data/empresa-credentials.csv
+

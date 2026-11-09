@@ -1,4 +1,12 @@
-﻿import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from "react";
+import {
+  type ChangeEvent,
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 import { useNavigate } from "react-router-dom";
 import PrivateLayout from "../../../layouts/PrivateLayout";
 import { clearAuthSession, getAuthSession } from "../../../shared/auth/session";
@@ -282,6 +290,71 @@ const formatAuditDateTime = (value: string): string => {
   });
 };
 
+/** Normaliza texto de búsqueda: minúsculas + sin tildes. */
+const normalizeSearchText = (value: string): string => {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+};
+
+/**
+ * Parte un texto en “palabras” buscables (letras/números).
+ * Ej: "Veronellu Ethel" -> ["veronellu", "ethel"]
+ */
+const toSearchTokens = (value: string): string[] => {
+  const normalized = normalizeSearchText(value);
+  if (!normalized) {
+    return [];
+  }
+  return normalized.split(/[^a-z0-9]+/g).filter(Boolean);
+};
+
+/**
+ * Match tipo buscador de lista: la query debe ser prefijo de alguna palabra
+ * (o del email/cuit completo), no un substring suelto en el medio.
+ * Así "To" no trae "Veronellu Ethel" solo porque el sector diga "Agroindustria".
+ */
+const profileMatchesQuery = (
+  profile: CompanyProfileAdminView,
+  rawQuery: string
+): boolean => {
+  const query = normalizeSearchText(rawQuery);
+  if (!query) {
+    return true;
+  }
+
+  const primaryFields = [
+    profile.companyName,
+    profile.contactName,
+    profile.contactEmail,
+    profile.city,
+    profile.taxId,
+    profile.sector,
+    profile.subSector,
+    profile.product,
+    profile.keywords,
+    ...(profile.products ?? []).map((product) => product.name)
+  ].filter((field): field is string => Boolean(field && String(field).trim()));
+
+  for (const field of primaryFields) {
+    const normalizedField = normalizeSearchText(field);
+
+    // Email / CUIT / texto continuo: prefijo del valor completo
+    if (normalizedField.startsWith(query)) {
+      return true;
+    }
+
+    // Prefijo de cualquier palabra del campo ("Torres Hnos" matchea con "to")
+    if (toSearchTokens(field).some((token) => token.startsWith(query))) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
 export default function AdminProfilesPage() {
   const navigate = useNavigate();
   const [profiles, setProfiles] = useState<CompanyProfileAdminView[]>([]);
@@ -316,6 +389,27 @@ export default function AdminProfilesPage() {
   const [reviewMessageByProductId, setReviewMessageByProductId] = useState<
     Record<number, string>
   >({});
+  const [accessEmail, setAccessEmail] = useState("");
+  const [accessPassword, setAccessPassword] = useState("");
+  const [generatedAccessPassword, setGeneratedAccessPassword] = useState("");
+  const [isResettingAccess, setIsResettingAccess] = useState(false);
+  const selectionWorkspaceRef = useRef<HTMLDivElement | null>(null);
+
+  const clearCompanySelection = useCallback((): void => {
+    setSelectedId(null);
+    setSelectedProfile(null);
+    setShowCreateForm(false);
+    setAuditRows([]);
+    setFormState(emptyFormState);
+    setVisibilityDraft(null);
+    setProductFormState(emptyProductFormState);
+    setEditingProductId(null);
+    setReviewingProductId(null);
+    setDeletingProductId(null);
+    setReviewMessageByProductId({});
+    setErrorMessage("");
+    setInfoMessage("");
+  }, []);
 
   const activeVisibility = visibilityDraft ?? selectedProfile?.visibility ?? null;
 
@@ -349,6 +443,11 @@ export default function AdminProfilesPage() {
 
     return products.filter((product) => product.isAccepted === null);
   }, [selectedProfile, showOnlyPendingProducts]);
+
+  // Filtro en vivo (desde la 1ª letra) sobre la lista cargada.
+  const visibleProfiles = useMemo(() => {
+    return profiles.filter((profile) => profileMatchesQuery(profile, query));
+  }, [profiles, query]);
 
   const handleUnauthorized = () => {
     clearAuthSession();
@@ -396,11 +495,10 @@ export default function AdminProfilesPage() {
       const rows = Array.isArray(result.data) ? result.data : [];
       setProfiles(rows);
 
+      // Mantener selección solo si sigue en la lista; no forzar la primera empresa.
       const keepSelected = selectedId !== null && rows.some((row) => row.id === selectedId);
-      const nextSelectedId = keepSelected ? selectedId : (rows[0]?.id ?? null);
-      setSelectedId(nextSelectedId);
-
-if (nextSelectedId === null) {
+      if (!keepSelected) {
+        setSelectedId(null);
         setSelectedProfile(null);
         setAuditRows([]);
         setFormState(emptyFormState);
@@ -479,6 +577,9 @@ if (!detailResponse.ok || !detailResult.success) {
       setEditingProductId(null);
       setReviewingProductId(null);
       setDeletingProductId(null);
+      setAccessEmail(detailResult.data.ownerUser?.email ?? detailResult.data.contactEmail ?? "");
+      setAccessPassword("");
+      setGeneratedAccessPassword("");
       setReviewMessageByProductId(
         Object.fromEntries(
           (detailResult.data.products ?? []).map((product) => [
@@ -515,6 +616,35 @@ if (!detailResponse.ok || !detailResult.success) {
     void loadProfileDetail(selectedId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId]);
+
+  // Click fuera del bloque lista + ficha → deseleccionar empresa.
+  useEffect(() => {
+    const hasActiveSelection = selectedId !== null || showCreateForm;
+    if (!hasActiveSelection) {
+      return;
+    }
+
+    const handlePointerDown = (event: MouseEvent | TouchEvent): void => {
+      const target = event.target;
+      if (!(target instanceof Node)) {
+        return;
+      }
+
+      // Click dentro de lista o detalle: mantener selección.
+      if (selectionWorkspaceRef.current?.contains(target)) {
+        return;
+      }
+
+      clearCompanySelection();
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("touchstart", handlePointerDown, { passive: true });
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("touchstart", handlePointerDown);
+    };
+  }, [selectedId, showCreateForm, clearCompanySelection]);
 
   const handleFormChange = (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -903,6 +1033,67 @@ if (!detailResponse.ok || !detailResult.success) {
     }
   };
 
+  const handleResetAccessPassword = async (): Promise<void> => {
+    if (!selectedProfile) {
+      return;
+    }
+
+    const authHeader = getAuthHeader();
+    if (!authHeader) {
+      handleUnauthorized();
+      return;
+    }
+
+    setIsResettingAccess(true);
+    setErrorMessage("");
+    setInfoMessage("");
+    setGeneratedAccessPassword("");
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/admin/profiles/${selectedProfile.id}/access-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: authHeader
+          },
+          body: JSON.stringify({
+            email: accessEmail.trim() || undefined,
+            password: accessPassword.trim() || undefined
+          })
+        }
+      );
+      const result = (await response.json()) as ApiResponse<{
+        profile: CompanyProfileAdminView;
+        access: { userId: number; email: string; password: string; created: boolean };
+      }>;
+
+      if (response.status === 401) {
+        handleUnauthorized();
+        return;
+      }
+
+      if (!response.ok || !result.success || !result.data) {
+        setErrorMessage(result.error ?? "No se pudo generar/resetear el acceso.");
+        return;
+      }
+
+      setSelectedProfile(result.data.profile);
+      setAccessEmail(result.data.access.email);
+      setAccessPassword("");
+      setGeneratedAccessPassword(result.data.access.password);
+      setInfoMessage(
+        result.message ??
+          "Acceso actualizado. Copiá la clave ahora: no se puede volver a mostrar."
+      );
+    } catch {
+      setErrorMessage("No se pudo conectar para resetear el acceso de la empresa.");
+    } finally {
+      setIsResettingAccess(false);
+    }
+  };
+
   const handleSaveSettings = async (): Promise<void> => {
     if (!selectedProfile) {
       return;
@@ -1186,24 +1377,29 @@ if (!detailResponse.ok || !detailResult.success) {
           {errorMessage ? <p className="admin-profiles-feedback error">{errorMessage}</p> : null}
           {infoMessage ? <p className="admin-profiles-feedback info">{infoMessage}</p> : null}
 
-          <div className="admin-profiles-grid">
+          <div className="admin-profiles-grid" ref={selectionWorkspaceRef}>
             <aside className="profiles-list-card">
-<div className="profiles-list-toolbar">
+              <form
+                className="profiles-list-toolbar"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  // Recarga el catálogo completo; el filtro por texto es en vivo (visibleProfiles).
+                  void loadProfiles();
+                }}
+              >
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Buscar por empresa/sector/producto"
+                  placeholder="Buscar por empresa, sector, producto, email..."
+                  aria-label="Buscar perfiles"
+                  autoComplete="off"
                 />
-                <button
-                  type="button"
-                  onClick={() => void loadProfiles(query)}
-                  disabled={isListLoading}
-                >
+                <button type="submit" disabled={isListLoading}>
                   {isListLoading ? "Cargando..." : "Buscar"}
                 </button>
-              </div>
+              </form>
 
-<button
+              <button
                 type="button"
                 className="create-company-toggle"
                 onClick={openCreateCompanyForm}
@@ -1217,12 +1413,23 @@ if (!detailResponse.ok || !detailResult.success) {
                 <p className="list-feedback">No hay perfiles disponibles.</p>
               ) : null}
 
+              {!isListLoading && profiles.length > 0 && visibleProfiles.length === 0 ? (
+                <p className="list-feedback">
+                  Ningún perfil coincide con “{query.trim()}”.
+                </p>
+              ) : null}
+
               <ul className="profiles-list">
-                {profiles.map((row) => (
+                {visibleProfiles.map((row) => (
                   <li key={row.id}>
-<button
+                    <button
                       type="button"
                       onClick={() => {
+                        // Segundo click sobre la misma empresa = deseleccionar
+                        if (!showCreateForm && selectedId === row.id) {
+                          clearCompanySelection();
+                          return;
+                        }
                         setShowCreateForm(false);
                         setSelectedId(row.id);
                       }}
@@ -1527,6 +1734,7 @@ if (!detailResponse.ok || !detailResult.success) {
                         </select>
                       </label>
                       <label className="settings-publish">
+                        <span>Perfil publicado</span>
                         <input
                           type="checkbox"
                           checked={selectedProfile.isPublished}
@@ -1540,8 +1748,9 @@ if (!detailResponse.ok || !detailResult.success) {
                                 : prev
                             )
                           }
+                          aria-label="Perfil publicado"
                         />
-                        <span>Perfil publicado</span>
+                        <span className="settings-publish-switch" aria-hidden="true" />
                       </label>
                     </div>
                     <button
@@ -1550,6 +1759,63 @@ if (!detailResponse.ok || !detailResult.success) {
                       disabled={isSavingSettings}
                     >
                       {isSavingSettings ? "Guardando..." : "Guardar configuración"}
+                    </button>
+                  </section>
+
+                  <section className="settings-card access-card">
+                    <h3>Acceso empresa (login)</h3>
+                    <p className="access-card-help">
+                      Las contraseñas se guardan hasheadas: no se puede re-leer la clave actual.
+                      Generá o definí una nueva acá (se muestra una sola vez) para copiarla y
+                      enviarla manualmente si hace falta.
+                    </p>
+                    <div className="settings-grid">
+                      <label>
+                        Email de acceso
+                        <input
+                          type="email"
+                          value={accessEmail}
+                          onChange={(event) => setAccessEmail(event.target.value)}
+                          placeholder={selectedProfile.contactEmail}
+                        />
+                      </label>
+                      <label>
+                        Nueva contraseña (opcional)
+                        <input
+                          type="text"
+                          value={accessPassword}
+                          onChange={(event) => setAccessPassword(event.target.value)}
+                          placeholder="Vacío = generar automática"
+                          autoComplete="new-password"
+                        />
+                      </label>
+                    </div>
+                    <div className="access-card-meta">
+                      {selectedProfile.ownerUser ? (
+                        <small>
+                          Usuario vinculado: <strong>{selectedProfile.ownerUser.email}</strong>
+                          {selectedProfile.ownerUser.isActive ? " · activo" : " · inactivo"}
+                        </small>
+                      ) : (
+                        <small>Todavía no hay usuario empresa vinculado a este perfil.</small>
+                      )}
+                    </div>
+                    {generatedAccessPassword ? (
+                      <p className="access-password-once">
+                        Clave generada (copiá ahora):{" "}
+                        <code>{generatedAccessPassword}</code>
+                      </p>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => void handleResetAccessPassword()}
+                      disabled={isResettingAccess}
+                    >
+                      {isResettingAccess
+                        ? "Procesando..."
+                        : selectedProfile.ownerUser
+                          ? "Resetear / definir contraseña"
+                          : "Crear acceso empresa"}
                     </button>
                   </section>
 
